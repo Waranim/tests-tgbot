@@ -19,6 +19,9 @@
         <spring-test.version>3.3.5</spring-test.version>
         <xmlunit.vesrion>2.10.0</xmlunit.vesrion>
         <telegrambots.version>6.9.7.1</telegrambots.version>
+        <spring-web.version>3.3.5</spring-web.version>
+        <hypersistence-utils-hibernate.version>3.8.3</hypersistence-utils-hibernate.version>
+        <jackson-module-jakarta-xmlbind-annotations.version>2.18.0</jackson-module-jakarta-xmlbind-annotations.version>
     </properties>
 
     <dependencies>
@@ -40,6 +43,18 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.telegram</groupId>
+            <artifactId>telegrambots</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.hypersistence</groupId>
+            <artifactId>hypersistence-utils-hibernate-63</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
         </dependency>
     </dependencies>
 
@@ -78,6 +93,27 @@
                 <groupId>org.telegram</groupId>
                 <artifactId>telegrambots</artifactId>
                 <version>${telegrambots.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>jackson-module-jaxb-annotations</artifactId>
+                        <groupId>com.fasterxml.jackson.module</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-web</artifactId>
+                <version>${spring-web.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.hypersistence</groupId>
+                <artifactId>hypersistence-utils-hibernate-63</artifactId>
+                <version>${hypersistence-utils-hibernate.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
+                <version>${jackson-module-jakarta-xmlbind-annotations.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
