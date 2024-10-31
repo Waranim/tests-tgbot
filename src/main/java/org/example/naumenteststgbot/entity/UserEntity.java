@@ -2,6 +2,8 @@ package org.example.naumenteststgbot.entity;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 /**
  * Сущность пользователя
  */
@@ -24,6 +26,15 @@ public class UserEntity {
     @Column(unique = true, nullable = false)
     private String username;
 
+    /**
+     * Список тестов пользователя
+     */
+    @OneToMany(mappedBy = "creatorId")
+    private List<TestEntity> tests;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    protected UserSession userSession;
+
     public Long getId() {
         return id;
     }
@@ -40,6 +51,16 @@ public class UserEntity {
         this.username = username;
     }
 
+    public List<TestEntity> getTests() {
+        return tests;
+    }
+    public void setSession(UserSession userSession) {
+        this.userSession = userSession;
+    }
+    public UserSession getSession() {
+        return userSession;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -52,7 +73,6 @@ public class UserEntity {
 
         return id != null && id.equals(other.getId());
     }
-
     @Override
     public int hashCode() {
         return 23;
