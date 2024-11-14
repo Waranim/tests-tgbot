@@ -29,21 +29,22 @@ public class TelegramBot extends TelegramLongPollingBot {
      * Конфигурация бота
      */
     private final BotConfig config;
+    private final MessageHandler messageHandler;
 
-    public TelegramBot(BotConfig config, CommandsHandler commandsHandler) {
+    public TelegramBot(BotConfig config, CommandsHandler commandsHandler, MessageHandler messageHandler) {
         super(config.getToken());
         this.config = config;
         this.commandsHandler = commandsHandler;
+        this.messageHandler = messageHandler;
     }
 
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            String chatId = update.getMessage().getChatId().toString();
             if (update.getMessage().getText().startsWith("/")) {
                 sendMessage(commandsHandler.handleCommands(update));
             } else {
-                sendMessage(new SendMessage(chatId, "Я вас не понимаю, для справки используйте /help"));
+                sendMessage(messageHandler.handleMessage(update));
             }
         }
     }
