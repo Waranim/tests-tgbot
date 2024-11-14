@@ -1,8 +1,10 @@
 package org.example.naumenteststgbot.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,8 +20,9 @@ public class TestEntity extends BaseEntity {
     /**
      * Вопросы в тесте
      */
-    @OneToMany(mappedBy = "test")
-    private List<QuestionEntity> questions;
+    @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuestionEntity> question = new ArrayList<>();
+
 
     /**
      * Название теста
@@ -45,15 +48,17 @@ public class TestEntity extends BaseEntity {
         this.title = title;
     }
 
-    public String getDescription() {
-        return description;
-    }
+
 
     public void setDescription(String description) {
         this.description = description;
     }
 
     public List<QuestionEntity> getQuestions() {
-        return questions;
+        return question;
+    }
+
+    public Object getCreatorId() {
+        return creatorId;
     }
 }

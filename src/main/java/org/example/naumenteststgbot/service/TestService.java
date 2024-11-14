@@ -130,7 +130,8 @@ public class TestService {
                 TestEntity test = getTest(Long.parseLong(text));
                 List<TestEntity> tests = userService.getTestsById(userId);
                 if (test == null || !tests.contains(test)) return "Тест не найден!";
-                response = String.format("Тест “%s” будет удалён, вы уверены? (Да/Нет)", currentTest.getTitle());
+                response = String.format("Тест “%s” будет удалён, вы уверены? (Да/Нет)", test.getTitle());
+                userService.setCurrentTest(userId, test);
                 userService.setState(userId, UserState.CONFIRM_DELETE_TEST);
                 break;
             case CONFIRM_DELETE_TEST:
@@ -146,7 +147,8 @@ public class TestService {
                 }
 
         }
-        testRepository.save(currentTest);
+        if(currentTest != null)
+            testRepository.save(currentTest);
         return response;
     }
 

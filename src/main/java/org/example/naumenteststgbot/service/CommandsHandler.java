@@ -22,10 +22,13 @@ public class CommandsHandler {
 
     private final TestService testService;
 
-    public CommandsHandler(HelpHandler helpHandler, UserService userService, TestService testService) {
+    private final QuestionService questionService;
+
+    public CommandsHandler(HelpHandler helpHandler, UserService userService, TestService testService, QuestionService questionService) {
         this.helpHandler = helpHandler;
         this.userService = userService;
         this.testService = testService;
+        this.questionService = questionService;
     }
 
     /**
@@ -38,6 +41,7 @@ public class CommandsHandler {
         String messageText = update.getMessage().getText();
         String command = messageText.split(" ")[0];
         String replyText;
+
         switch (command) {
             case "/start":
                 userService.create(user.getId(), user.getUserName());
@@ -57,6 +61,21 @@ public class CommandsHandler {
                 break;
             case "/del":
                 replyText = testService.handleDel(user.getId());
+                break;
+            case "/add_question":
+                replyText =questionService.handleAddQuestion(user.getId(),messageText);
+                break;
+            case "/view_question":
+                replyText = questionService.handleViewQuestions(user.getId(), messageText);
+                break;
+            case "/edit_question":
+                replyText = questionService.handleEditQuestion(user.getId(), messageText);
+                break;
+            case "/del_question":
+                replyText = questionService.handleDeleteQuestion(user.getId(),messageText);
+                break;
+            case "/stop":
+                replyText = questionService.handleStop(user.getId());
                 break;
             default:
                 replyText = "Неверная команда, для справки используйте /help";
