@@ -1,6 +1,7 @@
 package org.example.naumenteststgbot.entity;
 
 import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,25 +9,35 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.ManyToOne;
 
-
+/**
+ * Сущность вопроса
+ */
 @Entity
 public class QuestionEntity extends BaseEntity {
-    private String question; // Формулировка вопроса
+    /**
+     * Формулировка вопроса
+     */
+    private String question;
 
-
+    /**
+     * Ответы в вопросе
+     */
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<AnswerEntity> answers = new ArrayList<>();
 
+    /**
+     * Тест
+     */
     @ManyToOne
     private TestEntity test;
 
-    public QuestionEntity() {}
+    public QuestionEntity() {
+    }
 
     public QuestionEntity(TestEntity test) {
         this.test = test;
     }
 
-    // Геттеры и сеттеры
     public String getQuestion() {
         return question;
     }
@@ -46,6 +57,4 @@ public class QuestionEntity extends BaseEntity {
     public void setTest(TestEntity test) {
         this.test = test;
     }
-
-
 }
