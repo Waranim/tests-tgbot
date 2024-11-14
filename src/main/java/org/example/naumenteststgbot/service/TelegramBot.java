@@ -3,6 +3,7 @@ package org.example.naumenteststgbot.service;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.naumenteststgbot.config.BotConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -30,10 +31,31 @@ public class TelegramBot extends TelegramLongPollingBot {
      */
     private final BotConfig config;
 
+    /**
+     * Отправка сообщений
+     */
+    private final MessageSender messageSender;
+
+    public TelegramBot(BotConfig config, CommandsHandler commandsHandler, MessageSender messageSender) {
+        super(config.getToken());
+        this.config = config;
+        this.commandsHandler = commandsHandler;
+        this.messageSender = messageSender;
+    }
+
+    @Autowired
     public TelegramBot(BotConfig config, CommandsHandler commandsHandler) {
         super(config.getToken());
         this.config = config;
         this.commandsHandler = commandsHandler;
+
+        this.messageSender = message -> {
+            try {
+                execute(message);
+            } catch (TelegramApiException e) {
+                log.error("Не удалось отправить сообщение: {}", e.getMessage());
+            }
+        };
     }
 
     @Override
@@ -41,9 +63,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String chatId = update.getMessage().getChatId().toString();
             if (update.getMessage().getText().startsWith("/")) {
-                sendMessage(commandsHandler.handleCommands(update));
+                messageSender.sendMessage(commandsHandler.handleCommands(update));
             } else {
-                sendMessage(new SendMessage(chatId, "Я вас не понимаю, для справки используйте /help"));
+                messageSender.sendMessage(new SendMessage(chatId, "Я вас не понимаю, для справки используйте /help"));
             }
         }
     }
@@ -51,16 +73,5 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public String getBotUsername() {
         return config.getName();
-    }
-
-    /**
-     * Отправить сообщение
-     */
-    public void sendMessage(SendMessage sendMessage) {
-        try {
-            execute(sendMessage);
-        } catch (TelegramApiException e) {
-            log.error("Не удалось отправить сообщение. {}", e.getMessage());
-        }
     }
 }
