@@ -10,9 +10,9 @@ import java.util.Objects;
 @Entity
 public class AnswerEntity extends BaseEntity {
     @Column(nullable = false)
-    private String text; // Текст ответа
+    private String text;
 
-    private boolean correct; // Флаг правильности ответа
+    private boolean correct;
 
     @ManyToOne
     private QuestionEntity question;
@@ -52,12 +52,12 @@ public class AnswerEntity extends BaseEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AnswerEntity that = (AnswerEntity) o;
-        return text.equalsIgnoreCase(that.text);  // Сравниваем только текст ответа
+        return text.equalsIgnoreCase(that.text);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(text.toLowerCase());  // Используем только текст в качестве хэш-кода
+        return Objects.hash(text.toLowerCase());
     }
 
 
