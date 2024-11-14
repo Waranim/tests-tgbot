@@ -22,6 +22,10 @@ public class UserSession extends BaseEntity {
      */
     @OneToOne
     private TestEntity currentTest;
+
+    /**
+     * Индекс редактируемого варианта ответа
+     */
     private Integer editingAnswerIndex;
     /**
      * Вопрос, который в данный момент использует пользователь

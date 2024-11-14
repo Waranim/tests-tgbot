@@ -58,7 +58,7 @@ public class TestEntity extends BaseEntity {
         return question;
     }
 
-    public Object getCreatorId() {
+    public Long getCreatorId() {
         return creatorId;
     }
 }

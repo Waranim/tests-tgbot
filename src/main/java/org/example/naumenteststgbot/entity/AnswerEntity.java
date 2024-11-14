@@ -7,13 +7,25 @@ import jakarta.persistence.ManyToOne;
 
 import java.util.Objects;
 
+/**
+ * Сущность ответов
+ */
 @Entity
 public class AnswerEntity extends BaseEntity {
+    /**
+     * Формулировка ответа
+     */
     @Column(nullable = false)
     private String text;
 
+    /**
+     * Флаг правильности ответа
+     */
     private boolean correct;
 
+    /**
+     * Вопрос
+     */
     @ManyToOne
     private QuestionEntity question;
 

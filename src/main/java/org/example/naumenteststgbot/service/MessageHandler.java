@@ -11,10 +11,23 @@ import org.telegram.telegrambots.meta.api.objects.Update;
  */
 @Service
 public class MessageHandler {
+    /**
+     * Сервис для взаимодействия с пользователем
+     */
     private final UserService userService;
-    private final TestService testService;
-    private final QuestionService questionService;
 
+    /**
+     * Сервис для взаимодействия с тестами
+     */
+    private final TestService testService;
+
+    /**
+     * Сервис для взаимодействия с вопросами
+     */
+    private final QuestionService questionService;
+    /**
+     * Конструктор класса MessageHandler
+     */
     public MessageHandler(UserService userService, TestService testService, QuestionService questionService) {
         this.userService = userService;
         this.testService = testService;

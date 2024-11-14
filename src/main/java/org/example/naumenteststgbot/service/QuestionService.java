@@ -16,9 +16,24 @@ import java.util.List;
 @Service
 @Transactional
 public class QuestionService {
+    /**
+     * Репозиторий для взаимодействия над сущностью вопросов в базе данных
+     */
     private final QuestionRepository questionRepository;
+
+    /**
+     * Сервис для взаимодействия с пользователем
+     */
     private final UserService userService;
+
+    /**
+     * Репозиторий для взаимодействия над сущностью ответов в базе данных
+     */
     private final AnswerRepository answerRepository;
+
+    /**
+     * Сервис для взаимодействия с тестами
+     */
     private final TestService testService;
 
     /**

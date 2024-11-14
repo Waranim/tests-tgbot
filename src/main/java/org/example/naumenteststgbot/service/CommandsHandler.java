@@ -15,15 +15,24 @@ public class CommandsHandler {
      * Обработчик команд /start и /help
      */
     private final HelpHandler helpHandler;
+
     /**
      * Сервис для взаимодействия с пользователем
      */
     private final UserService userService;
 
+    /**
+     * Сервис для взаимодействия с тестами
+     */
     private final TestService testService;
 
+    /**
+     * Сервис для взаимодействия с вопросами
+     */
     private final QuestionService questionService;
-
+    /**
+     * Конструктор класса CommandsHandler
+     */
     public CommandsHandler(HelpHandler helpHandler, UserService userService, TestService testService, QuestionService questionService) {
         this.helpHandler = helpHandler;
         this.userService = userService;

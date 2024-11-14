@@ -96,7 +96,11 @@ public class UserService {
         user.getSession().setCurrentTest(testEntity);
         updateUser(user);
     }
-
+    /**
+     * Установить индекс правильного ответа
+     * @param id идентификатор пользователя
+     * @param editingAnswerIndex индекс редактируемого варианта ответа
+     */
     @Transactional
     public void setEditingAnswerIndex(Long id, Integer editingAnswerIndex) {
         UserEntity user = getUserById(id);
