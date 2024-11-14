@@ -1,10 +1,7 @@
 package org.example.naumenteststgbot.service;
 
 import org.example.naumenteststgbot.DTO.UserDTO;
-import org.example.naumenteststgbot.entity.TestEntity;
-import org.example.naumenteststgbot.entity.UserEntity;
-import org.example.naumenteststgbot.entity.UserSession;
-import org.example.naumenteststgbot.entity.UserState;
+import org.example.naumenteststgbot.entity.*;
 import org.example.naumenteststgbot.repository.UserRepository;
 import org.example.naumenteststgbot.repository.UserSessionRepository;
 import org.slf4j.Logger;
@@ -99,10 +96,35 @@ public class UserService {
         user.getSession().setCurrentTest(testEntity);
         updateUser(user);
     }
+    /**
+     * Установить индекс правильного ответа
+     * @param id идентификатор пользователя
+     * @param editingAnswerIndex индекс редактируемого варианта ответа
+     */
+    @Transactional
+    public void setEditingAnswerIndex(Long id, Integer editingAnswerIndex) {
+        UserEntity user = getUserById(id);
+        if (user == null) return;
+        user.getSession().setEditingAnswerIndex(editingAnswerIndex);
+        updateUser(user);
+    }
 
     public List<TestEntity> getTestsById(Long id) {
         UserEntity user = getUserById(id);
         if (user == null) return null;
         return user.getTests();
+    }
+
+    public void setCurrentQuestion(Long userId, QuestionEntity question) {
+        UserEntity user = getUserById(userId);
+        if (user == null) return;
+        user.getSession().setCurrentQuestion(question);
+        updateUser(user);
+    }
+
+    public QuestionEntity getCurrentQuestion(Long userId) {
+        UserEntity user = getUserById(userId);
+        if (user == null) return null;
+        return user.getSession().getCurrentQuestion();
     }
 }

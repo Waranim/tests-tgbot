@@ -1,5 +1,6 @@
 package org.example.naumenteststgbot.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;
 
@@ -21,10 +22,15 @@ public class UserSession extends BaseEntity {
      */
     @OneToOne
     private TestEntity currentTest;
+
+    /**
+     * Индекс редактируемого варианта ответа
+     */
+    private Integer editingAnswerIndex;
     /**
      * Вопрос, который в данный момент использует пользователь
      */
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private QuestionEntity currentQuestion;
 
     public Long getUserId() {
@@ -60,5 +66,13 @@ public class UserSession extends BaseEntity {
 
     public UserSession(Long userId) {
         this.userId = userId;
+    }
+
+    public Integer getEditingAnswerIndex() {
+        return editingAnswerIndex;
+    }
+
+    public void setEditingAnswerIndex(Integer editingAnswerIndex) {
+        this.editingAnswerIndex = editingAnswerIndex;
     }
 }
