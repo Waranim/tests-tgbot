@@ -37,6 +37,9 @@ class TelegramBotTest {
     @Mock
     private MessageSender messageSender;
 
+    @Mock
+    private MessageHandler messageHandler;
+
     /**
      * Телеграм бот
      */
@@ -67,7 +70,6 @@ class TelegramBotTest {
         when(update.getMessage()).thenReturn(message);
         when(message.hasText()).thenReturn(true);
         when(message.getText()).thenReturn("/start");
-        when(message.getChatId()).thenReturn(12345L);
         doNothing().when(messageSender).sendMessage(any(SendMessage.class));
 
         String text = """
@@ -104,10 +106,9 @@ class TelegramBotTest {
         when(update.getMessage()).thenReturn(message);
         when(message.hasText()).thenReturn(true);
         when(message.getText()).thenReturn("Hello");
-        when(message.getChatId()).thenReturn(12345L);
-        doNothing().when(messageSender).sendMessage(any(SendMessage.class));
 
         SendMessage expectedMessage = new SendMessage("12345", "Я вас не понимаю, для справки используйте /help");
+        when(messageHandler.handleMessage(update)).thenReturn(expectedMessage);
 
         telegramBot.onUpdateReceived(update);
 
