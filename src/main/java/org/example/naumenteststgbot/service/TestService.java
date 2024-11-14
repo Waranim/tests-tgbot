@@ -7,6 +7,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Сервис для обработки команд и сообщений, связанных с тестом
+ */
 @Service
 public class TestService {
     private final TestRepository testRepository;
@@ -78,17 +81,33 @@ public class TestService {
         return "Выберите тест:\n" + testsListToString(userService.getTestsById(id));
     }
 
+    /**
+     * Получить тест по идентификатору
+     * @param id Идентификатор теста
+     * @return тест или null, если не найден
+     */
     public TestEntity getTest(Long id) {
         return testRepository.findById(id).orElse(null);
     }
 
+    /**
+     * Создать тест
+     * @param creatorId Идентификатор создателя
+     * @return Созданный тесть
+     */
     private TestEntity createTest(Long creatorId){
         TestEntity test = new TestEntity(creatorId);
         return testRepository.save(test);
     }
 
+    /**
+     * Обработать сообщение, в зависимости от состояния пользователя
+     * @param userSession Сессия пользователя
+     * @param message  сообщение
+     * @return Ответ пользователю
+     */
     @Transactional
-    public String getResponseMessage(UserSession userSession, String text) {
+    public String handleMessage(UserSession userSession, String message) {
         UserState userState = userSession.getState();
         Long userId = userSession.getUserId();
         TestEntity currentTest = userSession.getCurrentTest();
@@ -97,45 +116,46 @@ public class TestService {
             case DEFAULT:
                 break;
             case ADD_TEST_TITLE:
-                currentTest.setTitle(text);
+                currentTest.setTitle(message);
                 response = "Введите описание теста";
                 userService.setState(userId, UserState.ADD_TEST_DESCRIPTION);
                 break;
             case ADD_TEST_DESCRIPTION:
-                currentTest.setDescription(text);
+                currentTest.setDescription(message);
                 response = String.format("Тест “%s” создан! Количество вопросов: 0. Для добавление вопросов используйте /add_question %s, где %s - идентификатор теста “%s”.", currentTest.getTitle(), currentTest.getId(), currentTest.getId(), currentTest.getTitle());
                 userService.setState(userId, UserState.DEFAULT);
                 break;
             case EDIT_TEST:
-                if(text.equals("1")){
+                if(message.equals("1")){
                     response = "Введите новое название теста";
                     userService.setState(userId, UserState.EDIT_TEST_TITLE);
                 }
-                else if(text.equals("2")){
+                else if(message.equals("2")){
                     response = "Введите новое описание теста";
                     userService.setState(userId, UserState.EDIT_TEST_DESCRIPTION);
                 }
                 break;
             case EDIT_TEST_TITLE:
-                currentTest.setTitle(text);
+                currentTest.setTitle(message);
                 userService.setState(userId, UserState.DEFAULT);
-                response = String.format("Название изменено на “%s”", text);
+                response = String.format("Название изменено на “%s”", message);
                 break;
             case EDIT_TEST_DESCRIPTION:
-                currentTest.setDescription(text);
+                currentTest.setDescription(message);
                 userService.setState(userId, UserState.DEFAULT);
-                response = String.format("Описание изменено на “%s”", text);
+                response = String.format("Описание изменено на “%s”", message);
                 break;
             case DELETE_TEST:
-                TestEntity test = getTest(Long.parseLong(text));
+                TestEntity test = getTest(Long.parseLong(message));
                 List<TestEntity> tests = userService.getTestsById(userId);
                 if (test == null || !tests.contains(test)) return "Тест не найден!";
-                response = String.format("Тест “%s” будет удалён, вы уверены? (Да/Нет)", currentTest.getTitle());
+                response = String.format("Тест “%s” будет удалён, вы уверены? (Да/Нет)", test.getTitle());
+                userService.setCurrentTest(userId, test);
                 userService.setState(userId, UserState.CONFIRM_DELETE_TEST);
                 break;
             case CONFIRM_DELETE_TEST:
-                text = text.toLowerCase();
-                if (text.equals("да"))
+                message = message.toLowerCase();
+                if (message.equals("да"))
                 {
                     userService.setCurrentTest(userId, null);
                     testRepository.delete(currentTest);
@@ -146,7 +166,8 @@ public class TestService {
                 }
 
         }
-        testRepository.save(currentTest);
+        if(currentTest != null)
+            testRepository.save(currentTest);
         return response;
     }
 

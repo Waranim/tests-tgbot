@@ -28,7 +28,7 @@ public class MessageHandler {
         String text = update.getMessage().getText();
         String responseMessage = "Я вас не понимаю, для справки используйте /help";
         if(userState != UserState.DEFAULT) {
-            responseMessage = testService.getResponseMessage(userSession, text);
+            responseMessage = testService.handleMessage(userSession, text);
         }
 
         return new SendMessage(update.getMessage().getChatId().toString(), responseMessage);
