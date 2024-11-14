@@ -30,7 +30,6 @@ public class MessageHandler {
         String text = update.getMessage().getText();
         String responseMessage = "Я вас не понимаю, для справки используйте /help";
 
-        // Обработка состояния пользователя
         switch (userState) {
             case ADD_TEST_TITLE:
             case ADD_TEST_DESCRIPTION:

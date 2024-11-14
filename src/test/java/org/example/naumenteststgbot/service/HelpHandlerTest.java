@@ -1,19 +1,21 @@
 package org.example.naumenteststgbot.service;
 
-import org.springframework.stereotype.Service;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Обработчик команд /start и /help
+ * Тесты для обработчика команд /start и /help
  */
-@Service
-public class HelpHandler {
+class HelpHandlerTest {
 
     /**
-     * Возвращает справочное сообщение
-     * @return сообщение пользователю
+     * Тест на вывод ожидаемого сообщения при вызове команды /start или /help
      */
-    public String handle() {
-        return """
+    @Test
+    public void testHandle() {
+        HelpHandler helpHandler = new HelpHandler();
+        String expectedMessage = """
                 Здравствуйте. Я бот специализирующийся на создании и прохождении тестов. Доступны следующие команды:
                 /add – Добавить тест
                 /add_question [testID] - Добавить вопрос к тесту
@@ -27,5 +29,9 @@ public class HelpHandler {
                 /stop - Закончить ввод вариантов ответа, если добавлено минимум 2 варианта \
                 при выполнении команды /add_question [testID]
                 /help - Справка""";
+
+        String actualMessage = helpHandler.handle();
+
+        assertEquals(expectedMessage, actualMessage);
     }
 }
