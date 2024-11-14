@@ -30,24 +30,27 @@ public class TelegramBot extends TelegramLongPollingBot {
      * Конфигурация бота
      */
     private final BotConfig config;
+    private final MessageHandler messageHandler;
 
     /**
      * Отправка сообщений
      */
     private final MessageSender messageSender;
 
-    public TelegramBot(BotConfig config, CommandsHandler commandsHandler, MessageSender messageSender) {
+    public TelegramBot(BotConfig config, CommandsHandler commandsHandler, MessageSender messageSender, MessageHandler messageHandler) {
         super(config.getToken());
         this.config = config;
         this.commandsHandler = commandsHandler;
         this.messageSender = messageSender;
+        this.messageHandler = messageHandler;
     }
 
     @Autowired
-    public TelegramBot(BotConfig config, CommandsHandler commandsHandler) {
+    public TelegramBot(BotConfig config, CommandsHandler commandsHandler, MessageHandler messageHandler) {
         super(config.getToken());
         this.config = config;
         this.commandsHandler = commandsHandler;
+        this.messageHandler = messageHandler;
 
         this.messageSender = message -> {
             try {
@@ -61,11 +64,10 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            String chatId = update.getMessage().getChatId().toString();
             if (update.getMessage().getText().startsWith("/")) {
                 messageSender.sendMessage(commandsHandler.handleCommands(update));
             } else {
-                messageSender.sendMessage(new SendMessage(chatId, "Я вас не понимаю, для справки используйте /help"));
+                messageSender.sendMessage(messageHandler.handleMessage(update));
             }
         }
     }
