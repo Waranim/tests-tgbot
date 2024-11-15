@@ -29,6 +29,10 @@ public class TelegramBot extends TelegramLongPollingBot {
      * Конфигурация бота
      */
     private final BotConfig config;
+
+    /**
+     * Обработчик сообщений
+     */
     private final MessageHandler messageHandler;
 
     public TelegramBot(BotConfig config, CommandsHandler commandsHandler, MessageHandler messageHandler) {

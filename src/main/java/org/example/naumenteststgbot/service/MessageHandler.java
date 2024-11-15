@@ -51,6 +51,7 @@ public class MessageHandler {
             case EDIT_TEST_DESCRIPTION:
             case DELETE_TEST:
             case CONFIRM_DELETE_TEST:
+            case VIEW_TEST:
                 responseMessage = testService.handleMessage(userSession, text);
                 break;
 
