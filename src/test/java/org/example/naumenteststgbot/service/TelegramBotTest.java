@@ -37,6 +37,9 @@ class TelegramBotTest {
     @Mock
     private MessageSender messageSender;
 
+    /**
+     * Обработка сообщений
+     */
     @Mock
     private MessageHandler messageHandler;
 
