@@ -1,6 +1,5 @@
 package org.example.naumenteststgbot.service;
 
-import org.example.naumenteststgbot.DTO.UserDTO;
 import org.example.naumenteststgbot.entity.UserEntity;
 import org.example.naumenteststgbot.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -67,7 +66,9 @@ class UserServiceTest {
         verify(userRepository, never()).save(any(UserEntity.class));
     }
 
-
+    /**
+     * Тест на получение пользователя, когда пользователь существует в базе данных
+     */
     @Test
     void testGetUserWhenUserExists() {
         Long id = 12345L;
@@ -78,19 +79,22 @@ class UserServiceTest {
 
         when(userRepository.findById(id)).thenReturn(Optional.of(existingUser));
 
-        UserDTO userDTO = userService.get(id);
-        assertNotNull(userDTO);
-        assertEquals(id, userDTO.id());
-        assertEquals(username, userDTO.username());
+        UserEntity user = userService.get(id);
+        assertNotNull(user);
+        assertEquals(id, user.getId());
+        assertEquals(username, user.getUsername());
     }
 
+    /**
+     * Тест на получение пользователя, когда пользователь не существует в базе данных
+     */
     @Test
     void testGetUserWhenUserDoesNotExist() {
         Long id = 12345L;
 
         when(userRepository.findById(id)).thenReturn(Optional.empty());
 
-        UserDTO userDTO = userService.get(id);
-        assertNull(userDTO);
+        UserEntity user = userService.get(id);
+        assertNull(user);
     }
 }
