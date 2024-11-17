@@ -47,132 +47,9 @@ public class QuestionService {
     }
 
     /**
-     * Обрабатывает команду добавления вопроса в тест
-     */
-    public String handleAddQuestion(Long userId, String message) {
-        String[] parts = message.split(" ");
-        List<TestEntity> tests = userService.getTestsById(userId);
-
-        if (parts.length == 1) {
-            if (tests.isEmpty()) {
-                return "У вас нет доступных тестов для добавления вопросов.";
-            }
-            userService.setState(userId, UserState.ADD_QUESTION);
-            return "Выберите тест:\n" + testsListToString(tests);
-        }
-
-        String testIdStr = parts[1];
-        if (!testIdStr.matches("^-?\\d+$")) {
-            return "Некорректный формат id теста. Пожалуйста, введите число.";
-        }
-        long testId = Long.parseLong(testIdStr);
-        TestEntity test = testService.getTest(testId);
-        if (test == null || !tests.contains(test)) {
-            return "Тест не найден!";
-        }
-
-        QuestionEntity question = createQuestion(test);
-        userService.setState(userId, UserState.ADD_QUESTION_TEXT);
-        userService.setCurrentQuestion(userId, question);
-        return String.format("Введите название вопроса для теста “%s”", test.getTitle());
-    }
-
-    /**
-     * Обрабатывает команду просмотра вопросов в тесте
-     */
-    public String handleViewQuestions(Long userId, String message) {
-        String[] parts = message.split(" ");
-        if (parts.length == 1) {
-            return "Используйте команду вместе с идентификатором вопроса!";
-        }
-        if (parts[1].matches("^-?\\d+$")) {
-            Long testId = Long.parseLong(parts[1]);
-            TestEntity test = testService.getTest(testId);
-            if (test == null || !test.getCreatorId().equals(userId)) {
-                return "Тест не найден!";
-            }
-            List<QuestionEntity> questions = test.getQuestions();
-            if (questions.isEmpty()) {
-                return "В этом тесте пока нет вопросов.";
-            }
-            StringBuilder response = new StringBuilder();
-            response.append(String.format("Вопросы теста \"%s\":\n", test.getTitle()));
-            for (int i = 0; i < questions.size(); i++) {
-                QuestionEntity question = questions.get(i);
-                response.append(String.format("%d) id:%d  \"%s\"\n", i + 1, question.getId(), question.getQuestion()));
-            }
-            return response.toString();
-        }
-
-        return "Ошибка ввода. Укажите корректный id теста.";
-    }
-
-    /**
-     * Обрабатывает команду редактирования вопроса
-     */
-    public String handleEditQuestion(Long userId, String message) {
-        String[] parts = message.split(" ");
-        if (parts.length == 1) {
-            return "Используйте команду вместе с идентификатором вопроса!";
-        }
-        Long questionId = Long.parseLong(parts[1]);
-        QuestionEntity question = questionRepository.findById(questionId).orElse(null);
-        if (question == null) {
-            return "Вопрос не найден!";
-        }
-        userService.setCurrentQuestion(userId, question);
-        userService.setState(userId, UserState.EDIT_QUESTION);
-        return String.format("""
-                Вы выбрали вопрос “%s”. Что вы хотите изменить в вопросе?
-                1: Формулировку вопроса
-                2: Варианты ответа
-                """, question.getQuestion());
-    }
-
-
-    /**
-     * Обрабатывает команду удаления вопроса
-     */
-    public String handleDeleteQuestion(Long userId, String message) {
-        UserSession userSession = userService.getSession(userId);
-        if (userSession.getState() == UserState.CONFIRM_DELETE_QUESTION) {
-            QuestionEntity question = userSession.getCurrentQuestion();
-            if (question == null) {
-                return "Вопрос не найден!";
-            }
-            message = message.toLowerCase();
-            if (message.equals("да")) {
-                userService.setCurrentQuestion(userId, null);
-                questionRepository.delete(question);
-                userService.setState(userId, UserState.DEFAULT);
-            } else if (message.equals("нет")) {
-                userService.setState(userId, UserState.DEFAULT);
-            } else {
-                return "Некорректный ввод. Пожалуйста, введите 'Да' или 'Нет'.";
-            }
-        }
-        userService.setState(userId, UserState.DELETE_QUESTION);
-        TestEntity test = userSession.getCurrentTest();
-        if (test == null) {
-            return "Сначала выберите тест для удаления вопроса!";
-        }
-        return "Введите id вопроса для удаления:\n";
-    }
-
-    /**
-     * Создает новый вопрос в заданном тесте и сохраняет его в базе данных
-     */
-    private QuestionEntity createQuestion(TestEntity test) {
-        QuestionEntity question = new QuestionEntity(test);
-        questionRepository.save(question);
-
-        return question;
-    }
-
-    /**
      * Управляет переходами между состояниями пользователя в зависимости от полученной команды
      */
-    public String getResponseMessage(UserSession userSession, String text) {
+    public String handleMessage(UserSession userSession, String text) {
         UserState userState = userSession.getState();
         Long userId = userSession.getUserId();
         QuestionEntity currentQuestion = userSession.getCurrentQuestion();
@@ -182,7 +59,7 @@ public class QuestionService {
             case DEFAULT:
                 break;
             case ADD_QUESTION:
-                if (!text.matches("^-?\\d+$")) {
+                if (!text.matches("^\\d+$")) {
                     return "Некорректный id теста. Пожалуйста, введите число.";
                 }
 
@@ -291,27 +168,131 @@ public class QuestionService {
     }
 
     /**
-     * Добавляет новый вариант ответа к текущему вопросу
+     * Обрабатывает команду добавления вопроса в тест
      */
-    public void addAnswerOption(QuestionEntity question, String answerText) {
-        AnswerEntity newAnswer = new AnswerEntity(answerText);
-        newAnswer.setQuestion(question);
-        answerRepository.save(newAnswer);
+    public String handleAddQuestion(Long userId, String message) {
+        String[] parts = message.split(" ");
+        List<TestEntity> tests = userService.getTestsById(userId);
+
+        if (parts.length == 1) {
+            if (tests.isEmpty()) {
+                return "У вас нет доступных тестов для добавления вопросов.";
+            }
+            userService.setState(userId, UserState.ADD_QUESTION);
+            return "Выберите тест:\n" + testsListToString(tests);
+        }
+
+        String testIdStr = parts[1];
+        if (!testIdStr.matches("^-?\\d+$")) {
+            return "Некорректный формат id теста. Пожалуйста, введите число.";
+        }
+        long testId = Long.parseLong(testIdStr);
+        TestEntity test = testService.getTest(testId);
+        if (test == null || !tests.contains(test)) {
+            return "Тест не найден!";
+        }
+
+        QuestionEntity question = createQuestion(test);
+        userService.setState(userId, UserState.ADD_QUESTION_TEXT);
+        userService.setCurrentQuestion(userId, question);
+        return String.format("Введите название вопроса для теста “%s”", test.getTitle());
     }
 
     /**
-     * Устанавливает правильный ответ для вопроса.
+     * Обрабатывает команду просмотра вопросов в тесте
      */
-    public String setCorrectAnswer(QuestionEntity question, int optionIndex) {
-        List<AnswerEntity> answers = question.getAnswers();
-        if (optionIndex < 1 || optionIndex > answers.size()) {
-            return "Некорректный номер варианта ответа. Введите число от 1 до " + answers.size();
+    public String handleViewQuestions(Long userId, String message) {
+        String[] parts = message.split(" ");
+        if (parts.length == 1) {
+            return "Используйте команду вместе с идентификатором вопроса!";
         }
-        for (int i = 0; i < answers.size(); i++) {
-            answers.get(i).setCorrect(i == optionIndex - 1);
+        if (parts[1].matches("^\\d+$")) {
+            Long testId = Long.parseLong(parts[1]);
+            TestEntity test = testService.getTest(testId);
+            if (test == null || !test.getCreatorId().equals(userId)) {
+                return "Тест не найден!";
+            }
+            List<QuestionEntity> questions = test.getQuestions();
+            if (questions.isEmpty()) {
+                return "В этом тесте пока нет вопросов.";
+            }
+            StringBuilder response = new StringBuilder();
+            response.append(String.format("Вопросы теста \"%s\":\n", test.getTitle()));
+            for (int i = 0; i < questions.size(); i++) {
+                QuestionEntity question = questions.get(i);
+                response.append(String.format("%d) id:%d  \"%s\"\n", i + 1, question.getId(), question.getQuestion()));
+            }
+            return response.toString();
         }
-        questionRepository.save(question);
-        return String.format("Вариант ответа %s назначен правильным.", optionIndex);
+
+        return "Ошибка ввода. Укажите корректный id теста.";
+    }
+
+    /**
+     * Обрабатывает команду редактирования вопроса
+     */
+    public String handleEditQuestion(Long userId, String message) {
+        String[] parts = message.split(" ");
+        if (parts.length == 1) {
+            return "Используйте команду вместе с идентификатором вопроса!";
+        }
+        Long questionId = Long.parseLong(parts[1]);
+        QuestionEntity question = questionRepository.findById(questionId).orElse(null);
+        if (question == null) {
+            return "Вопрос не найден!";
+        }
+        userService.setCurrentQuestion(userId, question);
+        userService.setState(userId, UserState.EDIT_QUESTION);
+        return String.format("""
+                Вы выбрали вопрос “%s”. Что вы хотите изменить в вопросе?
+                1: Формулировку вопроса
+                2: Варианты ответа
+                """, question.getQuestion());
+    }
+
+    /**
+     * Обрабатывает команду удаления вопроса
+     */
+    public String handleDeleteQuestion(Long userId, String message) {
+        UserSession userSession = userService.getSession(userId);
+        if (userSession.getState() == UserState.CONFIRM_DELETE_QUESTION) {
+            QuestionEntity question = userSession.getCurrentQuestion();
+            if (question == null) {
+                return "Вопрос не найден!";
+            }
+            message = message.toLowerCase();
+            if (message.equals("да")) {
+                userService.setCurrentQuestion(userId, null);
+                questionRepository.delete(question);
+                userService.setState(userId, UserState.DEFAULT);
+                return "Вопрос успешно удален.";
+            } else if (message.equals("нет")) {
+                userService.setState(userId, UserState.DEFAULT);
+                return "Удаление вопроса отменено.";
+            } else {
+                return "Некорректный ввод. Пожалуйста, введите 'Да' или 'Нет'.";
+            }
+        }
+        String[] parts = message.split(" ");
+        if (parts.length == 2) {
+            String questionIdStr = parts[1];
+            if (!questionIdStr.matches("^\\d+$")) {
+                return "Некорректный формат id вопроса. Пожалуйста, введите число.";
+            }
+            Long questionId = Long.parseLong(questionIdStr);
+            QuestionEntity question = questionRepository.findById(questionId).orElse(null);
+            if (question == null) {
+                return "Вопрос не найден!";
+            }
+            userService.setCurrentQuestion(userId, question);
+            userService.setState(userId, UserState.CONFIRM_DELETE_QUESTION);
+            return String.format("Вопрос “%s” будет удалён, вы уверены? (Да/Нет)", question.getQuestion());
+        }
+        if (parts.length == 1){
+                userService.setState(userId, UserState.DELETE_QUESTION);
+                return "Введите id вопроса для удаления:\n";
+        }
+        return "Некорректный ввод команды";
     }
 
     /**
@@ -332,6 +313,40 @@ public class QuestionService {
             return "Укажите правильный вариант ответа:\n" + answersListToString(currentQuestion.getAnswers());
         }
         return "Команда /stop используется только при создании вопроса";
+    }
+
+    /**
+     * Создает новый вопрос в заданном тесте и сохраняет его в базе данных
+     */
+    private QuestionEntity createQuestion(TestEntity test) {
+        QuestionEntity question = new QuestionEntity(test);
+        questionRepository.save(question);
+
+        return question;
+    }
+
+    /**
+     * Добавляет новый вариант ответа к текущему вопросу
+     */
+    private void addAnswerOption(QuestionEntity question, String answerText) {
+        AnswerEntity newAnswer = new AnswerEntity(answerText);
+        newAnswer.setQuestion(question);
+        answerRepository.save(newAnswer);
+    }
+
+    /**
+     * Устанавливает правильный ответ для вопроса.
+     */
+    private String setCorrectAnswer(QuestionEntity question, int optionIndex) {
+        List<AnswerEntity> answers = question.getAnswers();
+        if (optionIndex < 1 || optionIndex > answers.size()) {
+            return "Некорректный номер варианта ответа. Введите число от 1 до " + answers.size();
+        }
+        for (int i = 0; i < answers.size(); i++) {
+            answers.get(i).setCorrect(i == optionIndex - 1);
+        }
+        questionRepository.save(question);
+        return String.format("Вариант ответа %s назначен правильным.", optionIndex);
     }
 
     /**
@@ -357,4 +372,6 @@ public class QuestionService {
         }
         return response.toString();
     }
+
+
 }
