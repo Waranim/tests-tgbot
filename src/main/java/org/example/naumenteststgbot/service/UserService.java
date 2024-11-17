@@ -68,6 +68,11 @@ public class UserService {
         return user.getSession();
     }
 
+    /**
+     * Получить пользователя по идентификатору
+     * @param id идентификатор пользователя
+     * @return пользователь, или null, если пользователь не найден
+     */
     private UserEntity getUserById(Long id) {
         UserEntity user = userRepository.findById(id).orElse(null);
         if (user == null) {
@@ -76,11 +81,20 @@ public class UserService {
         return user;
     }
 
+    /**
+     * Сохранить обновленного пользователя и его сессию
+     * @param user пользователь, которого нужно сохранить
+     */
     private void updateUser(UserEntity user){
         userRepository.save(user);
         userSessionRepository.save(user.getSession());
     }
 
+    /**
+     * Установить состояние к сессии пользователя
+     * @param id идентификатор пользователя
+     * @param state состояние пользователя
+     */
     @Transactional
     public void setState(Long id, UserState state) {
         UserEntity user = getUserById(id);
@@ -89,6 +103,11 @@ public class UserService {
         updateUser(user);
     }
 
+    /**
+     * Установить текущий тест к сессии пользователя
+     * @param id идентификатор пользователя
+     * @param testEntity тест
+     */
     @Transactional
     public void setCurrentTest(Long id, TestEntity testEntity) {
         UserEntity user = getUserById(id);
@@ -109,6 +128,11 @@ public class UserService {
         updateUser(user);
     }
 
+    /**
+     * Получить список тестов по идентификатору пользователя
+     * @param id идентификатор пользователя
+     * @return список тестов или null, если пользователь не найден
+     */
     public List<TestEntity> getTestsById(Long id) {
         UserEntity user = getUserById(id);
         if (user == null) return null;

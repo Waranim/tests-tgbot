@@ -12,9 +12,21 @@ import java.util.List;
  */
 @Service
 public class TestService {
+    /**
+     * Репозиторий для тестов
+     */
     private final TestRepository testRepository;
+
+    /**
+     * Сервис пользователей
+     */
     private final UserService userService;
 
+    /**
+     * Конструктор сервиса тестов
+     * @param testRepository Репозиторий для тестов
+     * @param userService Сервис пользователей
+     */
     public TestService(TestRepository testRepository, UserService userService) {
         this.testRepository = testRepository;
         this.userService = userService;

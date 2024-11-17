@@ -4,9 +4,10 @@ import org.example.naumenteststgbot.entity.*;
 import org.example.naumenteststgbot.repository.TestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -16,26 +17,55 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * Тесты для TestService
+ */
+@ExtendWith(MockitoExtension.class)
 class TestServiceTest {
 
+    /**
+     * Репозиторий тестов
+     */
     @Mock
     private TestRepository testRepository;
 
+    /**
+     * Сервис пользователей
+     */
     @Mock
     private UserService userService;
 
+    /**
+     * Сервис тестов
+     */
     @InjectMocks
     private TestService testService;
 
+    /**
+     * Идентификатор пользователя
+     */
     private long userId;
+
+    /**
+     * Идентификатор теста
+     */
     private long testId;
+
+    /**
+     * Тест
+     */
     private TestEntity test;
+
+    /**
+     * Сессия пользователя
+     */
     private UserSession userSession;
 
+    /**
+     * Инициализация перед каждым тестом
+     */
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-
         userId = 123L;
         testId = 123L;
         test = new TestEntity(userId);
