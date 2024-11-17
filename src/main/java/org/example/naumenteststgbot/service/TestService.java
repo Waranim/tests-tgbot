@@ -49,7 +49,7 @@ public class TestService {
             if (test == null || !tests.contains(test)) return "Тест не найден!";
             return testToString(test);
         }
-        return "Ошибка ввода";
+        return "Ошибка ввода!";
     }
 
     /**
@@ -150,6 +150,10 @@ public class TestService {
                 response = String.format("Описание изменено на “%s”", message);
                 break;
             case DELETE_TEST:
+                if(!isNumber(message)) {
+                    response = "Ошибка ввода!";
+                    break;
+                }
                 TestEntity test = getTest(Long.parseLong(message));
                 List<TestEntity> tests = userService.getTestsById(userId);
                 if (test == null || !tests.contains(test)) return "Тест не найден!";
@@ -159,6 +163,7 @@ public class TestService {
                 break;
             case CONFIRM_DELETE_TEST:
                 message = message.toLowerCase();
+                userService.setState(userId, UserState.DEFAULT);
                 if (message.equals("да"))
                 {
                     userService.setCurrentTest(userId, null);
