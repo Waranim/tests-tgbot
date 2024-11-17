@@ -66,7 +66,7 @@ public class MessageHandler {
             case EDIT_ANSWER_TEXT:
             case DELETE_QUESTION:
             case CONFIRM_DELETE_QUESTION:
-                responseMessage = questionService.getResponseMessage(userSession, text);
+                responseMessage = questionService.handleMessage(userSession, text);
                 break;
 
             default:
