@@ -12,9 +12,21 @@ import java.util.List;
  */
 @Service
 public class TestService {
+    /**
+     * Репозиторий для тестов
+     */
     private final TestRepository testRepository;
+
+    /**
+     * Сервис пользователей
+     */
     private final UserService userService;
 
+    /**
+     * Конструктор сервиса тестов
+     * @param testRepository Репозиторий для тестов
+     * @param userService Сервис пользователей
+     */
     public TestService(TestRepository testRepository, UserService userService) {
         this.testRepository = testRepository;
         this.userService = userService;
@@ -39,15 +51,17 @@ public class TestService {
         List<TestEntity> tests = userService.getTestsById(userId);
 
         if (parts.length == 1) {
+            userService.setState(userId, UserState.VIEW_TEST);
             return "Выберите тест для просмотра:\n"
                     + testsListToString(tests);
-        } else if (parts[1].matches("^-?\\d+$")){
+        } else if (isNumber(parts[1])){
+            userService.setState(userId, UserState.DEFAULT);
             Long testId = Long.parseLong(parts[1]);
             TestEntity test = getTest(testId);
             if (test == null || !tests.contains(test)) return "Тест не найден!";
             return testToString(test);
         }
-        return "Ошибка ввода";
+        return "Ошибка ввода!";
     }
 
     /**
@@ -59,6 +73,8 @@ public class TestService {
         List<TestEntity> tests = userService.getTestsById(userId);
         if (parts.length == 1)
             return "Используйте команду вместе с идентификатором теста!";
+        else if (!isNumber(parts[1]))
+            return "Ошибка ввода!";
         Long testId = Long.parseLong(parts[1]);
         TestEntity test = getTest(testId);
         if (test == null || !tests.contains(test))
@@ -146,6 +162,10 @@ public class TestService {
                 response = String.format("Описание изменено на “%s”", message);
                 break;
             case DELETE_TEST:
+                if(!isNumber(message)) {
+                    response = "Ошибка ввода!";
+                    break;
+                }
                 TestEntity test = getTest(Long.parseLong(message));
                 List<TestEntity> tests = userService.getTestsById(userId);
                 if (test == null || !tests.contains(test)) return "Тест не найден!";
@@ -155,6 +175,7 @@ public class TestService {
                 break;
             case CONFIRM_DELETE_TEST:
                 message = message.toLowerCase();
+                userService.setState(userId, UserState.DEFAULT);
                 if (message.equals("да"))
                 {
                     userService.setCurrentTest(userId, null);
@@ -164,6 +185,8 @@ public class TestService {
                 else{
                     return String.format("Тест “%s” не удалён", currentTest.getTitle());
                 }
+            case VIEW_TEST:
+                return handleView(userId, "/view " + message);
 
         }
         if(currentTest != null)
@@ -179,7 +202,15 @@ public class TestService {
         List<QuestionEntity> questions = test.getQuestions();
         StringBuilder response = new StringBuilder(String.format("Тест “%s”. Всего вопросов: %s\n",  test.getTitle(), questions.size()));
         for (QuestionEntity question : questions) {
-            response.append(question.toString()).append('\n');
+            response.append("Вопрос: %s\nВарианты ответов:\n".formatted(question.getQuestion()));
+            List<AnswerEntity> answers = question.getAnswers();
+            AnswerEntity correctAnswer = null;
+            for (int i = 0; i < answers.size(); i++) {
+                var answer = answers.get(i);
+                response.append("%s - %s\n".formatted(i+1, answer.getAnswerText()));
+                if(answer.isCorrect()) correctAnswer = answer;
+            }
+            response.append("Правильный вариант: ").append(correctAnswer.getAnswerText()).append("\n\n");
         }
         return response.toString();
     }
@@ -194,5 +225,13 @@ public class TestService {
             response.append(String.format("%s)  id: %s %s\n", i+1, currentTest.getId(), currentTest.getTitle()));
         }
         return response.toString();
+    }
+
+    /**
+     * Узнать, находится ли в строке только лишь число
+     * @return true - если только цифры в строке, false - все остальные случаи.
+     */
+    private boolean isNumber(String number) {
+        return number.matches("^-?\\d+$");
     }
 }
