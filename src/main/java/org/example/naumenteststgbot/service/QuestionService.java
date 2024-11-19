@@ -332,6 +332,7 @@ public class QuestionService {
         AnswerEntity newAnswer = new AnswerEntity(answerText);
         newAnswer.setQuestion(question);
         answerRepository.save(newAnswer);
+        question.getAnswers().add(newAnswer);
     }
 
     /**
