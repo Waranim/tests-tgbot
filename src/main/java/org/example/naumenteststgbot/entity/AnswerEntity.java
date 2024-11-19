@@ -37,7 +37,6 @@ public class AnswerEntity extends BaseEntity {
         this.correct = false;
     }
 
-
     public boolean isCorrect() {
         return correct;
     }
@@ -45,7 +44,6 @@ public class AnswerEntity extends BaseEntity {
     public void setCorrect(boolean correct) {
         this.correct = correct;
     }
-
 
     public void setQuestion(QuestionEntity question) {
         this.question = question;
@@ -58,19 +56,4 @@ public class AnswerEntity extends BaseEntity {
     public void setAnswerText(String answerText) {
         this.text = answerText;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AnswerEntity that = (AnswerEntity) o;
-        return text.equalsIgnoreCase(that.text);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(text.toLowerCase());
-    }
-
-
 }
