@@ -3,12 +3,13 @@ package org.example.naumenteststgbot.service;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.naumenteststgbot.config.BotConfig;
+import org.example.naumenteststgbot.entity.UserState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
 
 /**
  * Телеграм бот
@@ -37,24 +38,51 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final MessageHandler messageHandler;
 
     /**
+     * Обработчик Callback query
+     */
+    private final CallbackQueryHandler callbackQueryHandler;
+
+    /**
      * Отправка сообщений
      */
     private final MessageSender messageSender;
+    /**
+     * Сервис пользователей
+     */
+    private final UserService userService;
 
-    public TelegramBot(BotConfig config, CommandsHandler commandsHandler, MessageSender messageSender, MessageHandler messageHandler) {
+    /**
+     * Редактирование сообщений
+     */
+    private final MessageEditor messageEditor;
+
+    public TelegramBot(BotConfig config, CommandsHandler commandsHandler, MessageSender messageSender, MessageHandler messageHandler, CallbackQueryHandler callbackQueryHandler, UserService userService, MessageEditor messageEditor) {
         super(config.getToken());
         this.config = config;
         this.commandsHandler = commandsHandler;
         this.messageSender = messageSender;
         this.messageHandler = messageHandler;
+        this.callbackQueryHandler = callbackQueryHandler;
+        this.userService = userService;
+        this.messageEditor = messageEditor;
     }
 
     @Autowired
-    public TelegramBot(BotConfig config, CommandsHandler commandsHandler, MessageHandler messageHandler) {
+    public TelegramBot(BotConfig config, CommandsHandler commandsHandler, MessageHandler messageHandler, CallbackQueryHandler callbackQueryHandler, UserService userService) {
         super(config.getToken());
         this.config = config;
         this.commandsHandler = commandsHandler;
         this.messageHandler = messageHandler;
+        this.callbackQueryHandler = callbackQueryHandler;
+
+        this.messageEditor = message -> {
+            try {
+                if(message != null)
+                    execute(message);
+            } catch (TelegramApiException e) {
+                log.error("Не удалось отредактировать сообщение: {}", e.getMessage());
+            }
+        };
 
         this.messageSender = message -> {
             try {
@@ -63,6 +91,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 log.error("Не удалось отправить сообщение: {}", e.getMessage());
             }
         };
+        this.userService = userService;
     }
 
     @Override
@@ -73,6 +102,13 @@ public class TelegramBot extends TelegramLongPollingBot {
             } else {
                 messageSender.sendMessage(messageHandler.handleMessage(update));
             }
+        }
+        else if(update.hasCallbackQuery()
+                && userService.getSession(update.getCallbackQuery().getFrom().getId()).getState() == UserState.INLINE_KEYBOARD){
+            if(update.getCallbackQuery().getData().startsWith("EDIT"))
+                messageEditor.editMessage(callbackQueryHandler.handleEdit(update));
+            else
+                messageSender.sendMessage(callbackQueryHandler.handle(update));
         }
     }
 

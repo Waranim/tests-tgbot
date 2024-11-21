@@ -4,8 +4,13 @@ import org.example.naumenteststgbot.entity.*;
 import org.example.naumenteststgbot.repository.TestRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Сервис для обработки команд и сообщений, связанных с тестом
@@ -23,18 +28,31 @@ public class TestService {
     private final UserService userService;
 
     /**
+     * Сервис для работы с inline клавиатурой
+     */
+    private final KeyboardService keyboardService;
+
+    /**
+     * Создание сообщений
+     */
+    private final MessageBuilder messageBuilder;
+
+    /**
      * Конструктор сервиса тестов
      * @param testRepository Репозиторий для тестов
      * @param userService Сервис пользователей
      */
-    public TestService(TestRepository testRepository, UserService userService) {
+    public TestService(TestRepository testRepository, UserService userService, KeyboardService keyboardService, MessageBuilder messageBuilder) {
         this.testRepository = testRepository;
         this.userService = userService;
+        this.keyboardService = keyboardService;
+        this.messageBuilder = messageBuilder;
     }
 
     /**
      * Обработать команду добавления теста
      */
+    @Transactional
     public String handleAdd(Long userId) {
         TestEntity test = createTest(userId);
         userService.setState(userId, UserState.ADD_TEST_TITLE);
@@ -97,6 +115,21 @@ public class TestService {
         return "Выберите тест:\n" + testsListToString(userService.getTestsById(id));
     }
 
+    /**
+     * Обработать команду /test
+     */
+    public SendMessage handleTest(Long id, String chatId) {
+
+        List<TestEntity> tests = userService.getTestsById(id);
+        List<String> testsTitles = tests.stream().map(TestEntity::getTitle).toList();
+        List<String> testsIds = tests.stream().map(t -> t.getId().toString()).toList();
+        SendMessage message = new SendMessage();
+        message.setReplyMarkup(keyboardService.createReply(testsTitles, testsIds, "TEST CHOOSE"));
+        message.setText("Выберите тест:");
+        message.setChatId(chatId);
+        userService.setState(id, UserState.INLINE_KEYBOARD);
+        return message;
+    }
     /**
      * Получить тест по идентификатору
      * @param id Идентификатор теста
@@ -233,5 +266,183 @@ public class TestService {
      */
     private boolean isNumber(String number) {
         return number.matches("^-?\\d+$");
+    }
+
+    /**
+     * Обработать Callback query связанный с тестами
+     */
+    @Transactional
+    public SendMessage handleCallback(Update update) {
+        String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
+        String callbackData = update.getCallbackQuery().getData();
+        String[] callbackDataParts = callbackData.split(" ");
+
+        if (callbackDataParts.length < 2) {
+            return messageBuilder.createErrorMessage(chatId, "Некорректные данные в callback.");
+        }
+
+        Long userId = update.getCallbackQuery().getFrom().getId();
+        TestEntity currentTest = userService.getSession(userId).getCurrentTest();
+
+        if (currentTest == null) {
+            return messageBuilder.createErrorMessage(chatId, "Текущий тест не найден.");
+        }
+
+        List<QuestionEntity> questions = currentTest.getQuestions();
+
+        String command = callbackDataParts[1];
+        return switch (command) {
+            case "CHOOSE" -> handleTestChoose(chatId, userId, callbackDataParts[2]);
+            case "START" -> handleTestStart(chatId, userId, questions);
+            case "END" -> handleTestEnd(chatId, userId);
+            default -> messageBuilder.createErrorMessage(chatId, "Неизвестная команда.");
+        };
+    }
+
+    /**
+     * Обработка выбора теста
+     */
+    private SendMessage handleTestChoose(String chatId, Long userId, String testIdString) {
+        Long testId = Long.parseLong(testIdString);
+
+        TestEntity test = getTest(testId);
+        if (test == null) {
+            return messageBuilder.createErrorMessage(chatId, "Тест с указанным ID не найден.");
+        }
+
+        userService.setCurrentTest(userId, test);
+        return messageBuilder.createSendMessage(chatId, String.format(
+                "Вы выбрали тест “%s”. Всего вопросов: %d.",
+                test.getTitle(), test.getQuestions().size()
+        ), keyboardService.createReply("Начать", "START", "TEST"));
+    }
+
+    /**
+     * Обработка начала теста
+     */
+    private SendMessage handleTestStart(String chatId, Long userId, List<QuestionEntity> questions) {
+        if (questions.isEmpty()) {
+            return messageBuilder.createErrorMessage(chatId, "Вопросы в тесте отсутствуют.");
+        }
+
+        userService.setCurrentQuestion(userId, questions.getFirst());
+        return createQuestionMessage(chatId, 0, questions);
+    }
+
+    /**
+     * Обработка конца теста
+     */
+    private SendMessage handleTestEnd(String chatId, Long userId) {
+        userService.setState(userId, UserState.DEFAULT);
+        return messageBuilder.createSendMessage(chatId, "Тест завершен!", null);
+    }
+
+    /**
+     * Создать сообщение с вопросом
+     */
+    private SendMessage createQuestionMessage(String chatId, int questionIndex, List<QuestionEntity> questions) {
+        QuestionEntity question = questions.get(questionIndex);
+        List<String> answers = question.getAnswers().stream().map(AnswerEntity::getAnswerText).collect(Collectors.toList());
+        List<String> callbacks = question.getAnswers().stream()
+                .map(a -> "ANSWER " + a.getAnswerText()).collect(Collectors.toList());
+
+        if (questionIndex < questions.size() - 1) {
+            answers.add("След. Вопрос");
+            callbacks.add("NEXT " + (questionIndex + 1));
+        } else {
+            answers.add("Завершить");
+            callbacks.add("END");
+        }
+
+        return messageBuilder.createSendMessage(chatId,
+                String.format("Вопрос %d/%d: %s", questionIndex + 1, questions.size(), question.getQuestion()),
+                keyboardService.createReply(answers, callbacks, "EDIT TEST"));
+    }
+
+    /**
+     * Обработать callback query с редактированием сообщения
+     */
+    @Transactional
+    public EditMessageText handleCallbackEdit(Update update) {
+        EditMessageText editMessageText = createEditMessageText(update);
+        String callbackData = update.getCallbackQuery().getData();
+        String[] callbackDataParts = callbackData.split(" ");
+        Long userId = update.getCallbackQuery().getFrom().getId();
+        TestEntity currentTest = userService.getSession(userId).getCurrentTest();
+        List<QuestionEntity> questions = currentTest.getQuestions();
+        QuestionEntity previousQuestion = userService.getCurrentQuestion(userId);
+        switch (callbackDataParts[2]) {
+            case "ANSWER":
+                handleAnswer(callbackDataParts[3], previousQuestion, questions, editMessageText);
+                break;
+            case "NEXT":
+                handleNext(questions.indexOf(previousQuestion)+1, questions, userId, editMessageText);
+                break;
+            default:
+                editMessageText.setText("Ошибка!");
+        }
+    return editMessageText;
+    }
+
+    /**
+     * Создать объект EditMessageText и поместить в него идентификаторы чата и сообщения из update
+     */
+    private static EditMessageText createEditMessageText(Update update) {
+        String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
+        Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
+        EditMessageText editMessageText = new EditMessageText();
+        editMessageText.setChatId(chatId);
+        editMessageText.setMessageId(messageId);
+        return editMessageText;
+    }
+
+    /**
+     * Обработать ответ на inline клавиатуре
+     */
+    private void handleAnswer(String answer, QuestionEntity previousQuestion, List<QuestionEntity> questions, EditMessageText editMessageText) {
+        int nextQuestionIndex = questions.indexOf(previousQuestion) + 1;
+        List<String> buttonsText = previousQuestion.getAnswers().stream().map(a ->
+        {if (a.getAnswerText().equals(answer))
+            if (a.isCorrect())
+                return a.getAnswerText() + " " + "✅";
+            else
+                return a.getAnswerText() + " " + "❌";
+         else return a.getAnswerText();
+        }).collect(Collectors.toCollection(ArrayList::new));
+        List<String> buttonsCallback = previousQuestion.getAnswers().stream()
+                .map(a -> "EDIT IGNORE " + a.getAnswerText())
+                .collect(Collectors.toCollection(ArrayList::new));
+        if(nextQuestionIndex < questions.size()) {
+            buttonsText.add("След. Вопрос");
+            buttonsCallback.add("EDIT TEST NEXT");
+        }
+        else {
+            buttonsText.add("Завершить");
+            buttonsCallback.add("TEST END");
+        }
+        editMessageText.setText("Вопрос %s/%s: %s".formatted(nextQuestionIndex, questions.size(), previousQuestion.getQuestion()));
+        editMessageText.setReplyMarkup(keyboardService.createReply(buttonsText, buttonsCallback, ""));
+    }
+
+    /**
+     * Обработать переход на следующий вопрос
+     */
+    private void handleNext(int currentQuestionIndex, List<QuestionEntity> questions, Long userId, EditMessageText editMessageText) {
+        QuestionEntity currentQuestion = questions.get(currentQuestionIndex);
+        List<String> buttonsText = currentQuestion.getAnswers().stream().map(AnswerEntity::getAnswerText).collect(Collectors.toCollection(ArrayList::new));
+        List<String> buttonsCallback = currentQuestion.getAnswers().stream()
+                .map(a -> "EDIT TEST ANSWER " + a.getAnswerText())
+                .collect(Collectors.toCollection(ArrayList::new));
+        if(currentQuestionIndex + 1 < questions.size()) {
+            buttonsText.add("След. Вопрос");
+            buttonsCallback.add("EDIT TEST NEXT");
+        }
+        else {
+            buttonsText.add("Завершить");
+            buttonsCallback.add("TEST END");
+        }
+        userService.setCurrentQuestion(userId, currentQuestion);
+        editMessageText.setReplyMarkup(keyboardService.createReply(buttonsText, buttonsCallback, ""));
+        editMessageText.setText("Вопрос %s/%s: %s".formatted(currentQuestionIndex + 1, questions.size(), currentQuestion.getQuestion()));
     }
 }

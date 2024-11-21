@@ -49,7 +49,9 @@ public class CommandsHandler {
         User user = update.getMessage().getFrom();
         String messageText = update.getMessage().getText();
         String command = messageText.split(" ")[0];
-        String replyText;
+        String chatId = update.getMessage().getChatId().toString();
+        String replyText = "Ошибка";
+        SendMessage replyMessage = null;
 
         switch (command) {
             case "/start":
@@ -86,11 +88,16 @@ public class CommandsHandler {
             case "/stop":
                 replyText = questionService.handleStop(user.getId());
                 break;
+            case "/test":
+                replyMessage = testService.handleTest(user.getId(), chatId);
+                break;
             default:
                 replyText = "Неверная команда, для справки используйте /help";
                 break;
         }
 
-        return new SendMessage(update.getMessage().getChatId().toString(), replyText);
+        return replyMessage == null
+                ? new SendMessage(chatId, replyText)
+                : replyMessage;
     }
 }
