@@ -179,6 +179,7 @@ public class TestService {
                 if (message.equals("да"))
                 {
                     userService.setCurrentTest(userId, null);
+                    userService.setCurrentQuestion(userId, null);
                     testRepository.delete(currentTest);
                     return String.format("Тест “%s” удалён", currentTest.getTitle());
                 }
