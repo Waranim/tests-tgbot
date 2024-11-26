@@ -3,7 +3,6 @@ package org.example.naumenteststgbot.service;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.naumenteststgbot.config.BotConfig;
-import org.example.naumenteststgbot.entity.UserState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -103,8 +102,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 messageSender.sendMessage(messageHandler.handleMessage(update));
             }
         }
-        else if(update.hasCallbackQuery()
-                && userService.getSession(update.getCallbackQuery().getFrom().getId()).getState() == UserState.INLINE_KEYBOARD){
+        else if(update.hasCallbackQuery()){
             if(update.getCallbackQuery().getData().startsWith("EDIT"))
                 messageEditor.editMessage(callbackQueryHandler.handleEdit(update));
             else
