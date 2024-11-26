@@ -30,6 +30,7 @@ public class CommandsHandler {
      * Сервис для взаимодействия с вопросами
      */
     private final QuestionService questionService;
+
     /**
      * Конструктор класса CommandsHandler
      */
@@ -65,25 +66,25 @@ public class CommandsHandler {
                 replyText = testService.handleAdd(user.getId());
                 break;
             case "/view":
-                replyText = testService.handleView(user.getId(), messageText);
+                replyMessage = testService.handleView(chatId,user.getId(), messageText);
                 break;
             case "/edit":
-                replyText = testService.handleEdit(user.getId(), messageText);
+                replyMessage = testService.handleEdit(chatId,user.getId(), messageText);
                 break;
             case "/del":
-                replyText = testService.handleDel(user.getId());
+                replyMessage = testService.handleDel(chatId, user.getId());
                 break;
             case "/add_question":
-                replyText =questionService.handleAddQuestion(user.getId(),messageText);
+                replyText = questionService.handleAddQuestion(user.getId(), messageText);
                 break;
             case "/view_question":
                 replyText = questionService.handleViewQuestions(user.getId(), messageText);
                 break;
             case "/edit_question":
-                replyText = questionService.handleEditQuestion(user.getId(), messageText);
+                replyMessage = questionService.handleEditQuestion(chatId, user.getId(), messageText);
                 break;
             case "/del_question":
-                replyText = questionService.handleDeleteQuestion(user.getId(),messageText);
+                replyMessage = questionService.handleDeleteQuestion(chatId, user.getId(), messageText);
                 break;
             case "/stop":
                 replyText = questionService.handleStop(user.getId());
