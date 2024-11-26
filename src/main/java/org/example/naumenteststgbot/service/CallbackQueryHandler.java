@@ -14,9 +14,11 @@ public class CallbackQueryHandler {
      * Сервис для тестов
      */
     private final TestService testService;
+    private final QuestionService questionService;
 
-    public CallbackQueryHandler(TestService testService) {
+    public CallbackQueryHandler(TestService testService, QuestionService questionService) {
         this.testService = testService;
+        this.questionService = questionService;
     }
 
     /**
@@ -30,6 +32,9 @@ public class CallbackQueryHandler {
         switch (callbackDataParts[0]) {
             case "TEST":
                 sendMessage = testService.handleCallback(update);
+                break;
+            case "QUESTION":
+                sendMessage = questionService.handleCallback(update);
                 break;
             default:
                 sendMessage = new SendMessage();
