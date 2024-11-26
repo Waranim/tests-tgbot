@@ -1,6 +1,7 @@
 package org.example.naumenteststgbot.service;
 
 import org.example.naumenteststgbot.entity.*;
+import org.example.naumenteststgbot.repository.QuestionRepository;
 import org.example.naumenteststgbot.repository.TestRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,55 +65,52 @@ public class TestService {
      * Обработать команду просмотра теста
      */
     @Transactional
-    public String handleView(Long userId, String message) {
+    public SendMessage handleView(String chatId, Long userId, String message) {
         String[] parts = message.split(" ");
         List<TestEntity> tests = userService.getTestsById(userId);
 
         if (parts.length == 1) {
             userService.setState(userId, UserState.VIEW_TEST);
-            return "Выберите тест для просмотра:\n"
-                    + testsListToString(tests);
+            return messageBuilder.createSendMessage(chatId,"Выберите тест для просмотра:\n"+ testsListToString(tests),null);
         } else if (isNumber(parts[1])){
             userService.setState(userId, UserState.DEFAULT);
             Long testId = Long.parseLong(parts[1]);
             TestEntity test = getTest(testId);
-            if (test == null || !tests.contains(test)) return "Тест не найден!";
-            return testToString(test);
+            if (test == null || !tests.contains(test))  return  messageBuilder.createSendMessage(chatId,"Тест не найден!",null);
+            return messageBuilder.createSendMessage(chatId,testToString(test),null);
         }
-        return "Ошибка ввода!";
+        return messageBuilder.createSendMessage(chatId,"Ошибка ввода!",null);
     }
 
     /**
      * Обработать команду редактирования теста
      */
     @Transactional
-    public String handleEdit(Long userId, String message) {
+    public SendMessage handleEdit(String chatId,Long userId, String message) {
         String[] parts = message.split(" ");
         List<TestEntity> tests = userService.getTestsById(userId);
         if (parts.length == 1)
-            return "Используйте команду вместе с идентификатором теста!";
+            return messageBuilder.createSendMessage(chatId,"Используйте команду вместе с идентификатором теста!",null);
         else if (!isNumber(parts[1]))
-            return "Ошибка ввода!";
+            return messageBuilder.createSendMessage(chatId,"Ошибка ввода!",null);
         Long testId = Long.parseLong(parts[1]);
         TestEntity test = getTest(testId);
         if (test == null || !tests.contains(test))
-            return "Тест не найден!";
+            messageBuilder.createSendMessage(chatId,"Тест не найден!",null);
         userService.setCurrentTest(userId, test);
         userService.setState(userId, UserState.EDIT_TEST);
-        return String.format("""
-                Вы выбрали тест “%s”. Что вы хотите изменить?
-                1: Название теста
-                2: Описание теста
-                """, test.getTitle());
+        List<String> buttonsText = List.of("Название теста","Описание теста");
+        List<String> callback = List.of("changeText","changeDescription");
+        return messageBuilder.createSendMessage(chatId,"Вы выбрали тест “%s”. Что вы хотите изменить?” ".formatted(test.getTitle()),keyboardService.createReply(buttonsText,callback,"TEST"));
     }
 
     /**
      * Обработать команду удаления теста
      */
     @Transactional
-    public String handleDel(Long id) {
+    public SendMessage handleDel(String chatId,Long id) {
         userService.setState(id, UserState.DELETE_TEST);
-        return "Выберите тест:\n" + testsListToString(userService.getTestsById(id));
+        return messageBuilder.createSendMessage(chatId,"Выберите тест:\n"+ testsListToString(userService.getTestsById(id)),null);
     }
 
     /**
@@ -156,7 +154,7 @@ public class TestService {
      * @return Ответ пользователю
      */
     @Transactional
-    public String handleMessage(UserSession userSession, String message) {
+    public SendMessage handleMessage(String chatId,UserSession userSession, String message) {
         UserState userState = userSession.getState();
         Long userId = userSession.getUserId();
         TestEntity currentTest = userSession.getCurrentTest();
@@ -201,11 +199,14 @@ public class TestService {
                 }
                 TestEntity test = getTest(Long.parseLong(message));
                 List<TestEntity> tests = userService.getTestsById(userId);
-                if (test == null || !tests.contains(test)) return "Тест не найден!";
-                response = String.format("Тест “%s” будет удалён, вы уверены? (Да/Нет)", test.getTitle());
+                if (test == null || !tests.contains(test))
+                    return messageBuilder.createSendMessage(chatId,"Тест не найден!",null);
                 userService.setCurrentTest(userId, test);
                 userService.setState(userId, UserState.CONFIRM_DELETE_TEST);
-                break;
+                List<String> buttonsText = List.of("Да", "Нет");
+                List<String> callback = List.of("confirmDeleteYes", "confirmDeleteNo");
+                return messageBuilder.createSendMessage(chatId, "Тест “%s” будет удалён, вы уверены?".formatted(test.getTitle()), keyboardService.createReply(buttonsText, callback, "TEST")
+                );
             case CONFIRM_DELETE_TEST:
                 message = message.toLowerCase();
                 userService.setState(userId, UserState.DEFAULT);
@@ -213,18 +214,19 @@ public class TestService {
                 {
                     userService.setCurrentTest(userId, null);
                     testRepository.delete(currentTest);
-                    return String.format("Тест “%s” удалён", currentTest.getTitle());
+                    return messageBuilder.createSendMessage(chatId,"Тест “%s” удалён".formatted(currentTest.getTitle()),null);
+
                 }
                 else{
-                    return String.format("Тест “%s” не удалён", currentTest.getTitle());
+                    return messageBuilder.createSendMessage(chatId,"Тест “%s” не удалён".formatted(currentTest.getTitle()),null);
                 }
             case VIEW_TEST:
-                return handleView(userId, "/view " + message);
+                return handleView(chatId,userId, "/view " + message);
 
         }
         if(currentTest != null)
             testRepository.save(currentTest);
-        return response;
+        return messageBuilder.createSendMessage(chatId,response,null);
     }
 
 
@@ -291,12 +293,34 @@ public class TestService {
         List<QuestionEntity> questions = currentTest.getQuestions();
 
         String command = callbackDataParts[1];
-        return switch (command) {
-            case "CHOOSE" -> handleTestChoose(chatId, userId, callbackDataParts[2]);
-            case "START" -> handleTestStart(chatId, userId, questions);
-            case "END" -> handleTestEnd(chatId, userId);
-            default -> messageBuilder.createErrorMessage(chatId, "Неизвестная команда.");
-        };
+        switch (command) {
+            case "changeText":
+                userService.setState(userId, UserState.EDIT_TEST_TITLE);
+                return messageBuilder.createSendMessage(chatId,"Введите новое название теста",null);
+            case "changeDescription":
+                userService.setState(userId, UserState.EDIT_TEST_DESCRIPTION);
+                return messageBuilder.createSendMessage(chatId,"Введите новое описание теста",null);
+            case "confirmDeleteYes":
+                TestEntity testToDelete = userService.getSession(userId).getCurrentTest();
+                userService.setCurrentTest(userId, null);
+                userService.setCurrentQuestion(userId, null);
+                testRepository.delete(testToDelete);
+                userService.setState(userId, UserState.DEFAULT);
+                return messageBuilder.createSendMessage(chatId, String.format("Вопрос “%s” успешно удалён.", testToDelete.getTitle()),null);
+
+            case "confirmDeleteNo":
+                userService.setState(userId, UserState.DEFAULT);
+                return messageBuilder.createSendMessage(chatId, "Удаление вопроса отменено.",null);
+
+            case "CHOOSE":
+                return handleTestChoose(chatId, userId, callbackDataParts[2]);
+            case "START":
+                return handleTestStart(chatId, userId, questions);
+            case "END":
+                return handleTestEnd(chatId, userId);
+            default:
+                return messageBuilder.createErrorMessage(chatId, "Неизвестная команда.");
+        }
     }
 
     /**
