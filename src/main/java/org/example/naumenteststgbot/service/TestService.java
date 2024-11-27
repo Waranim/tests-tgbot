@@ -1,6 +1,7 @@
 package org.example.naumenteststgbot.service;
 
 import org.example.naumenteststgbot.entity.*;
+import org.example.naumenteststgbot.enums.UserState;
 import org.example.naumenteststgbot.repository.TestRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +38,7 @@ public class TestService {
      */
     public String handleAdd(Long userId) {
         TestEntity test = createTest(userId);
-        userService.setState(userId, UserState.ADD_TEST_TITLE);
+        userService.changeStateById(userId, UserState.ADD_TEST_TITLE);
         userService.setCurrentTest(userId, test);
         return "Введите название теста";
     }
@@ -51,11 +52,11 @@ public class TestService {
         List<TestEntity> tests = userService.getTestsById(userId);
 
         if (parts.length == 1) {
-            userService.setState(userId, UserState.VIEW_TEST);
+            userService.changeStateById(userId, UserState.VIEW_TEST);
             return "Выберите тест для просмотра:\n"
                     + testsListToString(tests);
         } else if (isNumber(parts[1])){
-            userService.setState(userId, UserState.DEFAULT);
+            userService.changeStateById(userId, UserState.DEFAULT);
             Long testId = Long.parseLong(parts[1]);
             TestEntity test = getTest(testId);
             if (test == null || !tests.contains(test)) return "Тест не найден!";
@@ -80,7 +81,7 @@ public class TestService {
         if (test == null || !tests.contains(test))
             return "Тест не найден!";
         userService.setCurrentTest(userId, test);
-        userService.setState(userId, UserState.EDIT_TEST);
+        userService.changeStateById(userId, UserState.EDIT_TEST);
         return String.format("""
                 Вы выбрали тест “%s”. Что вы хотите изменить?
                 1: Название теста
@@ -93,7 +94,7 @@ public class TestService {
      */
     @Transactional
     public String handleDel(Long id) {
-        userService.setState(id, UserState.DELETE_TEST);
+        userService.changeStateById(id, UserState.DELETE_TEST);
         return "Выберите тест:\n" + testsListToString(userService.getTestsById(id));
     }
 
@@ -134,31 +135,31 @@ public class TestService {
             case ADD_TEST_TITLE:
                 currentTest.setTitle(message);
                 response = "Введите описание теста";
-                userService.setState(userId, UserState.ADD_TEST_DESCRIPTION);
+                userService.changeStateById(userId, UserState.ADD_TEST_DESCRIPTION);
                 break;
             case ADD_TEST_DESCRIPTION:
                 currentTest.setDescription(message);
                 response = String.format("Тест “%s” создан! Количество вопросов: 0. Для добавление вопросов используйте /add_question %s, где %s - идентификатор теста “%s”.", currentTest.getTitle(), currentTest.getId(), currentTest.getId(), currentTest.getTitle());
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 break;
             case EDIT_TEST:
                 if(message.equals("1")){
                     response = "Введите новое название теста";
-                    userService.setState(userId, UserState.EDIT_TEST_TITLE);
+                    userService.changeStateById(userId, UserState.EDIT_TEST_TITLE);
                 }
                 else if(message.equals("2")){
                     response = "Введите новое описание теста";
-                    userService.setState(userId, UserState.EDIT_TEST_DESCRIPTION);
+                    userService.changeStateById(userId, UserState.EDIT_TEST_DESCRIPTION);
                 }
                 break;
             case EDIT_TEST_TITLE:
                 currentTest.setTitle(message);
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 response = String.format("Название изменено на “%s”", message);
                 break;
             case EDIT_TEST_DESCRIPTION:
                 currentTest.setDescription(message);
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 response = String.format("Описание изменено на “%s”", message);
                 break;
             case DELETE_TEST:
@@ -171,11 +172,11 @@ public class TestService {
                 if (test == null || !tests.contains(test)) return "Тест не найден!";
                 response = String.format("Тест “%s” будет удалён, вы уверены? (Да/Нет)", test.getTitle());
                 userService.setCurrentTest(userId, test);
-                userService.setState(userId, UserState.CONFIRM_DELETE_TEST);
+                userService.changeStateById(userId, UserState.CONFIRM_DELETE_TEST);
                 break;
             case CONFIRM_DELETE_TEST:
                 message = message.toLowerCase();
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 if (message.equals("да"))
                 {
                     userService.setCurrentTest(userId, null);
