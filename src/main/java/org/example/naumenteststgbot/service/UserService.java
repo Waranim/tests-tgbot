@@ -115,6 +115,9 @@ public class UserService {
         return user.getTests();
     }
 
+    /**
+     * Установить текущий вопрос
+     */
     public void setCurrentQuestion(Long userId, QuestionEntity question) {
         UserEntity user = getUserById(userId);
         if (user == null) return;
@@ -122,6 +125,9 @@ public class UserService {
         updateUser(user);
     }
 
+    /**
+     * Получить текущий вопрос
+     */
     public QuestionEntity getCurrentQuestion(Long userId) {
         UserEntity user = getUserById(userId);
         if (user == null) return null;
