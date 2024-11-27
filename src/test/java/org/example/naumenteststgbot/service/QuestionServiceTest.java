@@ -3,7 +3,6 @@ package org.example.naumenteststgbot.service;
 import org.example.naumenteststgbot.entity.*;
 import org.example.naumenteststgbot.repository.AnswerRepository;
 import org.example.naumenteststgbot.repository.QuestionRepository;
-import org.example.naumenteststgbot.repository.TestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

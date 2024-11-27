@@ -12,7 +12,6 @@ import java.util.List;
  * Класс для управления вопросами
  * Предостволяет функционал добавления, редактирования, просмотра и удаления вопросов
  */
-
 @Service
 @Transactional
 public class QuestionService {
