@@ -62,7 +62,7 @@ public class UserService {
      * @param id идентификатор пользователя
      * @return пользователь, или null, если пользователь не найден
      */
-    private UserEntity getUserById(Long id) {
+    public UserEntity getUserById(Long id) {
         return userRepository.findById(id).orElse(null);
     }
 
