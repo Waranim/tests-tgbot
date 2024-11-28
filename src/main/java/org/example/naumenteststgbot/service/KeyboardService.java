@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -58,6 +59,60 @@ public class KeyboardService {
                 : prefix + " " + buttonCallbackData;
             button.setCallbackData(callbackData);
             rowsInline.add(List.of(button));
+
+        inlineKeyboardMarkup.setKeyboard(rowsInline);
+        return inlineKeyboardMarkup;
+    }
+
+    /**
+     * Создать inline клавиатуру для вопросов теста
+     *
+     * @param correctAnswerCount количество верно решённых вопросов
+     * @param buttonsText дополнительный текст к кнопкам
+     * @param buttonsCallbackData данные для callback
+     * @param prefix префикс для callback
+     * @param hiddenNextButton скрытие кнопки перехода на след. вопрос
+     * @return inline-клавиатура
+     */
+    public InlineKeyboardMarkup createKeyboardForTest(int correctAnswerCount, List<String> buttonsText, List<String> buttonsCallbackData, String prefix, boolean hiddenNextButton) {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+
+        if (buttonsText == null) {
+            buttonsText = new ArrayList<>(Collections.nCopies(buttonsCallbackData.size(), ""));
+        }
+
+        for (int i = 0; i < buttonsCallbackData.size(); i++) {
+            InlineKeyboardButton button = new InlineKeyboardButton();
+            button.setText(String.format("%d%s", i + 1, buttonsText.get(i)));
+            String callbackData = prefix.isEmpty()
+                    ? buttonsCallbackData.get(i)
+                    : prefix + " " + buttonsCallbackData.get(i);
+            button.setCallbackData(callbackData);
+            rowsInline.add(List.of(button));
+        }
+
+        if (prefix.isEmpty() && !hiddenNextButton) {
+            InlineKeyboardButton nextQuestion = new InlineKeyboardButton();
+            nextQuestion.setText("След. вопрос");
+            nextQuestion.setCallbackData("EDIT TEST NEXT");
+            rowsInline.add(List.of(nextQuestion));
+        }
+
+        InlineKeyboardButton counter = new InlineKeyboardButton();
+        counter.setText(String.format("Верно: %d", correctAnswerCount));
+        counter.setCallbackData("COUNTER");
+        rowsInline.add(List.of(counter));
+
+        InlineKeyboardButton exit = new InlineKeyboardButton();
+        InlineKeyboardButton finish = new InlineKeyboardButton();
+
+        exit.setText("Выйти");
+        exit.setCallbackData("TEST EXIT");
+
+        finish.setText("Завершить");
+        finish.setCallbackData("TEST FINISH");
+        rowsInline.add(List.of(exit, finish));
 
         inlineKeyboardMarkup.setKeyboard(rowsInline);
         return inlineKeyboardMarkup;

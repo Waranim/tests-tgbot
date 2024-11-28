@@ -1,8 +1,6 @@
 package org.example.naumenteststgbot.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 
 /**
  * Текущая сессия пользователя
@@ -16,6 +14,7 @@ public class UserSession extends BaseEntity {
     /**
      * Состояние пользователя
      */
+    @Enumerated(EnumType.STRING)
     private UserState state = UserState.DEFAULT;
     /**
      * Тест, который в данный момент использует пользователь
@@ -32,6 +31,16 @@ public class UserSession extends BaseEntity {
      */
     @OneToOne(cascade = CascadeType.ALL)
     private QuestionEntity currentQuestion;
+
+    /**
+     * Количество правильных ответов в тесте
+     */
+    private Integer correctAnswerCount;
+
+    /**
+     * Количество решённых вопросов в тесте
+     */
+    private Integer countAnsweredQuestions;
 
     public Long getUserId() {
         return userId;
@@ -74,5 +83,21 @@ public class UserSession extends BaseEntity {
 
     public void setEditingAnswerIndex(Integer editingAnswerIndex) {
         this.editingAnswerIndex = editingAnswerIndex;
+    }
+
+    public Integer getCorrectAnswerCount() {
+        return correctAnswerCount;
+    }
+
+    public void setCorrectAnswerCount(Integer correctAnswerCount) {
+        this.correctAnswerCount = correctAnswerCount;
+    }
+
+    public Integer getCountAnsweredQuestions() {
+        return countAnsweredQuestions;
+    }
+
+    public void setCountAnsweredQuestions(Integer countAnsweredQuestions) {
+        this.countAnsweredQuestions = countAnsweredQuestions;
     }
 }

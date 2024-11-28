@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -243,7 +244,7 @@ public class TestService {
                 response.append("%s - %s\n".formatted(i+1, answer.getAnswerText()));
                 if(answer.isCorrect()) correctAnswer = answer;
             }
-            response.append("Правильный вариант: ").append(correctAnswer.getAnswerText()).append("\n\n");
+            response.append("Правильный вариант: ").append(Objects.requireNonNull(correctAnswer).getAnswerText()).append("\n\n");
         }
         return response.toString();
     }
@@ -294,7 +295,8 @@ public class TestService {
         return switch (command) {
             case "CHOOSE" -> handleTestChoose(chatId, userId, callbackDataParts[2]);
             case "START" -> handleTestStart(chatId, userId, questions);
-            case "END" -> handleTestEnd(chatId, userId);
+            case "EXIT" -> handleTestExit(chatId, userId);
+            case "FINISH" -> handleTestFinish(chatId, userId);
             default -> messageBuilder.createErrorMessage(chatId, "Неизвестная команда.");
         };
     }
@@ -326,37 +328,45 @@ public class TestService {
         }
 
         userService.setCurrentQuestion(userId, questions.getFirst());
-        return createQuestionMessage(chatId, 0, questions);
+        userService.clearCorrectAnswerCount(userId);
+        userService.clearCountAnsweredQuestions(userId);
+        return createQuestionMessage(chatId, questions);
+    }
+
+    /**
+     * Обработка выхода из теста
+     */
+    private SendMessage handleTestExit(String chatId, Long userId) {
+        userService.setState(userId, UserState.DEFAULT);
+        return messageBuilder.createSendMessage(chatId, "Вы вышли из теста", null);
     }
 
     /**
      * Обработка конца теста
      */
-    private SendMessage handleTestEnd(String chatId, Long userId) {
+    private SendMessage handleTestFinish(String chatId, Long userId) {
         userService.setState(userId, UserState.DEFAULT);
-        return messageBuilder.createSendMessage(chatId, "Тест завершен!", null);
+        Integer correctAnswerCount = userService.getCorrectAnswerCount(userId);
+        Integer countAnsweredQuestions = userService.getCountAnsweredQuestions(userId);
+        String stringBuilder = "Тест завершен!\n" +
+                String.format("Правильных ответов: %d/%d\n", correctAnswerCount, countAnsweredQuestions) +
+                String.format("Процент правильных ответов: %d%%", (correctAnswerCount * 100) / countAnsweredQuestions);
+        return messageBuilder.createSendMessage(chatId, stringBuilder, null);
     }
 
     /**
      * Создать сообщение с вопросом
      */
-    private SendMessage createQuestionMessage(String chatId, int questionIndex, List<QuestionEntity> questions) {
-        QuestionEntity question = questions.get(questionIndex);
-        List<String> answers = question.getAnswers().stream().map(AnswerEntity::getAnswerText).collect(Collectors.toList());
+    private SendMessage createQuestionMessage(String chatId, List<QuestionEntity> questions) {
+        QuestionEntity question = questions.getFirst();
         List<String> callbacks = question.getAnswers().stream()
                 .map(a -> "ANSWER " + a.getAnswerText()).collect(Collectors.toList());
 
-        if (questionIndex < questions.size() - 1) {
-            answers.add("След. Вопрос");
-            callbacks.add("NEXT " + (questionIndex + 1));
-        } else {
-            answers.add("Завершить");
-            callbacks.add("END");
-        }
+        String textQuestion = createTextQuestion(0, questions);
 
         return messageBuilder.createSendMessage(chatId,
-                String.format("Вопрос %d/%d: %s", questionIndex + 1, questions.size(), question.getQuestion()),
-                keyboardService.createReply(answers, callbacks, "EDIT TEST"));
+                textQuestion,
+                keyboardService.createKeyboardForTest(0, null, callbacks, "EDIT TEST", false));
     }
 
     /**
@@ -373,7 +383,7 @@ public class TestService {
         QuestionEntity previousQuestion = userService.getCurrentQuestion(userId);
         switch (callbackDataParts[2]) {
             case "ANSWER":
-                handleAnswer(callbackDataParts[3], previousQuestion, questions, editMessageText);
+                handleAnswer(callbackDataParts[3], previousQuestion, questions, editMessageText, userId);
                 break;
             case "NEXT":
                 handleNext(questions.indexOf(previousQuestion)+1, questions, userId, editMessageText);
@@ -399,29 +409,28 @@ public class TestService {
     /**
      * Обработать ответ на inline клавиатуре
      */
-    private void handleAnswer(String answer, QuestionEntity previousQuestion, List<QuestionEntity> questions, EditMessageText editMessageText) {
-        int nextQuestionIndex = questions.indexOf(previousQuestion) + 1;
-        List<String> buttonsText = previousQuestion.getAnswers().stream().map(a ->
-        {if (a.getAnswerText().equals(answer))
-            if (a.isCorrect())
-                return a.getAnswerText() + " " + "✅";
-            else
-                return a.getAnswerText() + " " + "❌";
-         else return a.getAnswerText();
+    private void handleAnswer(String answer, QuestionEntity previousQuestion, List<QuestionEntity> questions, EditMessageText editMessageText, Long userId) {
+        int questionIndex = questions.indexOf(previousQuestion);
+        boolean isCompleted = questionIndex + 1 >= questions.size();
+        String textQuestion = createTextQuestion(questionIndex, questions);
+        List<String> buttonsText = previousQuestion.getAnswers().stream().map(a -> {
+            if (a.getAnswerText().equals(answer) || a.isCorrect()) {
+                if (a.isCorrect()) {
+                    if (a.getAnswerText().equals(answer)) userService.incrementCorrectAnswerCount(userId);
+                    return " ✅";
+                }
+                else
+                    return " ❌";
+            }
+            return "";
         }).collect(Collectors.toCollection(ArrayList::new));
         List<String> buttonsCallback = previousQuestion.getAnswers().stream()
                 .map(a -> "EDIT IGNORE " + a.getAnswerText())
                 .collect(Collectors.toCollection(ArrayList::new));
-        if(nextQuestionIndex < questions.size()) {
-            buttonsText.add("След. Вопрос");
-            buttonsCallback.add("EDIT TEST NEXT");
-        }
-        else {
-            buttonsText.add("Завершить");
-            buttonsCallback.add("TEST END");
-        }
-        editMessageText.setText("Вопрос %s/%s: %s".formatted(nextQuestionIndex, questions.size(), previousQuestion.getQuestion()));
-        editMessageText.setReplyMarkup(keyboardService.createReply(buttonsText, buttonsCallback, ""));
+        
+        userService.incrementCountAnsweredQuestions(userId);
+        editMessageText.setText(textQuestion);
+        editMessageText.setReplyMarkup(keyboardService.createKeyboardForTest(userService.getCorrectAnswerCount(userId), buttonsText, buttonsCallback, "", isCompleted));
     }
 
     /**
@@ -429,20 +438,32 @@ public class TestService {
      */
     private void handleNext(int currentQuestionIndex, List<QuestionEntity> questions, Long userId, EditMessageText editMessageText) {
         QuestionEntity currentQuestion = questions.get(currentQuestionIndex);
-        List<String> buttonsText = currentQuestion.getAnswers().stream().map(AnswerEntity::getAnswerText).collect(Collectors.toCollection(ArrayList::new));
         List<String> buttonsCallback = currentQuestion.getAnswers().stream()
                 .map(a -> "EDIT TEST ANSWER " + a.getAnswerText())
                 .collect(Collectors.toCollection(ArrayList::new));
-        if(currentQuestionIndex + 1 < questions.size()) {
-            buttonsText.add("След. Вопрос");
-            buttonsCallback.add("EDIT TEST NEXT");
-        }
-        else {
-            buttonsText.add("Завершить");
-            buttonsCallback.add("TEST END");
-        }
+
+        String textQuestion = createTextQuestion(currentQuestionIndex, questions);
+
         userService.setCurrentQuestion(userId, currentQuestion);
-        editMessageText.setReplyMarkup(keyboardService.createReply(buttonsText, buttonsCallback, ""));
-        editMessageText.setText("Вопрос %s/%s: %s".formatted(currentQuestionIndex + 1, questions.size(), currentQuestion.getQuestion()));
+        editMessageText.setReplyMarkup(keyboardService.createKeyboardForTest(userService.getCorrectAnswerCount(userId), null, buttonsCallback, "", true));
+        editMessageText.setText(textQuestion);
+    }
+
+    /**
+     * Создать текст вопроса для сообщения
+     */
+    private String createTextQuestion(int currentQuestionIndex, List<QuestionEntity> questions) {
+        QuestionEntity question = questions.get(currentQuestionIndex);
+        List<String> answers = question.getAnswers().stream().map(AnswerEntity::getAnswerText).toList();
+
+        String textQuestion = String.format("Вопрос %d/%d: %s\nВарианты ответа:\n", currentQuestionIndex + 1, questions.size(), question.getQuestion());
+        StringBuilder stringBuilder = new StringBuilder(textQuestion);
+        for (int i = 0; i < answers.size(); i++) {
+            stringBuilder.append(String.format("%d: %s\n", i + 1, answers.get(i)));
+        }
+
+        stringBuilder.append("\nВыберите один вариант ответа:");
+
+        return stringBuilder.toString();
     }
 }
