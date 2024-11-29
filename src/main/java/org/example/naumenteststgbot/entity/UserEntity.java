@@ -29,7 +29,7 @@ public class UserEntity {
     /**
      * Список тестов пользователя
      */
-    @OneToMany(mappedBy = "creatorId")
+    @OneToMany(mappedBy = "creatorId", fetch = FetchType.EAGER)
     private List<TestEntity> tests;
 
     @OneToOne(cascade = CascadeType.ALL)
