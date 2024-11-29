@@ -152,4 +152,56 @@ public class UserService {
         if (user == null) return null;
         return user.getSession().getCurrentQuestion();
     }
+
+    public Integer getCorrectAnswerCount(Long userId) {
+        UserEntity user = getUserById(userId);
+        if (user == null) return null;
+        return user.getSession().getCorrectAnswerCount();
+    }
+
+    /**
+     * Увеличить количество правильно решённых вопросов на 1
+     */
+    public void incrementCorrectAnswerCount(Long userId) {
+        UserEntity user = getUserById(userId);
+        if (user == null) return;
+        user.getSession().setCorrectAnswerCount(user.getSession().getCorrectAnswerCount() + 1);
+        updateUser(user);
+    }
+
+    /**
+     * Отчистить счётчик правильно решённых вопросов
+     */
+    public void clearCorrectAnswerCount(Long userId) {
+        UserEntity user = getUserById(userId);
+        if (user == null) return;
+        user.getSession().setCorrectAnswerCount(0);
+        updateUser(user);
+    }
+
+    public Integer getCountAnsweredQuestions(Long userId) {
+        UserEntity user = getUserById(userId);
+        if (user == null) return null;
+        return user.getSession().getCountAnsweredQuestions();
+    }
+
+    /**
+     * Увеличить количество решённых вопросов на 1
+     */
+    public void incrementCountAnsweredQuestions(Long userId) {
+        UserEntity user = getUserById(userId);
+        if (user == null) return;
+        user.getSession().setCountAnsweredQuestions(user.getSession().getCountAnsweredQuestions() + 1);
+        updateUser(user);
+    }
+
+    /**
+     * Отчистить счётчик правильно решённых вопросов
+     */
+    public void clearCountAnsweredQuestions(Long userId) {
+        UserEntity user = getUserById(userId);
+        if (user == null) return;
+        user.getSession().setCountAnsweredQuestions(0);
+        updateUser(user);
+    }
 }
