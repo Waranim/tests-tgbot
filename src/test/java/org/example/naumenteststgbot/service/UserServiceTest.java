@@ -79,7 +79,7 @@ class UserServiceTest {
 
         when(userRepository.findById(id)).thenReturn(Optional.of(existingUser));
 
-        UserEntity user = userService.get(id);
+        UserEntity user = userService.getUserById(id);
         assertNotNull(user);
         assertEquals(id, user.getId());
         assertEquals(username, user.getUsername());
@@ -94,7 +94,7 @@ class UserServiceTest {
 
         when(userRepository.findById(id)).thenReturn(Optional.empty());
 
-        UserEntity user = userService.get(id);
+        UserEntity user = userService.getUserById(id);
         assertNull(user);
     }
 }
