@@ -413,7 +413,8 @@ public class TestService {
         int questionIndex = questions.indexOf(previousQuestion);
         boolean isCompleted = questionIndex + 1 >= questions.size();
         String textQuestion = createTextQuestion(questionIndex, questions);
-        List<String> buttonsText = previousQuestion.getAnswers().stream().map(a -> {
+        List<AnswerEntity> answers = new ArrayList<>(previousQuestion.getAnswers());
+        List<String> buttonsText = answers.stream().map(a -> {
             if (a.getAnswerText().equals(answer) || a.isCorrect()) {
                 if (a.isCorrect()) {
                     if (a.getAnswerText().equals(answer)) userService.incrementCorrectAnswerCount(userId);
@@ -423,7 +424,7 @@ public class TestService {
                     return " ❌";
             }
             return "";
-        }).collect(Collectors.toCollection(ArrayList::new));
+        }).toList();
         List<String> buttonsCallback = previousQuestion.getAnswers().stream()
                 .map(a -> "EDIT IGNORE " + a.getAnswerText())
                 .collect(Collectors.toCollection(ArrayList::new));
