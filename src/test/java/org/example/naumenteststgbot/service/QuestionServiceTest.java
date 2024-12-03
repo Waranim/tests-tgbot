@@ -1,9 +1,9 @@
 package org.example.naumenteststgbot.service;
 
 import org.example.naumenteststgbot.entity.*;
+import org.example.naumenteststgbot.enums.UserState;
 import org.example.naumenteststgbot.repository.AnswerRepository;
 import org.example.naumenteststgbot.repository.QuestionRepository;
-import org.example.naumenteststgbot.repository.TestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -111,7 +111,7 @@ class QuestionServiceTest {
         setupMocksForAddQuestion();
         String result = questionService.handleAddQuestion(userId, "/add_question 1");
         assertEquals("Введите название вопроса для теста “Test”", result);
-        verify(userService).setState(userId, UserState.ADD_QUESTION_TEXT);
+        verify(userService).changeStateById(userId, UserState.ADD_QUESTION_TEXT);
 
         userSession.setCurrentQuestion(question);
         userSession.setState(UserState.ADD_QUESTION_TEXT);
@@ -119,7 +119,7 @@ class QuestionServiceTest {
         String addTextMessage = questionService.handleMessage(userSession, "Вопрос");
         assertEquals("Введите вариант ответа. Если вы хотите закончить добавлять варианты, введите команду /stop.", addTextMessage);
 
-        verify(userService).setState(userId, UserState.ADD_ANSWER);
+        verify(userService).changeStateById(userId, UserState.ADD_ANSWER);
         userSession.setState(UserState.ADD_ANSWER);
         String stop1 = questionService.handleStop(userId);
         assertEquals("Вы не создали необходимый минимум ответов (минимум: 2). Введите варианты ответа.", stop1);
@@ -132,7 +132,7 @@ class QuestionServiceTest {
                 "1: 1\n" +
                 "2: 2\n", stop2);
         verify(answerRepository, times(2)).save(any(AnswerEntity.class));
-        verify(userService).setState(userId, UserState.SET_CORRECT_ANSWER);
+        verify(userService).changeStateById(userId, UserState.SET_CORRECT_ANSWER);
         userSession.setState(UserState.SET_CORRECT_ANSWER);
 
         String correctAnswer = questionService.handleMessage(userSession, "2");
@@ -148,7 +148,7 @@ class QuestionServiceTest {
         setupMocksForAddQuestion();
         String result = questionService.handleAddQuestion(userId, "/add_question 1");
         assertEquals("Введите название вопроса для теста “Test”", result);
-        verify(userService).setState(userId, UserState.ADD_QUESTION_TEXT);
+        verify(userService).changeStateById(userId, UserState.ADD_QUESTION_TEXT);
 
         userSession.setCurrentQuestion(question);
         userSession.setState(UserState.ADD_QUESTION_TEXT);
@@ -156,7 +156,7 @@ class QuestionServiceTest {
         String addTextMessage = questionService.handleMessage(userSession, "Вопрос");
         assertEquals("Введите вариант ответа. Если вы хотите закончить добавлять варианты, введите команду /stop.", addTextMessage);
 
-        verify(userService).setState(userId, UserState.ADD_ANSWER);
+        verify(userService).changeStateById(userId, UserState.ADD_ANSWER);
         userSession.setState(UserState.ADD_ANSWER);
         String stop1 = questionService.handleStop(userId);
         assertEquals("Вы не создали необходимый минимум ответов (минимум: 2). Введите варианты ответа.", stop1);
@@ -169,12 +169,12 @@ class QuestionServiceTest {
                 "1: 1\n" +
                 "2: 2\n", stop2);
         verify(answerRepository, times(2)).save(any(AnswerEntity.class));
-        verify(userService).setState(userId, UserState.SET_CORRECT_ANSWER);
+        verify(userService).changeStateById(userId, UserState.SET_CORRECT_ANSWER);
         userSession.setState(UserState.SET_CORRECT_ANSWER);
 
         String correctAnswer = questionService.handleMessage(userSession, "2");
         assertEquals("Вариант ответа 2 назначен правильным.", correctAnswer);
-        verify(userService, times(1)).setState(userId, UserState.DEFAULT);
+        verify(userService, times(1)).changeStateById(userId, UserState.DEFAULT);
         userSession.setState(UserState.DEFAULT);
     }
 
@@ -187,20 +187,20 @@ class QuestionServiceTest {
         String result = questionService.handleAddQuestion(userId, "/add_question");
         assertEquals("Выберите тест:\n1) id: 1 Название: Test\n", result);
 
-        verify(userService).setState(userId, UserState.ADD_QUESTION);
+        verify(userService).changeStateById(userId, UserState.ADD_QUESTION);
         userSession.setState(UserState.ADD_QUESTION);
 
         String selectTestMessage = questionService.handleMessage(userSession, "1");
         assertEquals("Введите название вопроса для теста “Test”", selectTestMessage);
 
-        verify(userService).setState(userId, UserState.ADD_QUESTION_TEXT);
+        verify(userService).changeStateById(userId, UserState.ADD_QUESTION_TEXT);
         userSession.setCurrentQuestion(question);
         userSession.setState(UserState.ADD_QUESTION_TEXT);
 
         String addTextMessage = questionService.handleMessage(userSession, "Вопрос");
         assertEquals("Введите вариант ответа. Если вы хотите закончить добавлять варианты, введите команду /stop.", addTextMessage);
 
-        verify(userService).setState(userId, UserState.ADD_ANSWER);
+        verify(userService).changeStateById(userId, UserState.ADD_ANSWER);
         userSession.setState(UserState.ADD_ANSWER);
         String stop1 = questionService.handleStop(userId);
         assertEquals("Вы не создали необходимый минимум ответов (минимум: 2). Введите варианты ответа.", stop1);
@@ -214,12 +214,12 @@ class QuestionServiceTest {
                 "2: 2\n", stop2);
 
         verify(answerRepository, times(2)).save(any(AnswerEntity.class));
-        verify(userService).setState(userId, UserState.SET_CORRECT_ANSWER);
+        verify(userService).changeStateById(userId, UserState.SET_CORRECT_ANSWER);
         userSession.setState(UserState.SET_CORRECT_ANSWER);
 
         String correctAnswer = questionService.handleMessage(userSession, "2");
         assertEquals("Вариант ответа 2 назначен правильным.", correctAnswer);
-        verify(userService, times(1)).setState(userId, UserState.DEFAULT);
+        verify(userService, times(1)).changeStateById(userId, UserState.DEFAULT);
         userSession.setState(UserState.DEFAULT);
     }
 
@@ -257,20 +257,20 @@ class QuestionServiceTest {
                 2: Варианты ответа
                 """, result);
 
-        verify(userService).setState(userId, UserState.EDIT_QUESTION);
+        verify(userService).changeStateById(userId, UserState.EDIT_QUESTION);
         userSession.setCurrentQuestion(question);
         userSession.setState(UserState.EDIT_QUESTION);
 
         String editTextMessage = questionService.handleMessage(userSession, "1");
         assertEquals("Введите новый текст вопроса", editTextMessage);
 
-        verify(userService).setState(userId, UserState.EDIT_QUESTION_TEXT);
+        verify(userService).changeStateById(userId, UserState.EDIT_QUESTION_TEXT);
         userSession.setState(UserState.EDIT_QUESTION_TEXT);
 
         String confirmEdit = questionService.handleMessage(userSession, "Другой вопрос");
         assertEquals("Текст вопроса изменен на “Другой вопрос”", confirmEdit);
 
-        verify(userService, times(2)).setState(userId, UserState.DEFAULT);
+        verify(userService, times(2)).changeStateById(userId, UserState.DEFAULT);
         userSession.setState(UserState.DEFAULT);
     }
 
@@ -288,7 +288,7 @@ class QuestionServiceTest {
                 2: Варианты ответа
                 """, result);
 
-        verify(userService).setState(userId, UserState.EDIT_QUESTION);
+        verify(userService).changeStateById(userId, UserState.EDIT_QUESTION);
         userSession.setCurrentQuestion(question);
         userSession.setState(UserState.EDIT_QUESTION);
 
@@ -299,7 +299,7 @@ class QuestionServiceTest {
                 "1: Изменить формулировку ответа\n" +
                 "2: Изменить правильность варианта ответа", editTextMessage);
 
-        verify(userService).setState(userId, UserState.EDIT_ANSWER_OPTION_CHOICE);
+        verify(userService).changeStateById(userId, UserState.EDIT_ANSWER_OPTION_CHOICE);
         userSession.setState(UserState.EDIT_ANSWER_OPTION_CHOICE);
 
         String editAnswerText = questionService.handleMessage(userSession, "1");
@@ -308,7 +308,7 @@ class QuestionServiceTest {
                 "2: 2 (верный)\n" +
                 "\n" +
                 "Какой вариант ответа вы хотите изменить?", editAnswerText);
-        verify(userService).setState(userId, UserState.EDIT_ANSWER_TEXT_CHOICE);
+        verify(userService).changeStateById(userId, UserState.EDIT_ANSWER_TEXT_CHOICE);
         userSession.setState(UserState.EDIT_ANSWER_TEXT_CHOICE);
 
         String invalidIndex = questionService.handleMessage(userSession, "4");
@@ -317,13 +317,13 @@ class QuestionServiceTest {
         String correctIndex = questionService.handleMessage(userSession, "1");
         assertEquals("Введите новую формулировку ответа", correctIndex);
 
-        verify(userService).setState(userId, UserState.EDIT_ANSWER_TEXT);
+        verify(userService).changeStateById(userId, UserState.EDIT_ANSWER_TEXT);
         userSession.setState(UserState.EDIT_ANSWER_TEXT);
 
         String newAnswerText = questionService.handleMessage(userSession, "Новая формулировка");
         assertEquals("Формулировка изменена на “Новая формулировка”", newAnswerText);
 
-        verify(userService, times(2)).setState(userId, UserState.DEFAULT);
+        verify(userService, times(2)).changeStateById(userId, UserState.DEFAULT);
         userSession.setState(UserState.DEFAULT);
     }
 
@@ -341,7 +341,7 @@ class QuestionServiceTest {
                 2: Варианты ответа
                 """, result);
 
-        verify(userService).setState(userId, UserState.EDIT_QUESTION);
+        verify(userService).changeStateById(userId, UserState.EDIT_QUESTION);
         userSession.setCurrentQuestion(question);
         userSession.setState(UserState.EDIT_QUESTION);
 
@@ -352,7 +352,7 @@ class QuestionServiceTest {
                 "1: Изменить формулировку ответа\n" +
                 "2: Изменить правильность варианта ответа", editTextMessage);
 
-        verify(userService).setState(userId, UserState.EDIT_ANSWER_OPTION_CHOICE);
+        verify(userService).changeStateById(userId, UserState.EDIT_ANSWER_OPTION_CHOICE);
         userSession.setState(UserState.EDIT_ANSWER_OPTION_CHOICE);
 
         String editCorrectAnswer = questionService.handleMessage(userSession, "2");
@@ -361,7 +361,7 @@ class QuestionServiceTest {
                 "2: 2 (верный)\n" +
                 "\n" +
                 "Какой вариант ответа вы хотите сделать правильным?", editCorrectAnswer);
-        verify(userService, times(2)).setState(userId, UserState.SET_CORRECT_ANSWER);
+        verify(userService, times(2)).changeStateById(userId, UserState.SET_CORRECT_ANSWER);
         userSession.setState(UserState.SET_CORRECT_ANSWER);
 
         String invalidIndex = questionService.handleMessage(userSession, "4");
@@ -370,7 +370,7 @@ class QuestionServiceTest {
         String correctIndex = questionService.handleMessage(userSession, "1");
         assertEquals("Вариант ответа 1 назначен правильным.", correctIndex);
 
-        verify(userService, times(2)).setState(userId, UserState.DEFAULT);
+        verify(userService, times(2)).changeStateById(userId, UserState.DEFAULT);
         userSession.setState(UserState.DEFAULT);
     }
 
@@ -409,7 +409,7 @@ class QuestionServiceTest {
         String result = questionService.handleDeleteQuestion(userId, "/del_question 1");
         assertEquals("Вопрос “Вопрос” будет удалён, вы уверены? (Да/Нет)", result);
 
-        verify(userService).setState(userId, UserState.CONFIRM_DELETE_QUESTION);
+        verify(userService).changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
         userSession.setState(UserState.CONFIRM_DELETE_QUESTION);
 
         String confirmDelete = questionService.handleMessage(userSession, "Да");
@@ -418,7 +418,7 @@ class QuestionServiceTest {
         String notСonfirmDelete = questionService.handleMessage(userSession, "Нет");
         assertEquals("Вопрос “Вопрос” из теста “Test” не удален.", notСonfirmDelete);
 
-        verify(userService, times(3)).setState(userId, UserState.DEFAULT);
+        verify(userService, times(3)).changeStateById(userId, UserState.DEFAULT);
         userSession.setState(UserState.DEFAULT);
     }
 
@@ -438,13 +438,13 @@ class QuestionServiceTest {
         String result = questionService.handleDeleteQuestion(userId, "/del_question");
         assertEquals("Введите id вопроса для удаления:\n", result);
 
-        verify(userService).setState(userId, UserState.DELETE_QUESTION);
+        verify(userService).changeStateById(userId, UserState.DELETE_QUESTION);
         userSession.setState(UserState.DELETE_QUESTION);
 
         String questionId = questionService.handleMessage(userSession, "1");
         assertEquals("Вопрос “Вопрос” будет удалён, вы уверены? (Да/Нет)", questionId);
 
-        verify(userService).setState(userId, UserState.CONFIRM_DELETE_QUESTION);
+        verify(userService).changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
         userSession.setState(UserState.CONFIRM_DELETE_QUESTION);
 
         String confirmDelete = questionService.handleMessage(userSession, "Да");
@@ -453,7 +453,7 @@ class QuestionServiceTest {
         String notСonfirmDelete = questionService.handleMessage(userSession, "Нет");
         assertEquals("Вопрос “Вопрос” из теста “Test” не удален.", notСonfirmDelete);
 
-        verify(userService, times(3)).setState(userId, UserState.DEFAULT);
+        verify(userService, times(3)).changeStateById(userId, UserState.DEFAULT);
         userSession.setState(UserState.DEFAULT);
     }
 

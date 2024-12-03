@@ -1,11 +1,8 @@
 package org.example.naumenteststgbot.entity;
 
 import jakarta.persistence.*;
-
 import java.util.ArrayList;
 import java.util.List;
-
-
 
 /**
  * Сущность вопроса
