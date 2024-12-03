@@ -448,7 +448,7 @@ public class TestService {
                     return " ❌";
             }
             return "";
-        }).collect(Collectors.toCollection(ArrayList::new));
+        }).toList();
         List<String> buttonsCallback = previousQuestion.getAnswers().stream()
                 .map(a -> "EDIT IGNORE " + a.getAnswerText())
                 .collect(Collectors.toCollection(ArrayList::new));

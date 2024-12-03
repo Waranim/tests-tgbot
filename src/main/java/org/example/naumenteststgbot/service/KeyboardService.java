@@ -101,7 +101,7 @@ public class KeyboardService {
 
         InlineKeyboardButton counter = new InlineKeyboardButton();
         counter.setText(String.format("Верно: %d", correctAnswerCount));
-        counter.setCallbackData("COUNTER");
+        counter.setCallbackData("EDIT IGNORE");
         rowsInline.add(List.of(counter));
 
         InlineKeyboardButton exit = new InlineKeyboardButton();
