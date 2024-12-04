@@ -1,4 +1,4 @@
-package org.example.naumenteststgbot.config;
+package org.example.naumenteststgbot.init;
 
 import org.example.naumenteststgbot.service.TelegramBot;
 import org.springframework.context.event.ContextRefreshedEvent;

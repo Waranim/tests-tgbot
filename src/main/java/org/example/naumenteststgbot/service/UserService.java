@@ -2,10 +2,9 @@ package org.example.naumenteststgbot.service;
 
 import org.example.naumenteststgbot.entity.UserEntity;
 import org.example.naumenteststgbot.entity.*;
+import org.example.naumenteststgbot.enums.UserState;
 import org.example.naumenteststgbot.repository.UserRepository;
 import org.example.naumenteststgbot.repository.UserSessionRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,8 +16,6 @@ import java.util.List;
 @Service
 @Transactional
 public class UserService {
-
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     /**
      * Репозиторий для взаимодействия с базой данных
@@ -38,7 +35,7 @@ public class UserService {
      * @param username псевдоним пользователя в телеграм
      */
     public void create(Long id, String username) {
-        UserEntity user = get(id);
+        UserEntity user = getUserById(id);
         if (user != null) {
             return;
         }
@@ -48,15 +45,6 @@ public class UserService {
         userEntity.setUsername(username);
         userEntity.setSession(new UserSession(id));
         userRepository.save(userEntity);
-    }
-
-    /**
-     * Получение пользователя из базы данных
-     * @param id идентификатор телеграм
-     * @return объект UserDTO, содержащий информацию о пользователе, или null, если пользователь не найден
-     */
-    public UserEntity get(Long id) {
-        return userRepository.findById(id).orElse(null);
     }
 
     /**
@@ -74,12 +62,8 @@ public class UserService {
      * @param id идентификатор пользователя
      * @return пользователь, или null, если пользователь не найден
      */
-    private UserEntity getUserById(Long id) {
-        UserEntity user = userRepository.findById(id).orElse(null);
-        if (user == null) {
-            log.error("Пользователь с id: {} не найден", id);
-        }
-        return user;
+    public UserEntity getUserById(Long id) {
+        return userRepository.findById(id).orElse(null);
     }
 
     /**
@@ -92,12 +76,12 @@ public class UserService {
     }
 
     /**
-     * Установить состояние к сессии пользователя
+     * Изменить состояние сессии пользователя по идентификатору
      * @param id идентификатор пользователя
      * @param state состояние пользователя
      */
     @Transactional
-    public void setState(Long id, UserState state) {
+    public void changeStateById(Long id, UserState state) {
         UserEntity user = getUserById(id);
         if (user == null) return;
         user.getSession().setState(state);
@@ -140,6 +124,9 @@ public class UserService {
         return user.getTests();
     }
 
+    /**
+     * Установить текущий вопрос
+     */
     public void setCurrentQuestion(Long userId, QuestionEntity question) {
         UserEntity user = getUserById(userId);
         if (user == null) return;
@@ -147,9 +134,64 @@ public class UserService {
         updateUser(user);
     }
 
+    /**
+     * Получить текущий вопрос
+     */
     public QuestionEntity getCurrentQuestion(Long userId) {
         UserEntity user = getUserById(userId);
         if (user == null) return null;
         return user.getSession().getCurrentQuestion();
+    }
+
+    public Integer getCorrectAnswerCount(Long userId) {
+        UserEntity user = getUserById(userId);
+        if (user == null) return null;
+        return user.getSession().getCorrectAnswerCount();
+    }
+
+    /**
+     * Увеличить количество правильно решённых вопросов на 1
+     */
+    public void incrementCorrectAnswerCount(Long userId) {
+        UserEntity user = getUserById(userId);
+        if (user == null) return;
+        user.getSession().setCorrectAnswerCount(user.getSession().getCorrectAnswerCount() + 1);
+        updateUser(user);
+    }
+
+    /**
+     * Отчистить счётчик правильно решённых вопросов
+     */
+    public void clearCorrectAnswerCount(Long userId) {
+        UserEntity user = getUserById(userId);
+        if (user == null) return;
+        user.getSession().setCorrectAnswerCount(0);
+        updateUser(user);
+    }
+
+    public Integer getCountAnsweredQuestions(Long userId) {
+        UserEntity user = getUserById(userId);
+        if (user == null) return null;
+        return user.getSession().getCountAnsweredQuestions();
+    }
+
+    /**
+     * Увеличить количество решённых вопросов на 1
+     */
+    public void incrementCountAnsweredQuestions(Long userId) {
+        UserEntity user = getUserById(userId);
+        if (user == null) return;
+        user.getSession().setCountAnsweredQuestions(user.getSession().getCountAnsweredQuestions() + 1);
+        updateUser(user);
+    }
+
+    /**
+     * Отчистить счётчик правильно решённых вопросов
+     */
+    public void clearCountAnsweredQuestions(Long userId) {
+        UserEntity user = getUserById(userId);
+        if (user == null) return;
+        user.getSession().setCountAnsweredQuestions(0);
+        updateUser(user);
     }
 }
