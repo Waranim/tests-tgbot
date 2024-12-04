@@ -2,7 +2,6 @@ package org.example.naumenteststgbot.service;
 
 import org.example.naumenteststgbot.entity.*;
 import org.example.naumenteststgbot.enums.UserState;
-import org.example.naumenteststgbot.repository.QuestionRepository;
 import org.example.naumenteststgbot.repository.TestRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -103,7 +102,7 @@ public class TestService {
         userService.changeStateById(userId, UserState.EDIT_TEST);
         List<String> buttonsText = List.of("Название теста","Описание теста");
         List<String> callback = List.of("changeText " + testId,"changeDescription " + testId);
-        return messageBuilder.createSendMessage(chatId,"Вы выбрали тест “%s”. Что вы хотите изменить?” ".formatted(test.getTitle()),keyboardService.createReply(buttonsText,callback,"TEST"));
+        return messageBuilder.createSendMessage(chatId,"Вы выбрали тест “%s”. Что вы хотите изменить?” ".formatted(Objects.requireNonNull(test).getTitle()),keyboardService.createReply(buttonsText,callback,"TEST"));
     }
 
     /**

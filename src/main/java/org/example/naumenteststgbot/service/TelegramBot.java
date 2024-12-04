@@ -3,7 +3,6 @@ package org.example.naumenteststgbot.service;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.naumenteststgbot.config.BotConfig;
-import org.example.naumenteststgbot.enums.UserState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -46,10 +45,6 @@ public class TelegramBot extends TelegramLongPollingBot {
      * Отправка сообщений
      */
     private final MessageSender messageSender;
-    /**
-     * Сервис пользователей
-     */
-    private final UserService userService;
 
     /**
      * Редактирование сообщений
@@ -63,7 +58,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         this.messageSender = messageSender;
         this.messageHandler = messageHandler;
         this.callbackQueryHandler = callbackQueryHandler;
-        this.userService = userService;
         this.messageEditor = messageEditor;
     }
 
@@ -91,7 +85,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                 log.error("Не удалось отправить сообщение: {}", e.getMessage());
             }
         };
-        this.userService = userService;
     }
 
     @Override
