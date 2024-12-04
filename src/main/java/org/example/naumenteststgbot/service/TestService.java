@@ -156,7 +156,7 @@ public class TestService {
      * @return Ответ пользователю
      */
     @Transactional
-    public SendMessage handleMessage(String chatId,UserSession userSession, String message) {
+    public SendMessage handleMessage(String chatId, UserSession userSession, String message) {
         UserState userState = userSession.getState();
         Long userId = userSession.getUserId();
         TestEntity currentTest = userSession.getCurrentTest();

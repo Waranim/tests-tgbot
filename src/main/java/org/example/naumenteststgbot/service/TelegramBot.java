@@ -103,8 +103,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 messageSender.sendMessage(messageHandler.handleMessage(update));
             }
         }
-        else if(update.hasCallbackQuery()
-                && userService.getSession(update.getCallbackQuery().getFrom().getId()).getState() == UserState.INLINE_KEYBOARD){
+        else if(update.hasCallbackQuery()){
             if(update.getCallbackQuery().getData().startsWith("EDIT"))
                 messageEditor.editMessage(callbackQueryHandler.handleEdit(update));
             else
