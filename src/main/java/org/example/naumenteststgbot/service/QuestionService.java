@@ -407,7 +407,7 @@ public class QuestionService {
                 return createChoiceMessage(chatId,
                         "Что вы хотите сделать?",
                         List.of("Изменить формулировку ответа", "Правильность варианта ответа"),
-                        List.of("changeTextAnswerOption "+ callbackDataParts[2], "changeCorrectAnswerOption "+ callbackDataParts[2]));
+                        List.of("changeTextAnswerOption " + callbackDataParts[2], "changeCorrectAnswerOption " + callbackDataParts[2]));
 
             case "changeTextAnswerOption":
                 QuestionEntity questionEditTextAnswer = extractAndSetCurrentQuestion(callbackDataParts, userId);
@@ -427,7 +427,7 @@ public class QuestionService {
                 return createAnswerOptionsMessage(chatId,
                         "Какой вариант ответа вы хотите изменить?\n",
                         questionEditCorrectAnswerOption.getAnswers(),
-                        "changeCorrectAnswer "+ callbackDataParts[2]);
+                        "changeCorrectAnswer " + callbackDataParts[2]);
 
             case "changeCorrectAnswer":
                 QuestionEntity questionEditCorrectAnswer = extractAndSetCurrentQuestion(callbackDataParts, userId);

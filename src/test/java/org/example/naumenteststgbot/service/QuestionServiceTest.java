@@ -93,7 +93,6 @@ class QuestionServiceTest {
         ReflectionTestUtils.setField(question, "id", questionId);
         userSession = new UserSession(userId);
         answer = new AnswerEntity();
-
     }
 
     /**

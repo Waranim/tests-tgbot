@@ -100,7 +100,7 @@ public class TestService {
         userService.setCurrentTest(userId, test);
         userService.setState(userId, UserState.EDIT_TEST);
         List<String> buttonsText = List.of("Название теста","Описание теста");
-        List<String> callback = List.of("changeText "+ testId,"changeDescription +" + testId);
+        List<String> callback = List.of("changeText " + testId,"changeDescription " + testId);
         return messageBuilder.createSendMessage(chatId,"Вы выбрали тест “%s”. Что вы хотите изменить?” ".formatted(test.getTitle()),keyboardService.createReply(buttonsText,callback,"TEST"));
     }
 
