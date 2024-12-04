@@ -6,6 +6,11 @@ import org.example.naumenteststgbot.repository.AnswerRepository;
 import org.example.naumenteststgbot.repository.QuestionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Update;
+
+
+import java.util.ArrayList;
 
 import java.util.List;
 
@@ -37,19 +42,31 @@ public class QuestionService {
     private final TestService testService;
 
     /**
+     * Сервис для работы с inline клавиатурой
+     */
+    private final KeyboardService keyboardService;
+
+    /**
+     * Создание сообщений
+     */
+    private final MessageBuilder messageBuilder;
+
+    /**
      * Конструктор для инициализации сервисов и репозиториев
      */
-    public QuestionService(QuestionRepository questionRepository, UserService userService, AnswerRepository answerRepository, TestService testService) {
+    public QuestionService(QuestionRepository questionRepository, UserService userService, AnswerRepository answerRepository, TestService testService, KeyboardService keyboardService, MessageBuilder messageBuilder) {
         this.questionRepository = questionRepository;
         this.userService = userService;
         this.answerRepository = answerRepository;
         this.testService = testService;
+        this.keyboardService = keyboardService;
+        this.messageBuilder = messageBuilder;
     }
 
     /**
      * Управляет переходами между состояниями пользователя в зависимости от полученной команды
      */
-    public String handleMessage(UserSession userSession, String text) {
+    public SendMessage handleMessage(String chatId, UserSession userSession, String text) {
         UserState userState = userSession.getState();
         Long userId = userSession.getUserId();
         QuestionEntity currentQuestion = userSession.getCurrentQuestion();
@@ -60,18 +77,19 @@ public class QuestionService {
                 break;
             case ADD_QUESTION:
                 if (!text.matches("^\\d+$")) {
-                    return "Некорректный id теста. Пожалуйста, введите число.";
+                    return createSimpleMessage(chatId,"Некорректный id теста. Пожалуйста, введите число.");
                 }
 
                 long testId = Long.parseLong(text);
                 TestEntity selectedTest = testService.getTest(testId);
                 if (selectedTest == null || !userService.getTestsById(userId).contains(selectedTest)) {
-                    return "Тест не найден!";
+                    return createSimpleMessage(chatId,"Тест не найден!");
                 }
                 QuestionEntity nquestion = createQuestion(selectedTest);
                 userService.setCurrentQuestion(userId, nquestion);
-                userService.changeStateById(userId, UserState.ADD_QUESTION_TEXT);
-                return String.format("Введите название вопроса для теста “%s”", selectedTest.getTitle());
+                userService.setState(userId, UserState.ADD_QUESTION_TEXT);
+                return createSimpleMessage(chatId,"Введите название вопроса для теста “%s”".formatted(selectedTest.getTitle()));
+
 
             case ADD_QUESTION_TEXT:
                 currentQuestion.setQuestion(text);
@@ -145,11 +163,13 @@ public class QuestionService {
 
             case DELETE_QUESTION:
                 QuestionEntity question = questionRepository.findById(Long.parseLong(text)).orElse(null);
-                if (question == null) return "Вопрос не найден!";
-                response = String.format("Вопрос “%s” будет удалён, вы уверены? (Да/Нет)", question.getQuestion());
+                if (question == null) return messageBuilder.createSendMessage(chatId,"Вопрос не найден",null);
                 userService.setCurrentQuestion(userId, question);
                 userService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
-                break;
+                List<String> buttonsText = List.of("Да", "Нет");
+                List<String> callback = List.of("confirmDeleteYes", "confirmDeleteNo");
+                return messageBuilder.createSendMessage(chatId, "Вы уверены, что хотите удалить вопрос “%s”?".formatted(question.getQuestion()), keyboardService.createReply(buttonsText, callback, "QUESTION")
+                );
 
             case CONFIRM_DELETE_QUESTION:
                 text = text.toLowerCase();
@@ -164,7 +184,7 @@ public class QuestionService {
                 break;
         }
 
-        return response;
+        return createSimpleMessage(chatId,response);
     }
 
     /**
@@ -231,68 +251,61 @@ public class QuestionService {
     /**
      * Обрабатывает команду редактирования вопроса
      */
-    public String handleEditQuestion(Long userId, String message) {
+    public SendMessage handleEditQuestion(String chatId,Long userId, String message) {
         String[] parts = message.split(" ");
         if (parts.length == 1) {
-            return "Используйте команду вместе с идентификатором вопроса!";
+            return createSimpleMessage(chatId,"Используйте команду вместе с идентификатором вопроса!");
         }
         Long questionId = Long.parseLong(parts[1]);
         QuestionEntity question = questionRepository.findById(questionId).orElse(null);
         if (question == null) {
-            return "Вопрос не найден!";
+            return createSimpleMessage(chatId,"Вопрос не найден!");
         }
         userService.setCurrentQuestion(userId, question);
         userService.changeStateById(userId, UserState.EDIT_QUESTION);
-        return String.format("""
-                Вы выбрали вопрос “%s”. Что вы хотите изменить в вопросе?
-                1: Формулировку вопроса
-                2: Варианты ответа
-                """, question.getQuestion());
+        List<String> buttonsText = List.of("Формулировку вопроса","Варианты ответа");
+        List<String> callback = List.of("changeText", "changeAnswer");
+        return messageBuilder.createSendMessage(chatId,"Что вы хотите изменить в вопросе “%s” ".formatted(question.getQuestion()),keyboardService.createReply(buttonsText,callback,"QUESTION"));
     }
 
     /**
      * Обрабатывает команду удаления вопроса
      */
-    public String handleDeleteQuestion(Long userId, String message) {
+    public SendMessage handleDeleteQuestion(String chatId, Long userId, String message) {
         UserSession userSession = userService.getSession(userId);
         if (userSession.getState() == UserState.CONFIRM_DELETE_QUESTION) {
             QuestionEntity question = userSession.getCurrentQuestion();
             if (question == null) {
-                return "Вопрос не найден!";
+                return createSimpleMessage(chatId, "Вопрос не найден!");
             }
-            message = message.toLowerCase();
-            if (message.equals("да")) {
-                userService.setCurrentQuestion(userId, null);
-                questionRepository.delete(question);
-                userService.changeStateById(userId, UserState.DEFAULT);
-                return "Вопрос успешно удален.";
-            } else if (message.equals("нет")) {
-                userService.changeStateById(userId, UserState.DEFAULT);
-                return "Удаление вопроса отменено.";
-            } else {
-                return "Некорректный ввод. Пожалуйста, введите 'Да' или 'Нет'.";
-            }
+            List<String> buttonsText = List.of("Да", "Нет");
+            List<String> callback = List.of("confirmDeleteYes", "confirmDeleteNo");
+            return messageBuilder.createSendMessage(chatId, "Вы уверены, что хотите удалить вопрос “%s”?".formatted(question.getQuestion()), keyboardService.createReply(buttonsText, callback, "QUESTION"));
         }
         String[] parts = message.split(" ");
         if (parts.length == 2) {
             String questionIdStr = parts[1];
             if (!questionIdStr.matches("^\\d+$")) {
-                return "Некорректный формат id вопроса. Пожалуйста, введите число.";
+                return createSimpleMessage(chatId, "Некорректный формат id вопроса. Пожалуйста, введите число.");
             }
             Long questionId = Long.parseLong(questionIdStr);
             QuestionEntity question = questionRepository.findById(questionId).orElse(null);
             if (question == null) {
-                return "Вопрос не найден!";
+                return createSimpleMessage(chatId, "Вопрос не найден!");
+
             }
             userService.setCurrentQuestion(userId, question);
             userService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
-            return String.format("Вопрос “%s” будет удалён, вы уверены? (Да/Нет)", question.getQuestion());
+            List<String> buttonsText = List.of("Да", "Нет");
+            List<String> callback = List.of("confirmDeleteYes", "confirmDeleteNo");
+            return messageBuilder.createSendMessage(chatId, "Вы уверены, что хотите удалить вопрос “%s”?".formatted(question.getQuestion()), keyboardService.createReply(buttonsText, callback, "QUESTION")
+            );
         }
         if (parts.length == 1){
                 userService.changeStateById(userId, UserState.DELETE_QUESTION);
-                return "Введите id вопроса для удаления:\n";
+                return createSimpleMessage(chatId, "Введите id вопроса для удаления:\n");
         }
-        return "Некорректный ввод команды";
+        return createSimpleMessage(chatId, "Некорректный ввод команды");
     }
 
     /**
@@ -374,5 +387,103 @@ public class QuestionService {
         return response.toString();
     }
 
+    /**
+     * Обработать Callback query связанный с тестами
+     */
+    public SendMessage handleCallback(Update update) {
+        String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
+        String callbackData = update.getCallbackQuery().getData();
+        String[] callbackDataParts = callbackData.split(" ");
+        if (callbackDataParts.length < 2) {
+            return messageBuilder.createErrorMessage(chatId, "Некорректные данные в callback.");
+        }
 
+        Long userId = update.getCallbackQuery().getFrom().getId();
+        String command = callbackDataParts[1];
+        switch (command) {
+            case "changeText":
+                userService.setState(userId, UserState.EDIT_QUESTION_TEXT);
+                return createSimpleMessage(chatId,
+                        "Сейчас, формулировка к заданию выглядит так: %s\nВведите новую формулировку\n"
+                                .formatted(userService.getCurrentQuestion(userId).getQuestion()));
+
+            case "changeAnswer":
+                return createChoiceMessage(chatId,
+                        "Что вы хотите сделать?",
+                        List.of("Изменить формулировку ответа", "Правильность варианта ответа"),
+                        List.of("changeTextAnswerOption", "changeCorrectAnswerOption"));
+
+            case "changeTextAnswerOption":
+                return createAnswerOptionsMessage(chatId,
+                        "Какой вариант ответа вы хотите изменить?\n",
+                        userService.getCurrentQuestion(userId).getAnswers(),
+                        "changeTextAnswer");
+
+            case "changeTextAnswer":
+                userService.setEditingAnswerIndex(userId, Integer.valueOf(callbackDataParts[2]));
+                userService.setState(userId, UserState.EDIT_ANSWER_TEXT);
+                return createSimpleMessage(chatId, "Введите новую формулировку");
+
+            case "changeCorrectAnswerOption":
+                return createAnswerOptionsMessage(chatId,
+                        "Какой вариант ответа вы хотите изменить?\n",
+                        userService.getCurrentQuestion(userId).getAnswers(),
+                        "changeCorrectAnswer");
+
+            case "changeCorrectAnswer":
+                int index = Integer.parseInt(callbackDataParts[2]);
+                setCorrectAnswer(userService.getCurrentQuestion(userId), index+1);
+                userService.setState(userId, UserState.DEFAULT);
+                return createSimpleMessage(chatId,
+                        "Правильный вариант ответа “%s” был установлен"
+                                .formatted(userService.getCurrentQuestion(userId).getAnswers().get(index).getAnswerText()));
+
+            case "confirmDeleteYes":
+                QuestionEntity questionToDelete = userService.getCurrentQuestion(userId);
+                userService.setCurrentQuestion(userId, null);
+                questionRepository.delete(questionToDelete);
+                userService.setState(userId, UserState.DEFAULT);
+                return createSimpleMessage(chatId, String.format("Вопрос “%s” успешно удалён.", questionToDelete.getQuestion()));
+
+            case "confirmDeleteNo":
+                userService.setState(userId, UserState.DEFAULT);
+                return createSimpleMessage(chatId, "Удаление вопроса отменено.");
+
+            default:
+                return messageBuilder.createErrorMessage(chatId, "Неизвестная команда.");
+        }
+
+    }
+
+    /**
+     * Создает простое сообщение без кнопок и дополнительных элементов
+     */
+    private SendMessage createSimpleMessage(String chatId, String text) {
+        return messageBuilder.createSendMessage(chatId, text, null);
+    }
+
+    /**
+     * Создает сообщение с inline-кнопками для взаимодействия с пользователем
+     */
+    private SendMessage createChoiceMessage(String chatId, String text, List<String> buttonTexts, List<String> callback) {
+        return messageBuilder.createSendMessage(chatId, text,
+                keyboardService.createReply(buttonTexts, callback, "QUESTION"));
+    }
+
+    /**
+     *  Создает сообщение с вариантами ответов в виде inline-кнопок
+     */
+    private SendMessage createAnswerOptionsMessage(String chatId, String text, List<AnswerEntity> answers, String callbackPrefix) {
+        List<String> buttonTexts = new ArrayList<>();
+        List<String> callback = new ArrayList<>();
+
+        for (int i = 0; i < answers.size(); i++) {
+            String postfix = answers.get(i).isCorrect() ? " (верный)" : "";
+            buttonTexts.add(answers.get(i).getAnswerText() + postfix);
+            callback.add(callbackPrefix + " " + i);
+        }
+
+        return messageBuilder.createSendMessage(chatId, text,
+                keyboardService.createReply(buttonTexts, callback, "QUESTION"));
+    }
 }

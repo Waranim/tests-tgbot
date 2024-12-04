@@ -41,7 +41,8 @@ public class MessageHandler {
         UserSession userSession = userService.getSession(update.getMessage().getFrom().getId());
         UserState userState = userSession.getState();
         String text = update.getMessage().getText();
-        String responseMessage = "Я вас не понимаю, для справки используйте /help";
+        String chatId = update.getMessage().getChatId().toString();
+        SendMessage responseMessage = null;
 
         switch (userState) {
             case ADD_TEST_TITLE:
@@ -52,7 +53,7 @@ public class MessageHandler {
             case DELETE_TEST:
             case CONFIRM_DELETE_TEST:
             case VIEW_TEST:
-                responseMessage = testService.handleMessage(userSession, text);
+                responseMessage = testService.handleMessage(chatId,userSession, text);
                 break;
 
             case ADD_QUESTION_TEXT:
@@ -67,13 +68,13 @@ public class MessageHandler {
             case EDIT_ANSWER_TEXT:
             case DELETE_QUESTION:
             case CONFIRM_DELETE_QUESTION:
-                responseMessage = questionService.handleMessage(userSession, text);
+                responseMessage = questionService.handleMessage(chatId,userSession,text);
                 break;
 
             default:
                 break;
         }
 
-        return new SendMessage(update.getMessage().getChatId().toString(), responseMessage);
+        return responseMessage;
     }
 }
