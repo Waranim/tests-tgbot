@@ -7,11 +7,8 @@ import org.example.naumenteststgbot.repository.QuestionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Update;
-
 
 import java.util.ArrayList;
-
 import java.util.List;
 
 /**
@@ -264,8 +261,9 @@ public class QuestionService {
         userService.setCurrentQuestion(userId, question);
         userService.changeStateById(userId, UserState.EDIT_QUESTION);
         List<String> buttonsText = List.of("Формулировку вопроса","Варианты ответа");
-        List<String> callback = List.of("changeText", "changeAnswer");
-        return messageBuilder.createSendMessage(chatId,"Что вы хотите изменить в вопросе “%s” ".formatted(question.getQuestion()),keyboardService.createReply(buttonsText,callback,"QUESTION"));
+        List<String> callback = List.of("changeText "+ questionId, "changeAnswer "+ questionId);
+        return messageBuilder.createSendMessage(chatId,"Что вы хотите изменить в вопросе “%s” ".formatted(question.getQuestion()),
+                keyboardService.createReply(buttonsText,callback,"QUESTION"));
     }
 
     /**
@@ -390,53 +388,54 @@ public class QuestionService {
     /**
      * Обработать Callback query связанный с тестами
      */
-    public SendMessage handleCallback(Update update) {
-        String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
-        String callbackData = update.getCallbackQuery().getData();
+    public SendMessage handleCallback(String chatId,String callbackData,Long userId) {
         String[] callbackDataParts = callbackData.split(" ");
         if (callbackDataParts.length < 2) {
             return messageBuilder.createErrorMessage(chatId, "Некорректные данные в callback.");
         }
-
-        Long userId = update.getCallbackQuery().getFrom().getId();
         String command = callbackDataParts[1];
         switch (command) {
             case "changeText":
+                QuestionEntity questionEditText = extractAndSetCurrentQuestion(callbackDataParts, userId);
                 userService.changeStateById(userId, UserState.EDIT_QUESTION_TEXT);
                 return createSimpleMessage(chatId,
                         "Сейчас, формулировка к заданию выглядит так: %s\nВведите новую формулировку\n"
-                                .formatted(userService.getCurrentQuestion(userId).getQuestion()));
+                                .formatted(questionEditText.getQuestion()));
 
             case "changeAnswer":
                 return createChoiceMessage(chatId,
                         "Что вы хотите сделать?",
                         List.of("Изменить формулировку ответа", "Правильность варианта ответа"),
-                        List.of("changeTextAnswerOption", "changeCorrectAnswerOption"));
+                        List.of("changeTextAnswerOption " + callbackDataParts[2], "changeCorrectAnswerOption " + callbackDataParts[2]));
 
             case "changeTextAnswerOption":
+                QuestionEntity questionEditTextAnswer = extractAndSetCurrentQuestion(callbackDataParts, userId);
                 return createAnswerOptionsMessage(chatId,
                         "Какой вариант ответа вы хотите изменить?\n",
-                        userService.getCurrentQuestion(userId).getAnswers(),
-                        "changeTextAnswer");
+                        questionEditTextAnswer.getAnswers(),
+                        "changeTextAnswer " + callbackDataParts[2]);
 
             case "changeTextAnswer":
-                userService.setEditingAnswerIndex(userId, Integer.valueOf(callbackDataParts[2]));
+                extractAndSetCurrentQuestion(callbackDataParts, userId);
+                userService.setEditingAnswerIndex(userId, Integer.valueOf(callbackDataParts[3]));
                 userService.changeStateById(userId, UserState.EDIT_ANSWER_TEXT);
                 return createSimpleMessage(chatId, "Введите новую формулировку");
 
             case "changeCorrectAnswerOption":
+                QuestionEntity questionEditCorrectAnswerOption = extractAndSetCurrentQuestion(callbackDataParts, userId);
                 return createAnswerOptionsMessage(chatId,
                         "Какой вариант ответа вы хотите изменить?\n",
-                        userService.getCurrentQuestion(userId).getAnswers(),
-                        "changeCorrectAnswer");
+                        questionEditCorrectAnswerOption.getAnswers(),
+                        "changeCorrectAnswer " + callbackDataParts[2]);
 
             case "changeCorrectAnswer":
-                int index = Integer.parseInt(callbackDataParts[2]);
+                QuestionEntity questionEditCorrectAnswer = extractAndSetCurrentQuestion(callbackDataParts, userId);
+                int index = Integer.parseInt(callbackDataParts[3]);
                 setCorrectAnswer(userService.getCurrentQuestion(userId), index+1);
                 userService.changeStateById(userId, UserState.DEFAULT);
                 return createSimpleMessage(chatId,
                         "Правильный вариант ответа “%s” был установлен"
-                                .formatted(userService.getCurrentQuestion(userId).getAnswers().get(index).getAnswerText()));
+                                .formatted(questionEditCorrectAnswer.getAnswers().get(index).getAnswerText()));
 
             case "confirmDeleteYes":
                 QuestionEntity questionToDelete = userService.getCurrentQuestion(userId);
@@ -485,5 +484,15 @@ public class QuestionService {
 
         return messageBuilder.createSendMessage(chatId, text,
                 keyboardService.createReply(buttonTexts, callback, "QUESTION"));
+    }
+
+    /**
+     *  Извлекает ID вопроса из данных callback, находит соответствующий вопрос в репозитории
+     */
+    private QuestionEntity extractAndSetCurrentQuestion(String[] callbackDataParts, long userId) {
+        long questionId = Long.parseLong(callbackDataParts[2]);
+        QuestionEntity question = questionRepository.findById(questionId).orElse(null);
+        userService.setCurrentQuestion(userId, question);
+        return question;
     }
 }
