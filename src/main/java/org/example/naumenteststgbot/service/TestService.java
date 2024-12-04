@@ -100,7 +100,7 @@ public class TestService {
         userService.setCurrentTest(userId, test);
         userService.setState(userId, UserState.EDIT_TEST);
         List<String> buttonsText = List.of("Название теста","Описание теста");
-        List<String> callback = List.of("changeText","changeDescription");
+        List<String> callback = List.of("changeText " + testId,"changeDescription " + testId);
         return messageBuilder.createSendMessage(chatId,"Вы выбрали тест “%s”. Что вы хотите изменить?” ".formatted(test.getTitle()),keyboardService.createReply(buttonsText,callback,"TEST"));
     }
 
@@ -204,7 +204,7 @@ public class TestService {
                 userService.setCurrentTest(userId, test);
                 userService.setState(userId, UserState.CONFIRM_DELETE_TEST);
                 List<String> buttonsText = List.of("Да", "Нет");
-                List<String> callback = List.of("confirmDeleteYes", "confirmDeleteNo");
+                List<String> callback = List.of("confirmDeleteYes " + test.getId(), "confirmDeleteNo " + test.getId());
                 return messageBuilder.createSendMessage(chatId, "Тест “%s” будет удалён, вы уверены?".formatted(test.getTitle()), keyboardService.createReply(buttonsText, callback, "TEST")
                 );
             case CONFIRM_DELETE_TEST:
@@ -296,18 +296,21 @@ public class TestService {
         String command = callbackDataParts[1];
         switch (command) {
             case "changeText":
+                extractAndSetCurrentTest(callbackDataParts, userId);
                 userService.setState(userId, UserState.EDIT_TEST_TITLE);
                 return messageBuilder.createSendMessage(chatId,"Введите новое название теста",null);
             case "changeDescription":
+                extractAndSetCurrentTest(callbackDataParts, userId);
                 userService.setState(userId, UserState.EDIT_TEST_DESCRIPTION);
                 return messageBuilder.createSendMessage(chatId,"Введите новое описание теста",null);
             case "confirmDeleteYes":
-                TestEntity testToDelete = userService.getSession(userId).getCurrentTest();
+                long testId = Long.parseLong(callbackDataParts[2]);
+                TestEntity test = testRepository.findById(testId).orElse(null);
                 userService.setCurrentTest(userId, null);
                 userService.setCurrentQuestion(userId, null);
-                testRepository.delete(testToDelete);
+                testRepository.delete(test);
                 userService.setState(userId, UserState.DEFAULT);
-                return messageBuilder.createSendMessage(chatId, String.format("Вопрос “%s” успешно удалён.", testToDelete.getTitle()),null);
+                return messageBuilder.createSendMessage(chatId, String.format("Вопрос “%s” успешно удалён.", test.getTitle()),null);
 
             case "confirmDeleteNo":
                 userService.setState(userId, UserState.DEFAULT);
@@ -469,5 +472,15 @@ public class TestService {
         userService.setCurrentQuestion(userId, currentQuestion);
         editMessageText.setReplyMarkup(keyboardService.createReply(buttonsText, buttonsCallback, ""));
         editMessageText.setText("Вопрос %s/%s: %s".formatted(currentQuestionIndex + 1, questions.size(), currentQuestion.getQuestion()));
+    }
+
+    /**
+     *  Извлекает ID теста из данных callback, находит соответствующий тест в репозитории
+     */
+    private TestEntity extractAndSetCurrentTest(String[] callbackDataParts, long userId) {
+        long testId = Long.parseLong(callbackDataParts[2]);
+        TestEntity test = testRepository.findById(testId).orElse(null);
+        userService.setCurrentTest(userId, test);
+        return test;
     }
 }
