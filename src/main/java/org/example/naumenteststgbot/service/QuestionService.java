@@ -87,7 +87,7 @@ public class QuestionService {
                 }
                 QuestionEntity nquestion = createQuestion(selectedTest);
                 userService.setCurrentQuestion(userId, nquestion);
-                userService.setState(userId, UserState.ADD_QUESTION_TEXT);
+                userService.changeStateById(userId, UserState.ADD_QUESTION_TEXT);
                 return createSimpleMessage(chatId,"Введите название вопроса для теста “%s”".formatted(selectedTest.getTitle()));
 
 
@@ -402,7 +402,7 @@ public class QuestionService {
         String command = callbackDataParts[1];
         switch (command) {
             case "changeText":
-                userService.setState(userId, UserState.EDIT_QUESTION_TEXT);
+                userService.changeStateById(userId, UserState.EDIT_QUESTION_TEXT);
                 return createSimpleMessage(chatId,
                         "Сейчас, формулировка к заданию выглядит так: %s\nВведите новую формулировку\n"
                                 .formatted(userService.getCurrentQuestion(userId).getQuestion()));
@@ -421,7 +421,7 @@ public class QuestionService {
 
             case "changeTextAnswer":
                 userService.setEditingAnswerIndex(userId, Integer.valueOf(callbackDataParts[2]));
-                userService.setState(userId, UserState.EDIT_ANSWER_TEXT);
+                userService.changeStateById(userId, UserState.EDIT_ANSWER_TEXT);
                 return createSimpleMessage(chatId, "Введите новую формулировку");
 
             case "changeCorrectAnswerOption":
@@ -433,7 +433,7 @@ public class QuestionService {
             case "changeCorrectAnswer":
                 int index = Integer.parseInt(callbackDataParts[2]);
                 setCorrectAnswer(userService.getCurrentQuestion(userId), index+1);
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 return createSimpleMessage(chatId,
                         "Правильный вариант ответа “%s” был установлен"
                                 .formatted(userService.getCurrentQuestion(userId).getAnswers().get(index).getAnswerText()));
@@ -442,11 +442,11 @@ public class QuestionService {
                 QuestionEntity questionToDelete = userService.getCurrentQuestion(userId);
                 userService.setCurrentQuestion(userId, null);
                 questionRepository.delete(questionToDelete);
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 return createSimpleMessage(chatId, String.format("Вопрос “%s” успешно удалён.", questionToDelete.getQuestion()));
 
             case "confirmDeleteNo":
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 return createSimpleMessage(chatId, "Удаление вопроса отменено.");
 
             default:
