@@ -129,7 +129,7 @@ public class TestService {
         message.setReplyMarkup(keyboardService.createReply(testsTitles, testsIds, "TEST CHOOSE"));
         message.setText("Выберите тест:");
         message.setChatId(chatId);
-        userService.setState(id, UserState.INLINE_KEYBOARD);
+        userService.changeStateById(id, UserState.INLINE_KEYBOARD);
         return message;
     }
     /**
@@ -339,7 +339,7 @@ public class TestService {
      * Обработка выхода из теста
      */
     private SendMessage handleTestExit(String chatId, Long userId) {
-        userService.setState(userId, UserState.DEFAULT);
+        userService.changeStateById(userId, UserState.DEFAULT);
         return messageBuilder.createSendMessage(chatId, "Вы вышли из теста", null);
     }
 
@@ -347,7 +347,7 @@ public class TestService {
      * Обработка конца теста
      */
     private SendMessage handleTestFinish(String chatId, Long userId) {
-        userService.setState(userId, UserState.DEFAULT);
+        userService.changeStateById(userId, UserState.DEFAULT);
         Integer correctAnswerCount = userService.getCorrectAnswerCount(userId);
         Integer countAnsweredQuestions = userService.getCountAnsweredQuestions(userId);
         String stringBuilder = "Тест завершен!\n" +

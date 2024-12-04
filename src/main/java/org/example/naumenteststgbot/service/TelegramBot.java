@@ -3,7 +3,7 @@ package org.example.naumenteststgbot.service;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.naumenteststgbot.config.BotConfig;
-import org.example.naumenteststgbot.entity.UserState;
+import org.example.naumenteststgbot.enums.UserState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
