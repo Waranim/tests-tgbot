@@ -252,53 +252,6 @@ public class TestService {
         return messageBuilder.createSendMessage(chatId,response,null);
     }
 
-
-    /**
-     * Получить развернутое строковое представление сущности теста
-     */
-    private String testToString(TestEntity test) {
-        List<QuestionEntity> questions = test.getQuestions();
-        StringBuilder response = new StringBuilder(String.format("Тест “%s”. Всего вопросов: %s\n",  test.getTitle(), questions.size()));
-        String correctAnswerPercent = test.getCountAnsweredQuestionsAllUsers() != 0
-                ? String.valueOf((test.getCorrectAnswerCountAllUsers() * 100) / test.getCountAnsweredQuestionsAllUsers())
-                : "Тест ещё не проходили";
-        response.append(
-                String.format("\nСтатистика по тесту:\nОбщее количество попыток: %d\nСредний процент правильных ответов: %s\n\n",
-                        test.getCountTries(), correctAnswerPercent));
-        for (QuestionEntity question : questions) {
-            response.append("Вопрос: %s\nВарианты ответов:\n".formatted(question.getQuestion()));
-            List<AnswerEntity> answers = question.getAnswers();
-            AnswerEntity correctAnswer = null;
-            for (int i = 0; i < answers.size(); i++) {
-                var answer = answers.get(i);
-                response.append("%s - %s\n".formatted(i+1, answer.getAnswerText()));
-                if(answer.isCorrect()) correctAnswer = answer;
-            }
-            response.append("Правильный вариант: ").append(Objects.requireNonNull(correctAnswer).getAnswerText()).append("\n\n");
-        }
-        return response.toString();
-    }
-
-    /**
-     * Получить строковое представление списка тестов
-     */
-    private String testsListToString(List<TestEntity> tests) {
-        StringBuilder response = new StringBuilder();
-        for(int i = 0; i < tests.size(); i++) {
-            TestEntity currentTest = tests.get(i);
-            response.append(String.format("%s)  id: %s %s\n", i+1, currentTest.getId(), currentTest.getTitle()));
-        }
-        return response.toString();
-    }
-
-    /**
-     * Узнать, находится ли в строке только лишь число
-     * @return true - если только цифры в строке, false - все остальные случаи.
-     */
-    private boolean isNumber(String number) {
-        return number.matches("^-?\\d+$");
-    }
-
     /**
      * Обработать Callback query связанный с тестами
      */
