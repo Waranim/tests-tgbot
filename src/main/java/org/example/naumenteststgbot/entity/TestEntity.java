@@ -34,6 +34,11 @@ public class TestEntity extends BaseEntity {
     private String description;
 
     /**
+     * Открытие-закрытие доступа к тесту
+     */
+    private boolean accessOpen;
+
+    /**
      * Количество попыток прохождения
      */
     private Integer countTries;
@@ -52,6 +57,7 @@ public class TestEntity extends BaseEntity {
     }
     public TestEntity(Long creatorId) {
         this.creatorId = creatorId;
+        this.accessOpen = false;
     }
 
     public String getTitle() {
@@ -96,5 +102,19 @@ public class TestEntity extends BaseEntity {
 
     public void setCountAnsweredQuestionsAllUsers(Integer countAnsweredQuestionsAllUsers) {
         this.countAnsweredQuestionsAllUsers = countAnsweredQuestionsAllUsers;
+    }
+
+    /**
+     * Вернуть значение состояния доступа
+     */
+    public boolean isAccessOpen() {
+        return accessOpen;
+    }
+
+    /**
+     * Установить значение состояния доступа
+     */
+    public void setAccessOpen(boolean accessOpen) {
+        this.accessOpen = accessOpen;
     }
 }

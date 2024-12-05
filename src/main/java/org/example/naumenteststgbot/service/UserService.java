@@ -194,4 +194,38 @@ public class UserService {
         user.getSession().setCountAnsweredQuestions(0);
         updateUser(user);
     }
+
+    /**
+     * Получить доступные полученные тесты
+     */
+    public List<TestEntity> getOpenReceivedTests(Long userId){
+        UserEntity user = getUserById(userId);
+        return user.getReceivedTests().stream().filter(TestEntity::isAccessOpen).toList();
+    }
+
+    /**
+     *  Добавить тест к полученным тестам
+     */
+    public void addReceivedTest(Long userId, TestEntity test){
+        UserEntity user = getUserById(userId);
+        user.getReceivedTests().add(test);
+        userRepository.save(user);
+    }
+
+    /**
+     *  Удалить тест у полученных тестов
+     */
+    public void removeReceivedTest(Long userId, TestEntity test){
+        UserEntity user = getUserById(userId);
+        user.getReceivedTests().remove(test);
+        userRepository.save(user);
+    }
+
+    /**
+     * Обработывает команду /info
+     */
+    @Transactional
+    public String handleInfo(Long userId) {
+        return "Ваш идентификатор: " + userId;
+    }
 }

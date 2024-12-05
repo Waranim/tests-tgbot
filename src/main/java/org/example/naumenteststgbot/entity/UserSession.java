@@ -20,7 +20,7 @@ public class UserSession extends BaseEntity {
     /**
      * Тест, который в данный момент использует пользователь
      */
-    @OneToOne
+    @ManyToOne
     private TestEntity currentTest;
 
     /**
@@ -30,7 +30,7 @@ public class UserSession extends BaseEntity {
     /**
      * Вопрос, который в данный момент использует пользователь
      */
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     private QuestionEntity currentQuestion;
 
     /**

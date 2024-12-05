@@ -23,5 +23,6 @@ public enum UserState {
     EDIT_ANSWER_TEXT,
     VIEW_TEST,
     EDIT_ANSWER_OPTION,
+    CHOOSE_USER,
     INLINE_KEYBOARD
 }
