@@ -39,9 +39,7 @@ public class CallbackQueryHandler {
         String[] callbackDataParts = callbackData.split(" ");
         switch (callbackDataParts[0]) {
             case "TEST":
-                if (userService.getSession(update.getCallbackQuery().getFrom().getId()).getState() == UserState.INLINE_KEYBOARD) {
-                    sendMessage = testService.handleCallback(update);
-                }
+                sendMessage = testService.handleCallback(update);
                 break;
             case "QUESTION":
                 sendMessage = questionService.handleCallback(chatId,callbackData,userId);
