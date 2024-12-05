@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -22,6 +21,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -343,8 +343,6 @@ class TestServiceTest {
     @Test
     void testHandleCallbackChooseCommand() {
         Update update = createMockCallbackUpdate("TEST CHOOSE 123");
-        SendMessage expectedMessage = new SendMessage("123", "Вы выбрали тест “Название теста”. Всего вопросов: 1.");
-        when(messageBuilder.createSendMessage(eq("123"), eq("Вы выбрали тест “Название теста”. Всего вопросов: 1."), isNull())).thenReturn(expectedMessage);
         when(userService.getSession(userId)).thenReturn(userSession);
         userSession.setCurrentTest(test);
         when(testRepository.findById(testId)).thenReturn(java.util.Optional.of(test));
@@ -361,9 +359,6 @@ class TestServiceTest {
     @Test
     void testHandleCallbackStartCommand() {
         Update update = createMockCallbackUpdate("TEST START");
-        SendMessage expectedMessage = new SendMessage("123", "Вопрос 1/1: Вопрос\nВарианты ответа:\n1: Ответ\n\nВыберите один вариант ответа:");
-
-        when(messageBuilder.createSendMessage(eq("123"), eq("Вопрос 1/1: Вопрос\nВарианты ответа:\n1: Ответ\n\nВыберите один вариант ответа:"), isNull())).thenReturn(expectedMessage);
         when(userService.getSession(userId)).thenReturn(userSession);
         userSession.setCurrentTest(test);
 
@@ -379,9 +374,6 @@ class TestServiceTest {
     @Test
     void testHandleCallbackExitCommand() {
         Update update = createMockCallbackUpdate("TEST EXIT");
-        SendMessage expectedMessage = new SendMessage("123", "Вы вышли из теста");
-
-        when(messageBuilder.createSendMessage(eq("123"), eq("Вы вышли из теста"), isNull())).thenReturn(expectedMessage);
         when(userService.getSession(userId)).thenReturn(userSession);
         userSession.setCurrentTest(test);
 
@@ -397,9 +389,6 @@ class TestServiceTest {
     @Test
     void testHandleCallbackFinishCommand() {
         Update update = createMockCallbackUpdate("TEST FINISH");
-        SendMessage expectedMessage = new SendMessage("123", "Тест завершен!\nПравильных ответов: 1/1\nПроцент правильных ответов: 100%");
-
-        when(messageBuilder.createSendMessage(eq("123"), eq("Тест завершен!\nПравильных ответов: 1/1\nПроцент правильных ответов: 100%"), isNull())).thenReturn(expectedMessage);
         when(userService.getSession(userId)).thenReturn(userSession);
         userSession.setCurrentTest(test);
         when(userService.getCorrectAnswerCount(userId)).thenReturn(1);
@@ -416,9 +405,6 @@ class TestServiceTest {
     @Test
     void testHandleCallbackInvalidCommand() {
         Update update = createMockCallbackUpdate("TEST INVALID");
-        SendMessage expectedMessage = new SendMessage("123", "Ошибка: Неизвестная команда.");
-
-        when(messageBuilder.createErrorMessage(eq("123"), eq("Неизвестная команда."))).thenReturn(expectedMessage);
         when(userService.getSession(userId)).thenReturn(userSession);
         userSession.setCurrentTest(test);
 
