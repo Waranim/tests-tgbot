@@ -72,15 +72,22 @@ public class TestService {
 
         if (parts.length == 1) {
             userService.changeStateById(userId, UserState.VIEW_TEST);
-            return messageBuilder.createSendMessage(chatId,"Выберите тест для просмотра:\n"+ testsListToString(tests),null);
-        } else if (isNumber(parts[1])){
+            return messageBuilder.createSendMessage(chatId, "Выберите тест для просмотра:\n" + testsListToString(tests), null);
+        } else if (isNumber(parts[1])) {
             userService.changeStateById(userId, UserState.DEFAULT);
             Long testId = Long.parseLong(parts[1]);
             TestEntity test = getTest(testId);
-            if (test == null || !tests.contains(test))  return  messageBuilder.createSendMessage(chatId,"Тест не найден!",null);
-            return messageBuilder.createSendMessage(chatId,testToString(test),null);
+
+            if (test == null || !tests.contains(test)) {
+                return messageBuilder.createSendMessage(chatId, "Тест не найден!", null);
+            }
+
+            String buttonsText = test.isAccessOpen() ? "Закрыть доступ" : "Открыть доступ";
+            String callbackData = "EDIT TEST toggleAccess " + testId;
+
+            return messageBuilder.createSendMessage(chatId, testToString(test), keyboardService.createReply(buttonsText, callbackData, ""));
         }
-        return messageBuilder.createSendMessage(chatId,"Ошибка ввода!",null);
+        return messageBuilder.createSendMessage(chatId, "Ошибка ввода!", null);
     }
 
     /**
@@ -312,11 +319,9 @@ public class TestService {
                 testRepository.delete(test);
                 userService.changeStateById(userId, UserState.DEFAULT);
                 return messageBuilder.createSendMessage(chatId, String.format("Вопрос “%s” успешно удалён.", test.getTitle()),null);
-
             case "confirmDeleteNo":
                 userService.changeStateById(userId, UserState.DEFAULT);
                 return messageBuilder.createSendMessage(chatId, "Удаление вопроса отменено.",null);
-
             case "CHOOSE":
                 return handleTestChoose(chatId, userId, callbackDataParts[2]);
             case "START":
@@ -417,6 +422,8 @@ public class TestService {
             case "NEXT":
                 handleNext(questions.indexOf(previousQuestion)+1, questions, userId, editMessageText);
                 break;
+            case "toggleAccess":
+                return handleToggleAccess(editMessageText, Long.parseLong(callbackDataParts[3]));
             default:
                 editMessageText.setText("Ошибка!");
         }
@@ -505,5 +512,26 @@ public class TestService {
         TestEntity test = testRepository.findById(testId).orElse(null);
         userService.setCurrentTest(userId, test);
         return test;
+    }
+
+    /**
+     * Обработать открытие-закрытие теста на инлайн клавиатуре
+     */
+    private EditMessageText handleToggleAccess(EditMessageText editMessageText, Long testId) {
+        TestEntity test = testRepository.findById(testId).orElse(null);
+        if (test == null) {
+            editMessageText.setText("Тест не найден!");
+            return editMessageText;
+        }
+
+        test.setAccessOpen(!test.isAccessOpen());
+        testRepository.save(test);
+        String buttonsText = test.isAccessOpen() ? "Закрыть доступ" : "Открыть доступ";
+        String callbackData = "toggleAccess " + testId;
+
+        editMessageText.setText(testToString(test));
+        editMessageText.setReplyMarkup(keyboardService.createReply(buttonsText, callbackData, "EDIT TEST"));
+
+        return editMessageText;
     }
 }

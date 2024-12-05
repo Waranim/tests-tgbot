@@ -25,6 +25,9 @@ public class HelpHandler {
                 /edit_question [questionID] - Изменить вопрос с номером questionID
                 /del [testID] – Удалить тест с номером testID
                 /del_question [questionID] - Удалить вопрос с номером questionID
+                /share - Предоставить пользователю доступ к тесту
+                /shared_tests - Отписаться от чужого теста
+                /info - Получить свой идентификатор
                 /stop - Закончить ввод вариантов ответа, если добавлено минимум 2 варианта \
                 при выполнении команды /add_question [testID]
                 /help - Справка""";
