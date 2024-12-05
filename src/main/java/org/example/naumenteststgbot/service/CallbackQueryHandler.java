@@ -1,6 +1,5 @@
 package org.example.naumenteststgbot.service;
 
-import org.example.naumenteststgbot.enums.UserState;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -17,31 +16,24 @@ public class CallbackQueryHandler {
     private final TestService testService;
     private final QuestionService questionService;
 
-    /**
-     * Сервис для пользователей
-     */
-    private final UserService userService;
 
-    public CallbackQueryHandler(TestService testService, QuestionService questionService, UserService userService) {
+    public CallbackQueryHandler(TestService testService, QuestionService questionService) {
         this.testService = testService;
         this.questionService = questionService;
-        this.userService = userService;
     }
 
     /**
      * Обработать callback query
      */
     public SendMessage handle(Update update) {
-        SendMessage sendMessage = null;
+        SendMessage sendMessage;
         Long userId = update.getCallbackQuery().getFrom().getId();
         String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
         String callbackData = update.getCallbackQuery().getData();
         String[] callbackDataParts = callbackData.split(" ");
         switch (callbackDataParts[0]) {
             case "TEST":
-                if (userService.getSession(update.getCallbackQuery().getFrom().getId()).getState() == UserState.INLINE_KEYBOARD) {
-                    sendMessage = testService.handleCallback(update);
-                }
+                sendMessage = testService.handleCallback(update);
                 break;
             case "QUESTION":
                 sendMessage = questionService.handleCallback(chatId,callbackData,userId);

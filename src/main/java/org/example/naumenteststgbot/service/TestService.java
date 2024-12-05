@@ -97,7 +97,7 @@ public class TestService {
         Long testId = Long.parseLong(parts[1]);
         TestEntity test = getTest(testId);
         if (test == null || !tests.contains(test))
-            messageBuilder.createSendMessage(chatId,"Тест не найден!",null);
+            return messageBuilder.createSendMessage(chatId,"Тест не найден!",null);
         userService.setCurrentTest(userId, test);
         userService.changeStateById(userId, UserState.EDIT_TEST);
         List<String> buttonsText = List.of("Название теста","Описание теста");
@@ -377,9 +377,12 @@ public class TestService {
         userService.changeStateById(userId, UserState.DEFAULT);
         Integer correctAnswerCount = userService.getCorrectAnswerCount(userId);
         Integer countAnsweredQuestions = userService.getCountAnsweredQuestions(userId);
+        Integer correctAnswerPercent = countAnsweredQuestions != 0
+                ? (correctAnswerCount * 100) / countAnsweredQuestions
+                : 0;
         String stringBuilder = "Тест завершен!\n" +
                 String.format("Правильных ответов: %d/%d\n", correctAnswerCount, countAnsweredQuestions) +
-                String.format("Процент правильных ответов: %d%%", (correctAnswerCount * 100) / countAnsweredQuestions);
+                String.format("Процент правильных ответов: %d%%", correctAnswerPercent);
         return messageBuilder.createSendMessage(chatId, stringBuilder, null);
     }
 
