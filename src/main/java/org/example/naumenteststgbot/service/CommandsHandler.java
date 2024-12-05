@@ -30,15 +30,17 @@ public class CommandsHandler {
      * Сервис для взаимодействия с вопросами
      */
     private final QuestionService questionService;
+    private final ShareService shareService;
 
     /**
      * Конструктор класса CommandsHandler
      */
-    public CommandsHandler(HelpHandler helpHandler, UserService userService, TestService testService, QuestionService questionService) {
+    public CommandsHandler(HelpHandler helpHandler, UserService userService, TestService testService, QuestionService questionService, ShareService shareService) {
         this.helpHandler = helpHandler;
         this.userService = userService;
         this.testService = testService;
         this.questionService = questionService;
+        this.shareService = shareService;
     }
 
     /**
@@ -94,6 +96,12 @@ public class CommandsHandler {
                 break;
             case "/info":
                 replyText = userService.handleInfo(user.getId());
+                break;
+            case "/share":
+                replyMessage = shareService.handleShare(user.getId(), chatId);
+                break;
+            case "/shared_tests":
+                replyMessage = shareService.handleShareTests(user.getId(), chatId);
                 break;
             default:
                 replyText = "Неверная команда, для справки используйте /help";

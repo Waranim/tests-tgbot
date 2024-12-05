@@ -1,6 +1,5 @@
 package org.example.naumenteststgbot.service;
 
-import org.example.naumenteststgbot.enums.UserState;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -16,23 +15,20 @@ public class CallbackQueryHandler {
      */
     private final TestService testService;
     private final QuestionService questionService;
+    private final ShareService shareService;
 
-    /**
-     * Сервис для пользователей
-     */
-    private final UserService userService;
 
-    public CallbackQueryHandler(TestService testService, QuestionService questionService, UserService userService) {
+    public CallbackQueryHandler(TestService testService, QuestionService questionService, ShareService shareService) {
         this.testService = testService;
         this.questionService = questionService;
-        this.userService = userService;
+        this.shareService = shareService;
     }
 
     /**
      * Обработать callback query
      */
     public SendMessage handle(Update update) {
-        SendMessage sendMessage = null;
+        SendMessage sendMessage;
         Long userId = update.getCallbackQuery().getFrom().getId();
         String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
         String callbackData = update.getCallbackQuery().getData();
@@ -43,6 +39,9 @@ public class CallbackQueryHandler {
                 break;
             case "QUESTION":
                 sendMessage = questionService.handleCallback(chatId,callbackData,userId);
+                break;
+            case "SHARE":
+                sendMessage = shareService.handleCallback(chatId, callbackData, userId);
                 break;
             default:
                 sendMessage = new SendMessage();
