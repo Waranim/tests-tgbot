@@ -1,23 +1,20 @@
 package org.example.naumenteststgbot.service;
 
 import org.example.naumenteststgbot.entity.*;
+import org.example.naumenteststgbot.enums.UserState;
 import org.example.naumenteststgbot.repository.AnswerRepository;
 import org.example.naumenteststgbot.repository.QuestionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Update;
-
 
 import java.util.ArrayList;
-
 import java.util.List;
 
 /**
  * Класс для управления вопросами
  * Предостволяет функционал добавления, редактирования, просмотра и удаления вопросов
  */
-
 @Service
 @Transactional
 public class QuestionService {
@@ -87,7 +84,7 @@ public class QuestionService {
                 }
                 QuestionEntity nquestion = createQuestion(selectedTest);
                 userService.setCurrentQuestion(userId, nquestion);
-                userService.setState(userId, UserState.ADD_QUESTION_TEXT);
+                userService.changeStateById(userId, UserState.ADD_QUESTION_TEXT);
                 return createSimpleMessage(chatId,"Введите название вопроса для теста “%s”".formatted(selectedTest.getTitle()));
 
 
@@ -95,7 +92,7 @@ public class QuestionService {
                 currentQuestion.setQuestion(text);
                 questionRepository.save(currentQuestion);
                 response = "Введите вариант ответа. Если вы хотите закончить добавлять варианты, введите команду /stop.";
-                userService.setState(userId, UserState.ADD_ANSWER);
+                userService.changeStateById(userId, UserState.ADD_ANSWER);
                 break;
 
             case ADD_ANSWER:
@@ -106,10 +103,10 @@ public class QuestionService {
             case EDIT_QUESTION:
                 if (text.equals("1")) {
                     response = "Введите новый текст вопроса";
-                    userService.setState(userId, UserState.EDIT_QUESTION_TEXT);
+                    userService.changeStateById(userId, UserState.EDIT_QUESTION_TEXT);
                 } else if (text.equals("2")) {
                     response = "Что вы хотите сделать с вариантом ответа?\n1: Изменить формулировку ответа\n2: Изменить правильность варианта ответа";
-                    userService.setState(userId, UserState.EDIT_ANSWER_OPTION_CHOICE);
+                    userService.changeStateById(userId, UserState.EDIT_ANSWER_OPTION_CHOICE);
                 }
                 break;
 
@@ -117,18 +114,18 @@ public class QuestionService {
                 currentQuestion.setQuestion(text);
                 questionRepository.save(currentQuestion);
                 response = String.format("Текст вопроса изменен на “%s”", text);
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 break;
 
             case EDIT_ANSWER_OPTION_CHOICE:
                 if (text.equals("1")) {
                     response = "Сейчас варианты ответа выглядят так\n" + answersListToString(currentQuestion.getAnswers());
                     response += "\nКакой вариант ответа вы хотите изменить?";
-                    userService.setState(userId, UserState.EDIT_ANSWER_TEXT_CHOICE);
+                    userService.changeStateById(userId, UserState.EDIT_ANSWER_TEXT_CHOICE);
                 } else if (text.equals("2")) {
                     response = "Сейчас варианты ответа выглядят так:\n" + answersListToString(currentQuestion.getAnswers());
                     response += "\nКакой вариант ответа вы хотите сделать правильным?";
-                    userService.setState(userId, UserState.SET_CORRECT_ANSWER);
+                    userService.changeStateById(userId, UserState.SET_CORRECT_ANSWER);
                 }
                 break;
 
@@ -139,7 +136,7 @@ public class QuestionService {
                 } else {
                     userService.setEditingAnswerIndex(userId, answerIndex);
                     response = "Введите новую формулировку ответа";
-                    userService.setState(userId, UserState.EDIT_ANSWER_TEXT);
+                    userService.changeStateById(userId, UserState.EDIT_ANSWER_TEXT);
                 }
                 break;
 
@@ -148,7 +145,7 @@ public class QuestionService {
                 currentQuestion.getAnswers().get(editingAnswerIndex).setAnswerText(text);
                 questionRepository.save(currentQuestion);
                 response = String.format("Формулировка изменена на “%s”", text);
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 break;
 
             case SET_CORRECT_ANSWER:
@@ -157,7 +154,7 @@ public class QuestionService {
                     response = setCorrectAnswer;
                 } else {
                     response = setCorrectAnswer;
-                    userService.setState(userId, UserState.DEFAULT);
+                    userService.changeStateById(userId, UserState.DEFAULT);
                 }
                 break;
 
@@ -165,7 +162,7 @@ public class QuestionService {
                 QuestionEntity question = questionRepository.findById(Long.parseLong(text)).orElse(null);
                 if (question == null) return messageBuilder.createSendMessage(chatId,"Вопрос не найден",null);
                 userService.setCurrentQuestion(userId, question);
-                userService.setState(userId, UserState.CONFIRM_DELETE_QUESTION);
+                userService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
                 List<String> buttonsText = List.of("Да", "Нет");
                 List<String> callback = List.of("confirmDeleteYes", "confirmDeleteNo");
                 return messageBuilder.createSendMessage(chatId, "Вы уверены, что хотите удалить вопрос “%s”?".formatted(question.getQuestion()), keyboardService.createReply(buttonsText, callback, "QUESTION")
@@ -180,7 +177,7 @@ public class QuestionService {
                 } else {
                     response = String.format("Вопрос “%s” из теста “%s” не удален.", currentQuestion.getQuestion(), currentQuestion.getTest().getTitle());
                 }
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 break;
         }
 
@@ -198,7 +195,7 @@ public class QuestionService {
             if (tests.isEmpty()) {
                 return "У вас нет доступных тестов для добавления вопросов.";
             }
-            userService.setState(userId, UserState.ADD_QUESTION);
+            userService.changeStateById(userId, UserState.ADD_QUESTION);
             return "Выберите тест:\n" + testsListToString(tests);
         }
 
@@ -213,7 +210,7 @@ public class QuestionService {
         }
 
         QuestionEntity question = createQuestion(test);
-        userService.setState(userId, UserState.ADD_QUESTION_TEXT);
+        userService.changeStateById(userId, UserState.ADD_QUESTION_TEXT);
         userService.setCurrentQuestion(userId, question);
         return String.format("Введите название вопроса для теста “%s”", test.getTitle());
     }
@@ -262,11 +259,11 @@ public class QuestionService {
             return createSimpleMessage(chatId,"Вопрос не найден!");
         }
         userService.setCurrentQuestion(userId, question);
-        userService.setState(userId, UserState.EDIT_QUESTION);
+        userService.changeStateById(userId, UserState.EDIT_QUESTION);
         List<String> buttonsText = List.of("Формулировку вопроса","Варианты ответа");
-        List<String> callback = List.of("changeText", "changeAnswer");
-        return messageBuilder.createSendMessage(chatId,"Что вы хотите изменить в вопросе “%s” ".formatted(question.getQuestion()),keyboardService.createReply(buttonsText,callback,"QUESTION"));
-
+        List<String> callback = List.of("changeText "+ questionId, "changeAnswer "+ questionId);
+        return messageBuilder.createSendMessage(chatId,"Что вы хотите изменить в вопросе “%s” ".formatted(question.getQuestion()),
+                keyboardService.createReply(buttonsText,callback,"QUESTION"));
     }
 
     /**
@@ -296,14 +293,14 @@ public class QuestionService {
 
             }
             userService.setCurrentQuestion(userId, question);
-            userService.setState(userId, UserState.CONFIRM_DELETE_QUESTION);
+            userService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
             List<String> buttonsText = List.of("Да", "Нет");
             List<String> callback = List.of("confirmDeleteYes", "confirmDeleteNo");
             return messageBuilder.createSendMessage(chatId, "Вы уверены, что хотите удалить вопрос “%s”?".formatted(question.getQuestion()), keyboardService.createReply(buttonsText, callback, "QUESTION")
             );
         }
         if (parts.length == 1){
-                userService.setState(userId, UserState.DELETE_QUESTION);
+                userService.changeStateById(userId, UserState.DELETE_QUESTION);
                 return createSimpleMessage(chatId, "Введите id вопроса для удаления:\n");
         }
         return createSimpleMessage(chatId, "Некорректный ввод команды");
@@ -323,7 +320,7 @@ public class QuestionService {
             if (answers.size() < 2) {
                 return "Вы не создали необходимый минимум ответов (минимум: 2). Введите варианты ответа.";
             }
-            userService.setState(userId, UserState.SET_CORRECT_ANSWER);
+            userService.changeStateById(userId, UserState.SET_CORRECT_ANSWER);
             return "Укажите правильный вариант ответа:\n" + answersListToString(currentQuestion.getAnswers());
         }
         return "Команда /stop используется только при создании вопроса";
@@ -391,63 +388,64 @@ public class QuestionService {
     /**
      * Обработать Callback query связанный с тестами
      */
-    public SendMessage handleCallback(Update update) {
-        String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
-        String callbackData = update.getCallbackQuery().getData();
+    public SendMessage handleCallback(String chatId,String callbackData,Long userId) {
         String[] callbackDataParts = callbackData.split(" ");
         if (callbackDataParts.length < 2) {
             return messageBuilder.createErrorMessage(chatId, "Некорректные данные в callback.");
         }
-
-        Long userId = update.getCallbackQuery().getFrom().getId();
         String command = callbackDataParts[1];
         switch (command) {
             case "changeText":
-                userService.setState(userId, UserState.EDIT_QUESTION_TEXT);
+                QuestionEntity questionEditText = extractAndSetCurrentQuestion(callbackDataParts, userId);
+                userService.changeStateById(userId, UserState.EDIT_QUESTION_TEXT);
                 return createSimpleMessage(chatId,
                         "Сейчас, формулировка к заданию выглядит так: %s\nВведите новую формулировку\n"
-                                .formatted(userService.getCurrentQuestion(userId).getQuestion()));
+                                .formatted(questionEditText.getQuestion()));
 
             case "changeAnswer":
                 return createChoiceMessage(chatId,
                         "Что вы хотите сделать?",
                         List.of("Изменить формулировку ответа", "Правильность варианта ответа"),
-                        List.of("changeTextAnswerOption", "changeCorrectAnswerOption"));
+                        List.of("changeTextAnswerOption " + callbackDataParts[2], "changeCorrectAnswerOption " + callbackDataParts[2]));
 
             case "changeTextAnswerOption":
+                QuestionEntity questionEditTextAnswer = extractAndSetCurrentQuestion(callbackDataParts, userId);
                 return createAnswerOptionsMessage(chatId,
                         "Какой вариант ответа вы хотите изменить?\n",
-                        userService.getCurrentQuestion(userId).getAnswers(),
-                        "changeTextAnswer");
+                        questionEditTextAnswer.getAnswers(),
+                        "changeTextAnswer " + callbackDataParts[2]);
 
             case "changeTextAnswer":
-                userService.setEditingAnswerIndex(userId, Integer.valueOf(callbackDataParts[2]));
-                userService.setState(userId, UserState.EDIT_ANSWER_TEXT);
+                extractAndSetCurrentQuestion(callbackDataParts, userId);
+                userService.setEditingAnswerIndex(userId, Integer.valueOf(callbackDataParts[3]));
+                userService.changeStateById(userId, UserState.EDIT_ANSWER_TEXT);
                 return createSimpleMessage(chatId, "Введите новую формулировку");
 
             case "changeCorrectAnswerOption":
+                QuestionEntity questionEditCorrectAnswerOption = extractAndSetCurrentQuestion(callbackDataParts, userId);
                 return createAnswerOptionsMessage(chatId,
                         "Какой вариант ответа вы хотите изменить?\n",
-                        userService.getCurrentQuestion(userId).getAnswers(),
-                        "changeCorrectAnswer");
+                        questionEditCorrectAnswerOption.getAnswers(),
+                        "changeCorrectAnswer " + callbackDataParts[2]);
 
             case "changeCorrectAnswer":
-                int index = Integer.parseInt(callbackDataParts[2]);
+                QuestionEntity questionEditCorrectAnswer = extractAndSetCurrentQuestion(callbackDataParts, userId);
+                int index = Integer.parseInt(callbackDataParts[3]);
                 setCorrectAnswer(userService.getCurrentQuestion(userId), index+1);
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 return createSimpleMessage(chatId,
                         "Правильный вариант ответа “%s” был установлен"
-                                .formatted(userService.getCurrentQuestion(userId).getAnswers().get(index).getAnswerText()));
+                                .formatted(questionEditCorrectAnswer.getAnswers().get(index).getAnswerText()));
 
             case "confirmDeleteYes":
                 QuestionEntity questionToDelete = userService.getCurrentQuestion(userId);
                 userService.setCurrentQuestion(userId, null);
                 questionRepository.delete(questionToDelete);
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 return createSimpleMessage(chatId, String.format("Вопрос “%s” успешно удалён.", questionToDelete.getQuestion()));
 
             case "confirmDeleteNo":
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 return createSimpleMessage(chatId, "Удаление вопроса отменено.");
 
             default:
@@ -486,5 +484,15 @@ public class QuestionService {
 
         return messageBuilder.createSendMessage(chatId, text,
                 keyboardService.createReply(buttonTexts, callback, "QUESTION"));
+    }
+
+    /**
+     *  Извлекает ID вопроса из данных callback, находит соответствующий вопрос в репозитории
+     */
+    private QuestionEntity extractAndSetCurrentQuestion(String[] callbackDataParts, long userId) {
+        long questionId = Long.parseLong(callbackDataParts[2]);
+        QuestionEntity question = questionRepository.findById(questionId).orElse(null);
+        userService.setCurrentQuestion(userId, question);
+        return question;
     }
 }

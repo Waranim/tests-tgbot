@@ -1,6 +1,7 @@
 package org.example.naumenteststgbot.service;
 
 import org.example.naumenteststgbot.entity.*;
+import org.example.naumenteststgbot.enums.UserState;
 import org.example.naumenteststgbot.repository.TestRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,7 +57,7 @@ public class TestService {
     @Transactional
     public String handleAdd(Long userId) {
         TestEntity test = createTest(userId);
-        userService.setState(userId, UserState.ADD_TEST_TITLE);
+        userService.changeStateById(userId, UserState.ADD_TEST_TITLE);
         userService.setCurrentTest(userId, test);
         return "Введите название теста";
     }
@@ -70,10 +71,10 @@ public class TestService {
         List<TestEntity> tests = userService.getTestsById(userId);
 
         if (parts.length == 1) {
-            userService.setState(userId, UserState.VIEW_TEST);
+            userService.changeStateById(userId, UserState.VIEW_TEST);
             return messageBuilder.createSendMessage(chatId,"Выберите тест для просмотра:\n"+ testsListToString(tests),null);
         } else if (isNumber(parts[1])){
-            userService.setState(userId, UserState.DEFAULT);
+            userService.changeStateById(userId, UserState.DEFAULT);
             Long testId = Long.parseLong(parts[1]);
             TestEntity test = getTest(testId);
             if (test == null || !tests.contains(test))  return  messageBuilder.createSendMessage(chatId,"Тест не найден!",null);
@@ -96,12 +97,12 @@ public class TestService {
         Long testId = Long.parseLong(parts[1]);
         TestEntity test = getTest(testId);
         if (test == null || !tests.contains(test))
-            messageBuilder.createSendMessage(chatId,"Тест не найден!",null);
+            return messageBuilder.createSendMessage(chatId,"Тест не найден!",null);
         userService.setCurrentTest(userId, test);
-        userService.setState(userId, UserState.EDIT_TEST);
+        userService.changeStateById(userId, UserState.EDIT_TEST);
         List<String> buttonsText = List.of("Название теста","Описание теста");
-        List<String> callback = List.of("changeText","changeDescription");
-        return messageBuilder.createSendMessage(chatId,"Вы выбрали тест “%s”. Что вы хотите изменить?” ".formatted(test.getTitle()),keyboardService.createReply(buttonsText,callback,"TEST"));
+        List<String> callback = List.of("changeText " + testId,"changeDescription " + testId);
+        return messageBuilder.createSendMessage(chatId,"Вы выбрали тест “%s”. Что вы хотите изменить?” ".formatted(Objects.requireNonNull(test).getTitle()),keyboardService.createReply(buttonsText,callback,"TEST"));
     }
 
     /**
@@ -109,7 +110,7 @@ public class TestService {
      */
     @Transactional
     public SendMessage handleDel(String chatId,Long id) {
-        userService.setState(id, UserState.DELETE_TEST);
+        userService.changeStateById(id, UserState.DELETE_TEST);
         return messageBuilder.createSendMessage(chatId,"Выберите тест:\n"+ testsListToString(userService.getTestsById(id)),null);
     }
 
@@ -125,7 +126,7 @@ public class TestService {
         message.setReplyMarkup(keyboardService.createReply(testsTitles, testsIds, "TEST CHOOSE"));
         message.setText("Выберите тест:");
         message.setChatId(chatId);
-        userService.setState(id, UserState.INLINE_KEYBOARD);
+        userService.changeStateById(id, UserState.INLINE_KEYBOARD);
         return message;
     }
     /**
@@ -154,7 +155,7 @@ public class TestService {
      * @return Ответ пользователю
      */
     @Transactional
-    public SendMessage handleMessage(String chatId,UserSession userSession, String message) {
+    public SendMessage handleMessage(String chatId, UserSession userSession, String message) {
         UserState userState = userSession.getState();
         Long userId = userSession.getUserId();
         TestEntity currentTest = userSession.getCurrentTest();
@@ -165,31 +166,31 @@ public class TestService {
             case ADD_TEST_TITLE:
                 currentTest.setTitle(message);
                 response = "Введите описание теста";
-                userService.setState(userId, UserState.ADD_TEST_DESCRIPTION);
+                userService.changeStateById(userId, UserState.ADD_TEST_DESCRIPTION);
                 break;
             case ADD_TEST_DESCRIPTION:
                 currentTest.setDescription(message);
                 response = String.format("Тест “%s” создан! Количество вопросов: 0. Для добавление вопросов используйте /add_question %s, где %s - идентификатор теста “%s”.", currentTest.getTitle(), currentTest.getId(), currentTest.getId(), currentTest.getTitle());
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 break;
             case EDIT_TEST:
                 if(message.equals("1")){
                     response = "Введите новое название теста";
-                    userService.setState(userId, UserState.EDIT_TEST_TITLE);
+                    userService.changeStateById(userId, UserState.EDIT_TEST_TITLE);
                 }
                 else if(message.equals("2")){
                     response = "Введите новое описание теста";
-                    userService.setState(userId, UserState.EDIT_TEST_DESCRIPTION);
+                    userService.changeStateById(userId, UserState.EDIT_TEST_DESCRIPTION);
                 }
                 break;
             case EDIT_TEST_TITLE:
                 currentTest.setTitle(message);
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 response = String.format("Название изменено на “%s”", message);
                 break;
             case EDIT_TEST_DESCRIPTION:
                 currentTest.setDescription(message);
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 response = String.format("Описание изменено на “%s”", message);
                 break;
             case DELETE_TEST:
@@ -202,14 +203,14 @@ public class TestService {
                 if (test == null || !tests.contains(test))
                     return messageBuilder.createSendMessage(chatId,"Тест не найден!",null);
                 userService.setCurrentTest(userId, test);
-                userService.setState(userId, UserState.CONFIRM_DELETE_TEST);
+                userService.changeStateById(userId, UserState.CONFIRM_DELETE_TEST);
                 List<String> buttonsText = List.of("Да", "Нет");
-                List<String> callback = List.of("confirmDeleteYes", "confirmDeleteNo");
+                List<String> callback = List.of("confirmDeleteYes " + test.getId(), "confirmDeleteNo " + test.getId());
                 return messageBuilder.createSendMessage(chatId, "Тест “%s” будет удалён, вы уверены?".formatted(test.getTitle()), keyboardService.createReply(buttonsText, callback, "TEST")
                 );
             case CONFIRM_DELETE_TEST:
                 message = message.toLowerCase();
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 if (message.equals("да"))
                 {
                     userService.setCurrentTest(userId, null);
@@ -296,21 +297,24 @@ public class TestService {
         String command = callbackDataParts[1];
         switch (command) {
             case "changeText":
-                userService.setState(userId, UserState.EDIT_TEST_TITLE);
+                extractAndSetCurrentTest(callbackDataParts, userId);
+                userService.changeStateById(userId, UserState.EDIT_TEST_TITLE);
                 return messageBuilder.createSendMessage(chatId,"Введите новое название теста",null);
             case "changeDescription":
-                userService.setState(userId, UserState.EDIT_TEST_DESCRIPTION);
+                extractAndSetCurrentTest(callbackDataParts, userId);
+                userService.changeStateById(userId, UserState.EDIT_TEST_DESCRIPTION);
                 return messageBuilder.createSendMessage(chatId,"Введите новое описание теста",null);
             case "confirmDeleteYes":
-                TestEntity testToDelete = userService.getSession(userId).getCurrentTest();
+                long testId = Long.parseLong(callbackDataParts[2]);
+                TestEntity test = testRepository.findById(testId).orElse(null);
                 userService.setCurrentTest(userId, null);
                 userService.setCurrentQuestion(userId, null);
-                testRepository.delete(testToDelete);
-                userService.setState(userId, UserState.DEFAULT);
-                return messageBuilder.createSendMessage(chatId, String.format("Вопрос “%s” успешно удалён.", testToDelete.getTitle()),null);
+                testRepository.delete(test);
+                userService.changeStateById(userId, UserState.DEFAULT);
+                return messageBuilder.createSendMessage(chatId, String.format("Вопрос “%s” успешно удалён.", test.getTitle()),null);
 
             case "confirmDeleteNo":
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 return messageBuilder.createSendMessage(chatId, "Удаление вопроса отменено.",null);
 
             case "CHOOSE":
@@ -362,7 +366,7 @@ public class TestService {
      * Обработка выхода из теста
      */
     private SendMessage handleTestExit(String chatId, Long userId) {
-        userService.setState(userId, UserState.DEFAULT);
+        userService.changeStateById(userId, UserState.DEFAULT);
         return messageBuilder.createSendMessage(chatId, "Вы вышли из теста", null);
     }
 
@@ -370,12 +374,15 @@ public class TestService {
      * Обработка конца теста
      */
     private SendMessage handleTestFinish(String chatId, Long userId) {
-        userService.setState(userId, UserState.DEFAULT);
+        userService.changeStateById(userId, UserState.DEFAULT);
         Integer correctAnswerCount = userService.getCorrectAnswerCount(userId);
         Integer countAnsweredQuestions = userService.getCountAnsweredQuestions(userId);
+        Integer correctAnswerPercent = countAnsweredQuestions != 0
+                ? (correctAnswerCount * 100) / countAnsweredQuestions
+                : 0;
         String stringBuilder = "Тест завершен!\n" +
                 String.format("Правильных ответов: %d/%d\n", correctAnswerCount, countAnsweredQuestions) +
-                String.format("Процент правильных ответов: %d%%", (correctAnswerCount * 100) / countAnsweredQuestions);
+                String.format("Процент правильных ответов: %d%%", correctAnswerPercent);
         return messageBuilder.createSendMessage(chatId, stringBuilder, null);
     }
 
@@ -438,7 +445,8 @@ public class TestService {
         int questionIndex = questions.indexOf(previousQuestion);
         boolean isCompleted = questionIndex + 1 >= questions.size();
         String textQuestion = createTextQuestion(questionIndex, questions);
-        List<String> buttonsText = previousQuestion.getAnswers().stream().map(a -> {
+        List<AnswerEntity> answers = new ArrayList<>(previousQuestion.getAnswers());
+        List<String> buttonsText = answers.stream().map(a -> {
             if (a.getAnswerText().equals(answer) || a.isCorrect()) {
                 if (a.isCorrect()) {
                     if (a.getAnswerText().equals(answer)) userService.incrementCorrectAnswerCount(userId);
@@ -490,5 +498,15 @@ public class TestService {
         stringBuilder.append("\nВыберите один вариант ответа:");
 
         return stringBuilder.toString();
+    }
+
+    /**
+     *  Извлекает ID теста из данных callback, находит соответствующий тест в репозитории
+     */
+    private TestEntity extractAndSetCurrentTest(String[] callbackDataParts, long userId) {
+        long testId = Long.parseLong(callbackDataParts[2]);
+        TestEntity test = testRepository.findById(testId).orElse(null);
+        userService.setCurrentTest(userId, test);
+        return test;
     }
 }

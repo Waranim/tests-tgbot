@@ -1,6 +1,7 @@
 package org.example.naumenteststgbot.entity;
 
 import jakarta.persistence.*;
+import org.example.naumenteststgbot.enums.UserState;
 
 /**
  * Текущая сессия пользователя

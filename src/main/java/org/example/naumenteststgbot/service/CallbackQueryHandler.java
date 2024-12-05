@@ -16,6 +16,7 @@ public class CallbackQueryHandler {
     private final TestService testService;
     private final QuestionService questionService;
 
+
     public CallbackQueryHandler(TestService testService, QuestionService questionService) {
         this.testService = testService;
         this.questionService = questionService;
@@ -26,6 +27,7 @@ public class CallbackQueryHandler {
      */
     public SendMessage handle(Update update) {
         SendMessage sendMessage;
+        Long userId = update.getCallbackQuery().getFrom().getId();
         String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
         String callbackData = update.getCallbackQuery().getData();
         String[] callbackDataParts = callbackData.split(" ");
@@ -34,7 +36,7 @@ public class CallbackQueryHandler {
                 sendMessage = testService.handleCallback(update);
                 break;
             case "QUESTION":
-                sendMessage = questionService.handleCallback(update);
+                sendMessage = questionService.handleCallback(chatId,callbackData,userId);
                 break;
             default:
                 sendMessage = new SendMessage();
