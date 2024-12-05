@@ -188,6 +188,9 @@ public class TestService {
                 break;
             case ADD_TEST_DESCRIPTION:
                 currentTest.setDescription(message);
+                currentTest.setCountTries(0);
+                currentTest.setCorrectAnswerCountAllUsers(0);
+                currentTest.setCountAnsweredQuestionsAllUsers(0);
                 response = String.format("Тест “%s” создан! Количество вопросов: 0. Для добавление вопросов используйте /add_question %s, где %s - идентификатор теста “%s”.", currentTest.getTitle(), currentTest.getId(), currentTest.getId(), currentTest.getTitle());
                 userService.changeStateById(userId, UserState.DEFAULT);
                 break;
@@ -349,9 +352,16 @@ public class TestService {
      * Обработка конца теста
      */
     private SendMessage handleTestFinish(String chatId, Long userId) {
+        TestEntity test = userService.getSession(userId).getCurrentTest();
+
         userService.changeStateById(userId, UserState.DEFAULT);
         Integer correctAnswerCount = userService.getCorrectAnswerCount(userId);
         Integer countAnsweredQuestions = userService.getCountAnsweredQuestions(userId);
+        test.setCountTries(test.getCountTries() + 1);
+        test.setCorrectAnswerCountAllUsers(test.getCorrectAnswerCountAllUsers() + correctAnswerCount);
+        test.setCountAnsweredQuestionsAllUsers(test.getCountAnsweredQuestionsAllUsers() + countAnsweredQuestions);
+        testRepository.save(test);
+
         Integer correctAnswerPercent = countAnsweredQuestions != 0
                 ? (correctAnswerCount * 100) / countAnsweredQuestions
                 : 0;

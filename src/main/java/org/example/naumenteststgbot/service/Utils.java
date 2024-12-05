@@ -26,6 +26,12 @@ public class Utils {
     public String testToString(TestEntity test) {
         List<QuestionEntity> questions = test.getQuestions();
         StringBuilder response = new StringBuilder(String.format("Тест “%s”. Всего вопросов: %s\n",  test.getTitle(), questions.size()));
+        String correctAnswerPercent = test.getCountAnsweredQuestionsAllUsers() != 0
+                ? String.valueOf((test.getCorrectAnswerCountAllUsers() * 100) / test.getCountAnsweredQuestionsAllUsers())
+                : "Тест ещё не проходили";
+        response.append(
+                String.format("\nСтатистика по тесту:\nОбщее количество попыток: %d\nСредний процент правильных ответов: %s\n\n",
+                        test.getCountTries(), correctAnswerPercent));
         for (QuestionEntity question : questions) {
             response.append("Вопрос: %s\nВарианты ответов:\n".formatted(question.getQuestion()));
             List<AnswerEntity> answers = question.getAnswers();
