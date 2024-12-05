@@ -1,4 +1,4 @@
-package org.example.naumenteststgbot.entity;
+package org.example.naumenteststgbot.enums;
 
 public enum UserState {
     DEFAULT,

@@ -1,7 +1,7 @@
 package org.example.naumenteststgbot.service;
 
 import org.example.naumenteststgbot.entity.UserSession;
-import org.example.naumenteststgbot.entity.UserState;
+import org.example.naumenteststgbot.enums.UserState;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
