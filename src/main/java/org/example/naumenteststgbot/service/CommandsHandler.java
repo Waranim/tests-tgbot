@@ -92,6 +92,9 @@ public class CommandsHandler {
             case "/test":
                 replyMessage = testService.handleTest(user.getId(), chatId);
                 break;
+            case "/info":
+                replyText = userService.handleInfo(user.getId());
+                break;
             default:
                 replyText = "Неверная команда, для справки используйте /help";
                 break;

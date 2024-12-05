@@ -194,4 +194,12 @@ public class UserService {
         user.getSession().setCountAnsweredQuestions(0);
         updateUser(user);
     }
+
+    /**
+     * Обработывает команду /info
+     */
+    @Transactional
+    public String handleInfo(Long userId) {
+        return "Ваш идентификатор: " + userId;
+    }
 }
