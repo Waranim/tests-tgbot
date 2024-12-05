@@ -15,11 +15,13 @@ public class CallbackQueryHandler {
      */
     private final TestService testService;
     private final QuestionService questionService;
+    private final ShareService shareService;
 
 
-    public CallbackQueryHandler(TestService testService, QuestionService questionService) {
+    public CallbackQueryHandler(TestService testService, QuestionService questionService, ShareService shareService) {
         this.testService = testService;
         this.questionService = questionService;
+        this.shareService = shareService;
     }
 
     /**
@@ -37,6 +39,9 @@ public class CallbackQueryHandler {
                 break;
             case "QUESTION":
                 sendMessage = questionService.handleCallback(chatId,callbackData,userId);
+                break;
+            case "SHARE":
+                sendMessage = shareService.handleCallback(chatId, callbackData, userId);
                 break;
             default:
                 sendMessage = new SendMessage();

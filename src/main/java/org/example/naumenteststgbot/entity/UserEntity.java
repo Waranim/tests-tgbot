@@ -32,6 +32,12 @@ public class UserEntity {
     @OneToMany(mappedBy = "creatorId", fetch = FetchType.EAGER)
     private List<TestEntity> tests;
 
+    /**
+     * Список полученных тестов от других пользователей
+     */
+    @ManyToMany
+    private List<TestEntity> receivedTests;
+
     @OneToOne(cascade = CascadeType.ALL)
     protected UserSession userSession;
 
@@ -76,5 +82,9 @@ public class UserEntity {
     @Override
     public int hashCode() {
         return 23;
+    }
+
+    public List<TestEntity> getReceivedTests() {
+        return receivedTests;
     }
 }

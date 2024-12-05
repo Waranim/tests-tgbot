@@ -25,13 +25,16 @@ public class MessageHandler {
      * Сервис для взаимодействия с вопросами
      */
     private final QuestionService questionService;
+    private final ShareService shareService;
+
     /**
      * Конструктор класса MessageHandler
      */
-    public MessageHandler(UserService userService, TestService testService, QuestionService questionService) {
+    public MessageHandler(UserService userService, TestService testService, QuestionService questionService, ShareService shareService) {
         this.userService = userService;
         this.testService = testService;
         this.questionService = questionService;
+        this.shareService = shareService;
     }
 
     /**
@@ -70,6 +73,9 @@ public class MessageHandler {
             case CONFIRM_DELETE_QUESTION:
                 responseMessage = questionService.handleMessage(chatId,userSession,text);
                 break;
+
+            case CHOOSE_USER:
+                responseMessage = shareService.handleMessage(chatId, userSession, text);
 
             default:
                 break;
