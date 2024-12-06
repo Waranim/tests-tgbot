@@ -40,14 +40,12 @@ public class TelegramBot extends TelegramLongPollingBot {
      */
     private final MessageSender messageSender;
 
-    public TelegramBot(BotConfig config, CommandsHandler commandsHandler, MessageSender messageSender, MessageHandler messageHandler) {
-        super(config.getToken());
-        this.config = config;
-        this.commandsHandler = commandsHandler;
-        this.messageSender = messageSender;
-        this.messageHandler = messageHandler;
-    }
-
+    /**
+     * Конструктор для инициализации бота
+     * @param config конфигурация бота
+     * @param commandsHandler обработчик команд
+     * @param messageHandler обработчик сообщений
+     */
     @Autowired
     public TelegramBot(BotConfig config, CommandsHandler commandsHandler, MessageHandler messageHandler) {
         super(config.getToken());
@@ -64,6 +62,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         };
     }
 
+    /**
+     * Обработка входящих обновлений от Telegram API
+     * @param update объект, содержащий информацию о новом сообщении
+     */
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
@@ -75,6 +77,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     * Получение имени бота
+     * @return имя бота из конфигурации
+     */
     @Override
     public String getBotUsername() {
         return config.getName();

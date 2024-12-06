@@ -25,10 +25,16 @@ public class BotConfig {
     public BotConfig() {
     }
 
+    /**
+     * Получить имя бота
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Получить токен бота
+     */
     public String getToken() {
         return token;
     }

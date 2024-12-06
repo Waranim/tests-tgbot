@@ -1,5 +1,8 @@
 package org.example.naumenteststgbot.enums;
 
+/**
+ * Перечисление состояний пользователя в системе
+ */
 public enum UserState {
     DEFAULT,
     ADD_QUESTION,
