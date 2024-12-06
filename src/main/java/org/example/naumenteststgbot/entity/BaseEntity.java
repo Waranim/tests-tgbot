@@ -7,14 +7,24 @@ import jakarta.persistence.*;
  */
 @MappedSuperclass
 public class BaseEntity {
+
+    /**
+     * Уникальный идентификатор сущности
+     */
     @Id
     @SequenceGenerator(name = "hibernate_sequence")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernate_sequence")
     protected Long id;
 
+    /**
+     * Поле версии
+     */
     @Version
     protected Integer version;
 
+    /**
+     * Получить уникальный идентификатор сущности
+     */
     public Long getId() {
         return id;
     }

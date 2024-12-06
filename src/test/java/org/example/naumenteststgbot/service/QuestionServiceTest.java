@@ -54,12 +54,39 @@ class QuestionServiceTest {
     @InjectMocks
     private QuestionService questionService;
 
+    /**
+     * Идентификатор пользователя
+     */
     private long userId;
+
+    /**
+     * Идентификатор вопроса
+     */
     private long questionId;
+
+    /**
+     * Идентификатор теста
+     */
     private long testId;
+
+    /**
+     * Сущность теста
+     */
     private TestEntity test;
+
+    /**
+     * Сущность вопроса
+     */
     private QuestionEntity question;
+
+    /**
+     * Текущая сессия пользователя
+     */
     private UserSession userSession;
+
+    /**
+     * Сущность ответа
+     */
     private AnswerEntity answer;
 
     /**
