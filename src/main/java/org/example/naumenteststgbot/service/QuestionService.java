@@ -15,6 +15,7 @@ import java.util.List;
 @Service
 @Transactional
 public class QuestionService {
+
     /**
      * Репозиторий для взаимодействия над сущностью вопросов в базе данных
      */
@@ -182,8 +183,8 @@ public class QuestionService {
         }
 
         String testIdStr = parts[1];
-        if (!testIdStr.matches("^-?\\d+$")) {
-            return "Некорректный формат id теста. Пожалуйста, введите число.";
+        if (!testIdStr.matches("^?\\d+$")) {
+            return "Ошибка ввода. Укажите корректный id теста.";
         }
         long testId = Long.parseLong(testIdStr);
         TestEntity test = testService.getTest(testId);
@@ -235,18 +236,21 @@ public class QuestionService {
         if (parts.length == 1) {
             return "Используйте команду вместе с идентификатором вопроса!";
         }
-        Long questionId = Long.parseLong(parts[1]);
-        QuestionEntity question = questionRepository.findById(questionId).orElse(null);
-        if (question == null) {
-            return "Вопрос не найден!";
+        if (parts[1].matches("^\\d+$")) {
+            Long questionId = Long.parseLong(parts[1]);
+            QuestionEntity question = questionRepository.findById(questionId).orElse(null);
+            if (question == null) {
+                return "Вопрос не найден!";
+            }
+            userService.setCurrentQuestion(userId, question);
+            userService.setState(userId, UserState.EDIT_QUESTION);
+            return String.format("""
+                    Вы выбрали вопрос “%s”. Что вы хотите изменить в вопросе?
+                    1: Формулировку вопроса
+                    2: Варианты ответа
+                    """, question.getQuestion());
         }
-        userService.setCurrentQuestion(userId, question);
-        userService.setState(userId, UserState.EDIT_QUESTION);
-        return String.format("""
-                Вы выбрали вопрос “%s”. Что вы хотите изменить в вопросе?
-                1: Формулировку вопроса
-                2: Варианты ответа
-                """, question.getQuestion());
+        return "Ошибка ввода. Укажите корректный id теста.";
     }
 
     /**
@@ -291,7 +295,7 @@ public class QuestionService {
                 userService.setState(userId, UserState.DELETE_QUESTION);
                 return "Введите id вопроса для удаления:\n";
         }
-        return "Некорректный ввод команды";
+        return "Ошибка ввода. Укажите корректный id теста.";
     }
 
     /**
@@ -372,6 +376,4 @@ public class QuestionService {
         }
         return response.toString();
     }
-
-
 }
