@@ -256,7 +256,7 @@ class QuestionServiceTest {
     @Test
     void testHandleAddQuestionInvalidId() {
         String result = questionService.handleAddQuestion(userId, "/add_question abc");
-        assertEquals("Некорректный формат id теста. Пожалуйста, введите число.", result);
+        assertEquals("Ошибка ввода. Укажите корректный id теста.", result);
     }
 
     /**
