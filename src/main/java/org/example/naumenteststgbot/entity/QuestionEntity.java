@@ -18,6 +18,7 @@ public class QuestionEntity extends BaseEntity {
      * Ответы в вопросе
      */
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OrderBy("id ASC")
     private List<AnswerEntity> answers = new ArrayList<>();
 
     /**
