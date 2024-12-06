@@ -71,26 +71,21 @@ public class TestService {
     @Transactional
     public SendMessage handleView(String chatId, Long userId, String message) {
         String[] parts = message.split(" ");
-        List<TestEntity> ownTests = userService.getTestsById(userId);
-        List<TestEntity> receivedTests = userService.getOpenReceivedTests(userId);
-        List<TestEntity> allTests = new ArrayList<>();
-        allTests.addAll(receivedTests);
-        allTests.addAll(ownTests);
-
+        List<TestEntity> tests = userService.getTestsById(userId);
         if (parts.length == 1) {
             userService.changeStateById(userId, UserState.VIEW_TEST);
-            return messageBuilder.createSendMessage(chatId, "Выберите тест для просмотра:\n" + utils.testsListToString(allTests, userId), null);
+            return messageBuilder.createSendMessage(chatId, "Выберите тест для просмотра:\n" + utils.testsListToString(tests, userId), null);
         } else if (utils.isNumber(parts[1])) {
             userService.changeStateById(userId, UserState.DEFAULT);
             Long testId = Long.parseLong(parts[1]);
             TestEntity test = getTest(testId);
 
-            if (test == null || !allTests.contains(test)) {
+            if (test == null || !tests.contains(test)) {
                 return messageBuilder.createSendMessage(chatId, "Тест не найден!", null);
             }
 
             InlineKeyboardMarkup keyboard = null;
-            if (ownTests.contains(test)) {
+            if (tests.contains(test)) {
                 String buttonsText = test.isAccessOpen() ? "Закрыть доступ" : "Открыть доступ";
                 String callbackData = "EDIT TEST toggleAccess " + testId;
                 keyboard = keyboardService.createReply(buttonsText, callbackData, "");
@@ -135,9 +130,13 @@ public class TestService {
      * Обработать команду /test
      */
     public SendMessage handleTest(Long id, String chatId) {
-
         List<TestEntity> tests = userService.getTestsById(id);
-        tests.addAll(userService.getOpenReceivedTests(id));
+        List<TestEntity> receivedTests = new ArrayList<>(userService.getOpenReceivedTests(id));
+        receivedTests.forEach(test -> {
+            String creatorUsername = userService.getUserById(test.getCreatorId()).getUsername();
+            test.setTitle(String.format("%s (%s)", test.getTitle(), creatorUsername));
+        });
+        tests.addAll(receivedTests);
         List<String> testsTitles = tests.stream().map(TestEntity::getTitle).toList();
         List<String> testsIds = tests.stream().map(t -> t.getId().toString()).toList();
         SendMessage message = new SendMessage();

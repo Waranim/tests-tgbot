@@ -67,7 +67,7 @@ public class ShareService {
             return messageBuilder.createErrorMessage(chatId, "У вас нет доступа к тесту");
 
         userService.removeReceivedTest(userId, test);
-        String creatorUsername = userService.getUserById(userId).getUsername();
+        String creatorUsername = userService.getUserById(test.getCreatorId()).getUsername();
         return messageBuilder.createSendMessage(
                 chatId,
                 "Вы отписались от теста “%s (%s)” Чтобы вернуть доступ к тесту необходимо обратится к его владельцу."
@@ -88,7 +88,7 @@ public class ShareService {
                 testId.toString(),
                 "SHARE UNSUBSCRIBE"
                 );
-        String creatorUsername = userService.getUserById(userId).getUsername();
+        String creatorUsername = userService.getUserById(test.getCreatorId()).getUsername();
         return messageBuilder.createSendMessage(chatId,
                 "Вы выбрали “%s (%s)”. Всего вопросов: %s."
                         .formatted(test.getTitle(), creatorUsername, test.getQuestions().size())
