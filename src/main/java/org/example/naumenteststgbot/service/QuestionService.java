@@ -1,6 +1,7 @@
 package org.example.naumenteststgbot.service;
 
 import org.example.naumenteststgbot.entity.*;
+import org.example.naumenteststgbot.enums.UserState;
 import org.example.naumenteststgbot.repository.AnswerRepository;
 import org.example.naumenteststgbot.repository.QuestionRepository;
 import org.springframework.stereotype.Service;
@@ -70,14 +71,14 @@ public class QuestionService {
                 }
                 QuestionEntity nquestion = createQuestion(selectedTest);
                 userService.setCurrentQuestion(userId, nquestion);
-                userService.setState(userId, UserState.ADD_QUESTION_TEXT);
+                userService.changeStateById(userId, UserState.ADD_QUESTION_TEXT);
                 return String.format("Введите название вопроса для теста “%s”", selectedTest.getTitle());
 
             case ADD_QUESTION_TEXT:
                 currentQuestion.setQuestion(text);
                 questionRepository.save(currentQuestion);
                 response = "Введите вариант ответа. Если вы хотите закончить добавлять варианты, введите команду /stop.";
-                userService.setState(userId, UserState.ADD_ANSWER);
+                userService.changeStateById(userId, UserState.ADD_ANSWER);
                 break;
 
             case ADD_ANSWER:
@@ -88,10 +89,10 @@ public class QuestionService {
             case EDIT_QUESTION:
                 if (text.equals("1")) {
                     response = "Введите новый текст вопроса";
-                    userService.setState(userId, UserState.EDIT_QUESTION_TEXT);
+                    userService.changeStateById(userId, UserState.EDIT_QUESTION_TEXT);
                 } else if (text.equals("2")) {
                     response = "Что вы хотите сделать с вариантом ответа?\n1: Изменить формулировку ответа\n2: Изменить правильность варианта ответа";
-                    userService.setState(userId, UserState.EDIT_ANSWER_OPTION_CHOICE);
+                    userService.changeStateById(userId, UserState.EDIT_ANSWER_OPTION_CHOICE);
                 }
                 break;
 
@@ -99,18 +100,18 @@ public class QuestionService {
                 currentQuestion.setQuestion(text);
                 questionRepository.save(currentQuestion);
                 response = String.format("Текст вопроса изменен на “%s”", text);
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 break;
 
             case EDIT_ANSWER_OPTION_CHOICE:
                 if (text.equals("1")) {
                     response = "Сейчас варианты ответа выглядят так\n" + answersListToString(currentQuestion.getAnswers());
                     response += "\nКакой вариант ответа вы хотите изменить?";
-                    userService.setState(userId, UserState.EDIT_ANSWER_TEXT_CHOICE);
+                    userService.changeStateById(userId, UserState.EDIT_ANSWER_TEXT_CHOICE);
                 } else if (text.equals("2")) {
                     response = "Сейчас варианты ответа выглядят так:\n" + answersListToString(currentQuestion.getAnswers());
                     response += "\nКакой вариант ответа вы хотите сделать правильным?";
-                    userService.setState(userId, UserState.SET_CORRECT_ANSWER);
+                    userService.changeStateById(userId, UserState.SET_CORRECT_ANSWER);
                 }
                 break;
 
@@ -121,7 +122,7 @@ public class QuestionService {
                 } else {
                     userService.setEditingAnswerIndex(userId, answerIndex);
                     response = "Введите новую формулировку ответа";
-                    userService.setState(userId, UserState.EDIT_ANSWER_TEXT);
+                    userService.changeStateById(userId, UserState.EDIT_ANSWER_TEXT);
                 }
                 break;
 
@@ -130,7 +131,7 @@ public class QuestionService {
                 currentQuestion.getAnswers().get(editingAnswerIndex).setAnswerText(text);
                 questionRepository.save(currentQuestion);
                 response = String.format("Формулировка изменена на “%s”", text);
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 break;
 
             case SET_CORRECT_ANSWER:
@@ -139,7 +140,7 @@ public class QuestionService {
                     response = setCorrectAnswer;
                 } else {
                     response = setCorrectAnswer;
-                    userService.setState(userId, UserState.DEFAULT);
+                    userService.changeStateById(userId, UserState.DEFAULT);
                 }
                 break;
 
@@ -148,7 +149,7 @@ public class QuestionService {
                 if (question == null) return "Вопрос не найден!";
                 response = String.format("Вопрос “%s” будет удалён, вы уверены? (Да/Нет)", question.getQuestion());
                 userService.setCurrentQuestion(userId, question);
-                userService.setState(userId, UserState.CONFIRM_DELETE_QUESTION);
+                userService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
                 break;
 
             case CONFIRM_DELETE_QUESTION:
@@ -160,7 +161,7 @@ public class QuestionService {
                 } else {
                     response = String.format("Вопрос “%s” из теста “%s” не удален.", currentQuestion.getQuestion(), currentQuestion.getTest().getTitle());
                 }
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 break;
         }
 
@@ -178,7 +179,7 @@ public class QuestionService {
             if (tests.isEmpty()) {
                 return "У вас нет доступных тестов для добавления вопросов.";
             }
-            userService.setState(userId, UserState.ADD_QUESTION);
+            userService.changeStateById(userId, UserState.ADD_QUESTION);
             return "Выберите тест:\n" + testsListToString(tests);
         }
 
@@ -193,7 +194,7 @@ public class QuestionService {
         }
 
         QuestionEntity question = createQuestion(test);
-        userService.setState(userId, UserState.ADD_QUESTION_TEXT);
+        userService.changeStateById(userId, UserState.ADD_QUESTION_TEXT);
         userService.setCurrentQuestion(userId, question);
         return String.format("Введите название вопроса для теста “%s”", test.getTitle());
     }
@@ -243,7 +244,7 @@ public class QuestionService {
                 return "Вопрос не найден!";
             }
             userService.setCurrentQuestion(userId, question);
-            userService.setState(userId, UserState.EDIT_QUESTION);
+            userService.changeStateById(userId, UserState.EDIT_QUESTION);
             return String.format("""
                     Вы выбрали вопрос “%s”. Что вы хотите изменить в вопросе?
                     1: Формулировку вопроса
@@ -267,10 +268,10 @@ public class QuestionService {
             if (message.equals("да")) {
                 userService.setCurrentQuestion(userId, null);
                 questionRepository.delete(question);
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 return "Вопрос успешно удален.";
             } else if (message.equals("нет")) {
-                userService.setState(userId, UserState.DEFAULT);
+                userService.changeStateById(userId, UserState.DEFAULT);
                 return "Удаление вопроса отменено.";
             } else {
                 return "Некорректный ввод. Пожалуйста, введите 'Да' или 'Нет'.";
@@ -288,11 +289,11 @@ public class QuestionService {
                 return "Вопрос не найден!";
             }
             userService.setCurrentQuestion(userId, question);
-            userService.setState(userId, UserState.CONFIRM_DELETE_QUESTION);
+            userService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
             return String.format("Вопрос “%s” будет удалён, вы уверены? (Да/Нет)", question.getQuestion());
         }
         if (parts.length == 1){
-                userService.setState(userId, UserState.DELETE_QUESTION);
+                userService.changeStateById(userId, UserState.DELETE_QUESTION);
                 return "Введите id вопроса для удаления:\n";
         }
         return "Ошибка ввода. Укажите корректный id теста.";
@@ -312,7 +313,7 @@ public class QuestionService {
             if (answers.size() < 2) {
                 return "Вы не создали необходимый минимум ответов (минимум: 2). Введите варианты ответа.";
             }
-            userService.setState(userId, UserState.SET_CORRECT_ANSWER);
+            userService.changeStateById(userId, UserState.SET_CORRECT_ANSWER);
             return "Укажите правильный вариант ответа:\n" + answersListToString(currentQuestion.getAnswers());
         }
         return "Команда /stop используется только при создании вопроса";

@@ -1,7 +1,7 @@
 package org.example.naumenteststgbot.service;
 
 import org.example.naumenteststgbot.entity.UserSession;
-import org.example.naumenteststgbot.entity.UserState;
+import org.example.naumenteststgbot.enums.UserState;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -51,6 +51,7 @@ public class MessageHandler {
             case EDIT_TEST_DESCRIPTION:
             case DELETE_TEST:
             case CONFIRM_DELETE_TEST:
+            case VIEW_TEST:
                 responseMessage = testService.handleMessage(userSession, text);
                 break;
 
