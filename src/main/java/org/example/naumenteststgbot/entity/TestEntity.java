@@ -12,6 +12,7 @@ import java.util.List;
  */
 @Entity
 public class TestEntity extends BaseEntity {
+
     /**
      * Создатель теста
      */
@@ -23,7 +24,6 @@ public class TestEntity extends BaseEntity {
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuestionEntity> question = new ArrayList<>();
 
-
     /**
      * Название теста
      */
@@ -34,30 +34,50 @@ public class TestEntity extends BaseEntity {
      */
     private String description;
 
+    /**
+     * Конструктор без параметров
+     */
     public TestEntity() {
     }
+
+    /**
+     * Конструктор с указанием идентификатора создателя теста
+     */
     public TestEntity(Long creatorId) {
         this.creatorId = creatorId;
     }
 
+    /**
+     * Получить название теста
+     */
     public String getTitle() {
         return title;
     }
 
+    /**
+     * Установить название теста
+     */
     public void setTitle(String title) {
         this.title = title;
     }
 
-
-
+    /**
+     * Установить описание теста
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
+    /**
+     * Получить список вопросов, связанных с тестом
+     */
     public List<QuestionEntity> getQuestions() {
         return question;
     }
 
+    /**
+     * Получить идентификатор создателя теста.
+     */
     public Long getCreatorId() {
         return creatorId;
     }

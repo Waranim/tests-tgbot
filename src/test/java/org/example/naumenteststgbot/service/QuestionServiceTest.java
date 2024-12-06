@@ -55,12 +55,39 @@ class QuestionServiceTest {
     @InjectMocks
     private QuestionService questionService;
 
+    /**
+     * Идентификатор пользователя
+     */
     private long userId;
+
+    /**
+     * Идентификатор вопроса
+     */
     private long questionId;
+
+    /**
+     * Идентификатор теста
+     */
     private long testId;
+
+    /**
+     * Сущность теста
+     */
     private TestEntity test;
+
+    /**
+     * Сущность вопроса
+     */
     private QuestionEntity question;
+
+    /**
+     * Текущая сессия пользователя
+     */
     private UserSession userSession;
+
+    /**
+     * Сущность ответа
+     */
     private AnswerEntity answer;
 
     /**
@@ -229,7 +256,7 @@ class QuestionServiceTest {
     @Test
     void testHandleAddQuestionInvalidId() {
         String result = questionService.handleAddQuestion(userId, "/add_question abc");
-        assertEquals("Некорректный формат id теста. Пожалуйста, введите число.", result);
+        assertEquals("Ошибка ввода. Укажите корректный id теста.", result);
     }
 
     /**

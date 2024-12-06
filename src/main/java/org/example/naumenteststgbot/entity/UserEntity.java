@@ -17,6 +17,9 @@ public class UserEntity {
     @Id
     private Long id;
 
+    /**
+     * Поле версии
+     */
     @Version
     private Integer version;
 
@@ -32,31 +35,57 @@ public class UserEntity {
     @OneToMany(mappedBy = "creatorId")
     private List<TestEntity> tests;
 
+    /**
+     * Сессия пользователя
+     */
     @OneToOne(cascade = CascadeType.ALL)
     protected UserSession userSession;
 
+    /**
+     * Получить уникальный идентификатор пользователя
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * Установить уникальный идентификатор пользователя
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * Получить псевдоним пользователя
+     */
     public String getUsername() {
         return username;
     }
 
+    /**
+     * Установить псевдоним пользователя
+     */
     public void setUsername(String username) {
         this.username = username;
     }
 
+    /**
+     * Получить список тестов, созданных пользователем
+     */
     public List<TestEntity> getTests() {
         return tests;
     }
+
+    /**
+     * Установить сессию пользователя
+     */
     public void setSession(UserSession userSession) {
         this.userSession = userSession;
     }
+
+    /**
+     * Получить сессию пользователя
+     */
     public UserSession getSession() {
         return userSession;
     }

@@ -9,6 +9,7 @@ import java.util.List;
  */
 @Entity
 public class QuestionEntity extends BaseEntity {
+
     /**
      * Формулировка вопроса
      */
@@ -26,29 +27,51 @@ public class QuestionEntity extends BaseEntity {
     @ManyToOne
     private TestEntity test;
 
+    /**
+     * Конструктор без параметров
+     */
     public QuestionEntity() {
     }
 
+    /**
+     * Конструктор с параметром теста
+     * @param test тест, связанный с вопросом
+     */
     public QuestionEntity(TestEntity test) {
         this.test = test;
     }
 
+    /**
+     * Получить формулировку вопроса
+     */
     public String getQuestion() {
         return question;
     }
 
+    /**
+     * Установить формулировку вопроса
+     */
     public void setQuestion(String question) {
         this.question = question;
     }
 
+    /**
+     * Получить список ответов, связанных с вопросом
+     */
     public List<AnswerEntity> getAnswers() {
         return answers;
     }
 
+    /**
+     * Получить тест, связанный с вопросом
+     */
     public TestEntity getTest() {
         return test;
     }
 
+    /**
+     * Установить тест для вопроса
+     */
     public void setTest(TestEntity test) {
         this.test = test;
     }
