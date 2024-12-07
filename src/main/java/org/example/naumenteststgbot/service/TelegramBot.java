@@ -3,7 +3,6 @@ package org.example.naumenteststgbot.service;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.naumenteststgbot.config.BotConfig;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -46,7 +45,6 @@ public class TelegramBot extends TelegramLongPollingBot {
      * @param commandsHandler обработчик команд
      * @param messageHandler обработчик сообщений
      */
-    @Autowired
     public TelegramBot(BotConfig config, CommandsHandler commandsHandler, MessageHandler messageHandler) {
         super(config.getToken());
         this.config = config;
@@ -64,7 +62,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     /**
      * Обработка входящих обновлений от Telegram API
-     * @param update объект, содержащий информацию о новом сообщении
+     * @param update объект, содержащий информацию о взаимодействии пользователя с ботом (сообщения, callback и др.)
      */
     @Override
     public void onUpdateReceived(Update update) {

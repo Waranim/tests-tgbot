@@ -61,7 +61,6 @@ public class MessageHandler {
             case SET_CORRECT_ANSWER:
             case EDIT_QUESTION:
             case EDIT_QUESTION_TEXT:
-            case EDIT_ANSWER_OPTION:
             case EDIT_ANSWER_OPTION_CHOICE:
             case EDIT_ANSWER_TEXT_CHOICE:
             case EDIT_ANSWER_TEXT:
