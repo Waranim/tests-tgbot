@@ -3,7 +3,6 @@ package org.example.naumenteststgbot.service;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.naumenteststgbot.config.BotConfig;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -40,15 +39,12 @@ public class TelegramBot extends TelegramLongPollingBot {
      */
     private final MessageSender messageSender;
 
-    public TelegramBot(BotConfig config, CommandsHandler commandsHandler, MessageSender messageSender, MessageHandler messageHandler) {
-        super(config.getToken());
-        this.config = config;
-        this.commandsHandler = commandsHandler;
-        this.messageSender = messageSender;
-        this.messageHandler = messageHandler;
-    }
-
-    @Autowired
+    /**
+     * Конструктор для инициализации бота
+     * @param config конфигурация бота
+     * @param commandsHandler обработчик команд
+     * @param messageHandler обработчик сообщений
+     */
     public TelegramBot(BotConfig config, CommandsHandler commandsHandler, MessageHandler messageHandler) {
         super(config.getToken());
         this.config = config;
@@ -64,6 +60,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         };
     }
 
+    /**
+     * Обработка входящих обновлений от Telegram API
+     * @param update объект, содержащий информацию о взаимодействии пользователя с ботом (сообщения, callback и др.)
+     */
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
@@ -75,6 +75,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     * Получение имени бота
+     * @return имя бота из конфигурации
+     */
     @Override
     public String getBotUsername() {
         return config.getName();

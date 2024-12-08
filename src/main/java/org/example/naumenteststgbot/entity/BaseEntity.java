@@ -29,6 +29,11 @@ public class BaseEntity {
         return id;
     }
 
+    /**
+     * Сравнивает текущий объект с другим объектом
+     * @param o объект для сравнения
+     * @return true если объекты равны, false в противном случае
+     */
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -42,6 +47,10 @@ public class BaseEntity {
         return id != null && id.equals(other.getId());
     }
 
+    /**
+     * Возвращает хэш-код объекта
+     * @return целочисленное значение хэш-кода
+     */
     @Override
     public int hashCode() {
         return 17;

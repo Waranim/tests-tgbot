@@ -22,8 +22,16 @@ public class UserService {
      */
     private final UserRepository userRepository;
 
+    /**
+     * Репозиторий для взаимодействия с сессиями пользователей в базе данных
+     */
     private final UserSessionRepository userSessionRepository;
 
+    /**
+     * Конструктор сервиса пользователей
+     * @param userRepository репозиторий для взаимодействия с пользователями
+     * @param userSessionRepository репозиторий для взаимодействия с сессиями пользователей
+     */
     public UserService(UserRepository userRepository, UserSessionRepository userSessionRepository) {
         this.userRepository = userRepository;
         this.userSessionRepository = userSessionRepository;

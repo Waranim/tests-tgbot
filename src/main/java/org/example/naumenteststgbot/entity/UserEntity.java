@@ -90,6 +90,11 @@ public class UserEntity {
         return userSession;
     }
 
+    /**
+     * Сравнивает текущий объект с другим объектом
+     * @param o объект для сравнения
+     * @return true если объекты равны, false в противном случае
+     */
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -102,6 +107,11 @@ public class UserEntity {
 
         return id != null && id.equals(other.getId());
     }
+
+    /**
+     * Возвращает хэш-код объекта
+     * @return целочисленное значение хэш-кода
+     */
     @Override
     public int hashCode() {
         return 23;
