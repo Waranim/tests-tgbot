@@ -5,6 +5,8 @@ import org.example.naumenteststgbot.entity.UserSession;
 import org.example.naumenteststgbot.states.UserState;
 import org.example.naumenteststgbot.util.Util;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 /**
@@ -29,8 +31,7 @@ public class MessageHandler {
     /**
      * Конструктор класса MessageHandler
      */
-    public MessageHandler(UserService userService, TestService testService, QuestionService questionService, SessionService sessionService, StateService stateService, Util util, CommandsHandler commandsHandler) {
-        this.userService = userService;
+    public MessageHandler(TestService testService, QuestionService questionService, SessionService sessionService, StateService stateService, Util util, CommandsHandler commandsHandler) {
         this.testService = testService;
         this.questionService = questionService;
         this.sessionService = sessionService;
@@ -42,6 +43,7 @@ public class MessageHandler {
     /**
      * Обработать сообщение
      */
+    @Transactional
     public String handleMessage(String message, Long userId) {
         UserSession userSession = sessionService.getSession(userId);
         UserState userState = stateService.getCurrentState(userId);

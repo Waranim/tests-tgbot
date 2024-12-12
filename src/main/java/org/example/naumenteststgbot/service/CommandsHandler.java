@@ -4,6 +4,8 @@ import org.example.naumenteststgbot.entity.TestEntity;
 import org.example.naumenteststgbot.states.UserState;
 import org.example.naumenteststgbot.util.Util;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 /**
@@ -59,6 +61,7 @@ public class CommandsHandler {
      *
      * @return сообщение для отправки пользователю
      */
+    @Transactional
     public String handleCommands(String message, Long userId, String username) {
         String command = message.split(" ")[0];
         String replyText;

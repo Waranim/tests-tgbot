@@ -1,6 +1,7 @@
 package org.example.naumenteststgbot.service;
 
 import org.example.naumenteststgbot.entity.UserEntity;
+import org.example.naumenteststgbot.entity.UserSession;
 import org.example.naumenteststgbot.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,11 +17,9 @@ public class UserService {
      * Репозиторий для взаимодействия с базой данных
      */
     private final UserRepository userRepository;
-    private final SessionService sessionService;
 
-    public UserService(UserRepository userRepository, SessionService sessionService) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.sessionService = sessionService;
     }
 
     /**
@@ -37,7 +36,7 @@ public class UserService {
         UserEntity userEntity = new UserEntity();
         userEntity.setId(id);
         userEntity.setUsername(username);
-        userEntity.setSession(sessionService.createSession(id));
+        userEntity.setSession(new UserSession(id));
         userRepository.save(userEntity);
     }
 
