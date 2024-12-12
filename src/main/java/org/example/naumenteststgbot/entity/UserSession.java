@@ -3,7 +3,7 @@ package org.example.naumenteststgbot.entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;
-import org.example.naumenteststgbot.enums.UserState;
+import org.example.naumenteststgbot.states.UserState;
 
 /**
  * Текущая сессия пользователя
