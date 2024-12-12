@@ -1,4 +1,4 @@
-package org.example.naumenteststgbot.enums;
+package org.example.naumenteststgbot.states;
 
 /**
  * Перечисление состояний пользователя в системе
