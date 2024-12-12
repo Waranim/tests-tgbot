@@ -2,7 +2,6 @@ package org.example.naumenteststgbot.service;
 
 import org.example.naumenteststgbot.entity.UserSession;
 import org.example.naumenteststgbot.states.UserState;
-import org.example.naumenteststgbot.repository.UserSessionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,12 +12,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class StateService {
 
-    private final UserSessionRepository userSessionRepository;
+    /**
+     * Сервис сессии
+     */
     private final SessionService sessionService;
 
-    public StateService(UserSessionRepository userSessionRepository,
-                        SessionService sessionService) {
-        this.userSessionRepository = userSessionRepository;
+    /**
+     * Конструктор сервиса состояний
+     * @param sessionService Сервис сессии
+     */
+    public StateService(SessionService sessionService) {
         this.sessionService = sessionService;
     }
 
@@ -32,7 +35,7 @@ public class StateService {
         UserSession session = sessionService.getSession(id);
         if (session == null) return;
         session.setState(state);
-        userSessionRepository.save(session);
+        sessionService.updateSession(session);
     }
 
     /**

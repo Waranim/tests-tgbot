@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * Сервис для обработки команд и сообщений, связанных с тестом
+ * Сервис для создания, обновления, получения и удаления теста
  */
 @Service
 public class TestService {
@@ -62,7 +62,7 @@ public class TestService {
     }
 
     /**
-     * Удаление теста по идентификатору
+     * Удаление теста
      * @param test тест, который нужно удалить
      */
     public void delete(TestEntity test) {

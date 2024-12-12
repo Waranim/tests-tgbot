@@ -12,9 +12,21 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class SessionService {
 
+    /**
+     * Репозиторий сессии пользователя
+     */
     private final UserSessionRepository userSessionRepository;
+
+    /**
+     * Сервис пользователя
+     */
     private final UserService userService;
 
+    /**
+     * Конструктор для сервиса сессии пользователя
+     * @param userSessionRepository Репозиторий сессии пользователя
+     * @param userService Сервис пользователя
+     */
     public SessionService(UserSessionRepository userSessionRepository,
                          UserService userService) {
         this.userSessionRepository = userSessionRepository;
@@ -107,11 +119,10 @@ public class SessionService {
     }
 
     /**
-     * Создать новую сессию для пользователя
-     * @param userId идентификатор пользователя
-     * @return новая сессия
+     * Обновление сессии пользователя в базе данных
+     * @param session сессия пользователя
      */
-    public UserSession createSession(Long userId) {
-        return new UserSession(userId);
+    public void updateSession(UserSession session) {
+        userSessionRepository.save(session);
     }
-} 
+}
