@@ -1,14 +1,17 @@
 package org.example.naumenteststgbot.service;
 
-import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.User;
+import org.example.naumenteststgbot.entity.TestEntity;
+import org.example.naumenteststgbot.states.UserState;
+import org.example.naumenteststgbot.util.Util;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * Обработчик всех команд
  */
-@Service
+@Component
 public class CommandsHandler {
 
     /**
@@ -31,13 +34,37 @@ public class CommandsHandler {
      */
     private final QuestionService questionService;
     /**
+     * Сервис для управления состояниями пользователей
+     */
+    private final StateService stateService;
+
+    /**
+     * Сервис для управления сессиями пользователей
+     */
+    private final SessionService sessionService;
+
+    /**
+     * Утилитный класс с вспомогательными методами
+     */
+    private final Util util;
+
+    /**
      * Конструктор класса CommandsHandler
      */
-    public CommandsHandler(HelpHandler helpHandler, UserService userService, TestService testService, QuestionService questionService) {
+    public CommandsHandler(HelpHandler helpHandler,
+                           UserService userService,
+                           TestService testService,
+                           QuestionService questionService,
+                           StateService stateService,
+                           SessionService sessionService,
+                           Util util) {
         this.helpHandler = helpHandler;
         this.userService = userService;
         this.testService = testService;
         this.questionService = questionService;
+        this.stateService = stateService;
+        this.sessionService = sessionService;
+        this.util = util;
     }
 
     /**
@@ -45,52 +72,115 @@ public class CommandsHandler {
      *
      * @return сообщение для отправки пользователю
      */
-    public SendMessage handleCommands(Update update) {
-        User user = update.getMessage().getFrom();
-        String messageText = update.getMessage().getText();
-        String command = messageText.split(" ")[0];
+    @Transactional
+    public String handleCommands(String message, Long userId, String username) {
+        String command = message.split(" ")[0];
         String replyText;
 
         switch (command) {
             case "/start":
-                userService.create(user.getId(), user.getUserName());
+                userService.create(userId, username);
                 replyText = helpHandler.handle();
                 break;
             case "/help":
                 replyText = helpHandler.handle();
                 break;
             case "/add":
-                replyText = testService.handleAdd(user.getId());
+                replyText = handleAdd(userId);
                 break;
             case "/view":
-                replyText = testService.handleView(user.getId(), messageText);
+                replyText = handleView(userId, message);
                 break;
             case "/edit":
-                replyText = testService.handleEdit(user.getId(), messageText);
+                replyText = handleEdit(userId, message);
                 break;
             case "/del":
-                replyText = testService.handleDel(user.getId());
+                replyText = handleDel(userId);
                 break;
             case "/add_question":
-                replyText =questionService.handleAddQuestion(user.getId(),messageText);
+                replyText =questionService.handleAddQuestion(userId, message);
                 break;
             case "/view_question":
-                replyText = questionService.handleViewQuestions(user.getId(), messageText);
+                replyText = questionService.handleViewQuestions(userId, message);
                 break;
             case "/edit_question":
-                replyText = questionService.handleEditQuestion(user.getId(), messageText);
+                replyText = questionService.handleEditQuestion(userId, message);
                 break;
             case "/del_question":
-                replyText = questionService.handleDeleteQuestion(user.getId(),messageText);
+                replyText = questionService.handleDeleteQuestion(userId,message);
                 break;
             case "/stop":
-                replyText = questionService.handleStop(user.getId());
+                replyText = questionService.handleStop(userId);
                 break;
             default:
                 replyText = "Неверная команда, для справки используйте /help";
                 break;
         }
 
-        return new SendMessage(update.getMessage().getChatId().toString(), replyText);
+        return replyText;
+    }
+
+
+    /**
+     * Обработать команду добавления теста
+     */
+    private String handleAdd(Long userId) {
+        TestEntity test = testService.createTest(userId);
+        stateService.changeStateById(userId, UserState.ADD_TEST_TITLE);
+        sessionService.setCurrentTest(userId, test);
+        return "Введите название теста";
+    }
+
+    /**
+     * Обработать команду просмотра теста
+     */
+    private String handleView(Long userId, String message) {
+        String[] parts = message.split(" ");
+        List<TestEntity> tests = testService.getTestsById(userId);
+
+        if (parts.length == 1) {
+            stateService.changeStateById(userId, UserState.VIEW_TEST);
+            return "Выберите тест для просмотра:\n"
+                    + util.testsListToString(tests);
+        } else if (util.isNumber(parts[1])){
+            stateService.changeStateById(userId, UserState.DEFAULT);
+            Long testId = Long.parseLong(parts[1]);
+            TestEntity test = testService.getTest(testId);
+            if (test == null || !tests.contains(test)) return "Тест не найден!";
+            return util.testToString(test);
+        }
+        return "Ошибка ввода!";
+    }
+
+    /**
+     * Обработать команду редактирования теста
+     */
+    private String handleEdit(Long userId, String message) {
+        String[] parts = message.split(" ");
+        List<TestEntity> tests = testService.getTestsById(userId);
+        if (parts.length == 1)
+            return "Используйте команду вместе с идентификатором теста!";
+        else if (!util.isNumber(parts[1]))
+            return "Ошибка ввода!";
+        Long testId = Long.parseLong(parts[1]);
+        TestEntity test = testService.getTest(testId);
+        if (test == null || !tests.contains(test))
+            return "Тест не найден!";
+        sessionService.setCurrentTest(userId, test);
+        stateService.changeStateById(userId, UserState.EDIT_TEST);
+        return String.format("""
+                Вы выбрали тест “%s”. Что вы хотите изменить?
+                1: Название теста
+                2: Описание теста
+                """, test.getTitle());
+    }
+
+    /**
+     * Обработать команду удаления теста
+     */
+    private String handleDel(Long id) {
+        stateService.changeStateById(id, UserState.DELETE_TEST);
+        return "Выберите тест:\n"
+                + util.testsListToString(testService.getTestsById(id));
     }
 }

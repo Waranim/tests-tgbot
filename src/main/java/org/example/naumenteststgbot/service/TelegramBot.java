@@ -5,7 +5,9 @@ import org.apache.logging.log4j.Logger;
 import org.example.naumenteststgbot.config.BotConfig;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 /**
@@ -67,10 +69,15 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
+            String message = update.getMessage().getText();
+            User user = update.getMessage().getFrom();
+            Long userId = user.getId();
+            String username = user.getUserName();
+            String chatId = update.getMessage().getChatId().toString();
             if (update.getMessage().getText().startsWith("/")) {
-                messageSender.sendMessage(commandsHandler.handleCommands(update));
+                messageSender.sendMessage(new SendMessage(chatId, commandsHandler.handleCommands(message, userId, username)));
             } else {
-                messageSender.sendMessage(messageHandler.handleMessage(update));
+                messageSender.sendMessage(new SendMessage(chatId, messageHandler.handleMessage(message, userId)));
             }
         }
     }
