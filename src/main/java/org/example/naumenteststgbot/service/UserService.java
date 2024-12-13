@@ -18,6 +18,9 @@ public class UserService {
      */
     private final UserRepository userRepository;
 
+    /**
+     * Взаимодействие с сущностью пользователя
+     */
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }

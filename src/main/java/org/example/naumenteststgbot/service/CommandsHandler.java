@@ -33,8 +33,19 @@ public class CommandsHandler {
      * Сервис для взаимодействия с вопросами
      */
     private final QuestionService questionService;
+    /**
+     * Сервис для управления состояниями пользователей
+     */
     private final StateService stateService;
+
+    /**
+     * Сервис для управления сессиями пользователей
+     */
     private final SessionService sessionService;
+
+    /**
+     * Утилитный класс с вспомогательными методами
+     */
     private final Util util;
 
     /**

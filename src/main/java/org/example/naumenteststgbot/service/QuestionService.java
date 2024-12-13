@@ -31,13 +31,24 @@ public class QuestionService {
      * Сервис для взаимодействия с тестами
      */
     private final TestService testService;
+    /**
+     * Сервис для управления состояниями пользователей
+     */
     private final StateService stateService;
+
+    /**
+     * Сервис для управления сессиями пользователей
+     */
     private final SessionService sessionService;
 
     /**
      * Конструктор для инициализации сервисов и репозиториев
      */
-    public QuestionService(QuestionRepository questionRepository, AnswerRepository answerRepository, TestService testService, StateService stateService, SessionService sessionService) {
+    public QuestionService(QuestionRepository questionRepository,
+                           AnswerRepository answerRepository,
+                           TestService testService,
+                           StateService stateService,
+                           SessionService sessionService) {
         this.questionRepository = questionRepository;
         this.answerRepository = answerRepository;
         this.testService = testService;

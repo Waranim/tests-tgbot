@@ -23,15 +23,34 @@ public class MessageHandler {
      * Сервис для взаимодействия с вопросами
      */
     private final QuestionService questionService;
-    private final SessionService sessionService;
+    /**
+     * Сервис для управления состояниями пользователей
+     */
     private final StateService stateService;
+
+    /**
+     * Сервис для управления сессиями пользователей
+     */
+    private final SessionService sessionService;
+
+    /**
+     * Утилитный класс с вспомогательными методами
+     */
     private final Util util;
+    /**
+     * Обработчик команд
+     */
     private final CommandsHandler commandsHandler;
 
     /**
      * Конструктор класса MessageHandler
      */
-    public MessageHandler(TestService testService, QuestionService questionService, SessionService sessionService, StateService stateService, Util util, CommandsHandler commandsHandler) {
+    public MessageHandler(TestService testService,
+                          QuestionService questionService,
+                          SessionService sessionService,
+                          StateService stateService,
+                          Util util,
+                          CommandsHandler commandsHandler) {
         this.testService = testService;
         this.questionService = questionService;
         this.sessionService = sessionService;
