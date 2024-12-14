@@ -2,6 +2,7 @@ package org.example.naumenteststgbot.entity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ public class TestEntity extends BaseEntity {
     /**
      * Вопросы в тесте
      */
-    @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<QuestionEntity> question = new ArrayList<>();
 
     /**

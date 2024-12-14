@@ -1,18 +1,21 @@
-package org.example.naumenteststgbot.service;
+package org.example.naumenteststgbot.processor;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 /**
- * Обработчик команд /start и /help
+ * Обработчик команды справки.
  */
-@Service
-public class HelpHandler {
-
+@Component
+public class HelpCommandProcessor extends AbstractCommandProcessor {
     /**
-     * Возвращает справочное сообщение
-     * @return сообщение пользователю
+     * Конструктор для инициализации обработчика команды справки.
      */
-    public String handle() {
+    protected HelpCommandProcessor() {
+        super("/help");
+    }
+
+    @Override
+    public String process(Long userId, String message) {
         return """
                 Здравствуйте. Я бот специализирующийся на создании и прохождении тестов. Доступны следующие команды:
                 /add – Добавить тест

@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.naumenteststgbot.config.BotConfig;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -20,11 +21,6 @@ public class TelegramBot extends TelegramLongPollingBot {
      * Логер
      */
     private final Logger log = LogManager.getLogger(TelegramBot.class);
-
-    /**
-     * Обработчик всех команд
-     */
-    private final CommandsHandler commandsHandler;
 
     /**
      * Конфигурация бота
@@ -44,13 +40,11 @@ public class TelegramBot extends TelegramLongPollingBot {
     /**
      * Конструктор для инициализации бота
      * @param config конфигурация бота
-     * @param commandsHandler обработчик команд
      * @param messageHandler обработчик сообщений
      */
-    public TelegramBot(BotConfig config, CommandsHandler commandsHandler, MessageHandler messageHandler) {
+    public TelegramBot(BotConfig config, MessageHandler messageHandler) {
         super(config.getToken());
         this.config = config;
-        this.commandsHandler = commandsHandler;
         this.messageHandler = messageHandler;
 
         this.messageSender = message -> {
@@ -66,6 +60,7 @@ public class TelegramBot extends TelegramLongPollingBot {
      * Обработка входящих обновлений от Telegram API
      * @param update объект, содержащий информацию о взаимодействии пользователя с ботом (сообщения, callback и др.)
      */
+    @Transactional
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
@@ -74,11 +69,9 @@ public class TelegramBot extends TelegramLongPollingBot {
             Long userId = user.getId();
             String username = user.getUserName();
             String chatId = update.getMessage().getChatId().toString();
-            if (update.getMessage().getText().startsWith("/")) {
-                messageSender.sendMessage(new SendMessage(chatId, commandsHandler.handleCommands(message, userId, username)));
-            } else {
-                messageSender.sendMessage(new SendMessage(chatId, messageHandler.handleMessage(message, userId)));
-            }
+            if (message.equals("/start"))
+                message += " " + username;
+            messageSender.sendMessage(new SendMessage(chatId, messageHandler.handle(message, userId)));
         }
     }
 
