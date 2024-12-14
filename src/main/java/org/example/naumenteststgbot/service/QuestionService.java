@@ -75,7 +75,7 @@ public class QuestionService {
 
                 long testId = Long.parseLong(text);
                 TestEntity selectedTest = testService.getTest(testId);
-                if (selectedTest == null || !testService.getTestsById(userId).contains(selectedTest)) {
+                if (selectedTest == null || !testService.getTestsByUserId(userId).contains(selectedTest)) {
                     return "Тест не найден!";
                 }
                 QuestionEntity nquestion = createQuestion(selectedTest);
@@ -182,7 +182,7 @@ public class QuestionService {
      */
     public String handleAddQuestion(Long userId, String message) {
         String[] parts = message.split(" ");
-        List<TestEntity> tests = testService.getTestsById(userId);
+        List<TestEntity> tests = testService.getTestsByUserId(userId);
 
         if (parts.length == 1) {
             if (tests.isEmpty()) {

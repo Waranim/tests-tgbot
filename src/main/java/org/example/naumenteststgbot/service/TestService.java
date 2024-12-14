@@ -55,7 +55,7 @@ public class TestService {
      * @param userId идентификатор пользователя
      * @return список тестов или null, если пользователь не найден
      */
-    public List<TestEntity> getTestsById(Long userId) {
+    public List<TestEntity> getTestsByUserId(Long userId) {
         UserEntity user = userService.getUserById(userId);
         if (user == null) return null;
         return user.getTests();
