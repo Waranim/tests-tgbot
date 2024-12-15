@@ -1,15 +1,15 @@
-package org.example.naumenteststgbot.service;
+package org.example.bot.service;
 
-import org.example.naumenteststgbot.entity.*;
-import org.example.naumenteststgbot.processor.*;
-import org.example.naumenteststgbot.processor.Add.*;
-import org.example.naumenteststgbot.processor.Del.*;
-import org.example.naumenteststgbot.processor.Edit.*;
-import org.example.naumenteststgbot.processor.View.*;
-import org.example.naumenteststgbot.repository.TestRepository;
-import org.example.naumenteststgbot.repository.UserRepository;
-import org.example.naumenteststgbot.repository.UserSessionRepository;
-import org.example.naumenteststgbot.util.Util;
+import org.example.bot.entity.*;
+import org.example.bot.processor.*;
+import org.example.bot.processor.Add.*;
+import org.example.bot.processor.Del.*;
+import org.example.bot.processor.Edit.*;
+import org.example.bot.processor.View.*;
+import org.example.bot.repository.TestRepository;
+import org.example.bot.repository.UserRepository;
+import org.example.bot.repository.UserSessionRepository;
+import org.example.bot.util.Util;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -112,7 +112,7 @@ class TestMessageProcessorTest {
     void testAddTest() {
         UserSession session = new UserSession(userId);
         UserEntity user = new UserEntity();
-        user.setId(userId);
+        user.setUserId(userId);
         user.setSession(session);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
@@ -140,7 +140,7 @@ class TestMessageProcessorTest {
         TestEntity test2 = createTest(userId, 312L, "Тест по знаниям ПДД");
         UserEntity user = new UserEntity(Arrays.asList(test1, test2));
 
-        user.setId(userId);
+        user.setUserId(userId);
         user.setSession(session);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
@@ -155,7 +155,7 @@ class TestMessageProcessorTest {
     @Test
     void testViewTests() {
         prepareTestData();
-        
+
         String response = messageHandler.handle("/view", userId);
         assertEquals("Выберите тест для просмотра:\n" +
                 "1)  id: 123 Математический тест\n" +
@@ -174,7 +174,7 @@ class TestMessageProcessorTest {
     @Test
     void testViewTestsWithNotExistId() {
         prepareTestData();
-        
+
         messageHandler.handle("/view", userId);
         String response2 = messageHandler.handle("999", userId);
         assertEquals("Тест не найден!", response2);
@@ -197,7 +197,7 @@ class TestMessageProcessorTest {
         String response2 = messageHandler.handle("/view abc", userId);
         assertEquals("Ошибка ввода!", response2);
     }
-    
+
 
     /**
      * Тестирует процесс редактирования названия теста
@@ -205,7 +205,7 @@ class TestMessageProcessorTest {
     @Test
     void testEditTestTitle() {
         prepareTestData();
-        
+
         String response1 = messageHandler.handle("/edit 123", userId);
         assertEquals("Вы выбрали тест “Математический тест”. " +
                 "Что вы хотите изменить?\n" +
