@@ -1,8 +1,8 @@
-package org.example.naumenteststgbot.processor.Edit;
+package org.example.bot.processor.Edit;
 
-import org.example.naumenteststgbot.processor.AbstractStateProcessor;
-import org.example.naumenteststgbot.service.StateService;
-import org.example.naumenteststgbot.states.UserState;
+import org.example.bot.processor.AbstractStateProcessor;
+import org.example.bot.service.StateService;
+import org.example.bot.states.UserState;
 import org.springframework.stereotype.Component;
 
 /**

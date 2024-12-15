@@ -1,12 +1,12 @@
-package org.example.naumenteststgbot.processor.Del;
+package org.example.bot.processor.Del;
 
-import org.example.naumenteststgbot.entity.QuestionEntity;
-import org.example.naumenteststgbot.processor.AbstractCommandProcessor;
-import org.example.naumenteststgbot.service.QuestionService;
-import org.example.naumenteststgbot.service.SessionService;
-import org.example.naumenteststgbot.service.StateService;
-import org.example.naumenteststgbot.states.UserState;
-import org.example.naumenteststgbot.util.Util;
+import org.example.bot.entity.QuestionEntity;
+import org.example.bot.processor.AbstractCommandProcessor;
+import org.example.bot.service.QuestionService;
+import org.example.bot.service.SessionService;
+import org.example.bot.service.StateService;
+import org.example.bot.states.UserState;
+import org.example.bot.util.Util;
 import org.springframework.stereotype.Component;
 
 /**

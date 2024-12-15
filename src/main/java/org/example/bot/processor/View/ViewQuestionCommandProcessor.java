@@ -1,10 +1,10 @@
-package org.example.naumenteststgbot.processor.View;
+package org.example.bot.processor.View;
 
-import org.example.naumenteststgbot.entity.QuestionEntity;
-import org.example.naumenteststgbot.entity.TestEntity;
-import org.example.naumenteststgbot.processor.AbstractCommandProcessor;
-import org.example.naumenteststgbot.service.TestService;
-import org.example.naumenteststgbot.util.Util;
+import org.example.bot.entity.QuestionEntity;
+import org.example.bot.entity.TestEntity;
+import org.example.bot.processor.AbstractCommandProcessor;
+import org.example.bot.service.TestService;
+import org.example.bot.util.Util;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
