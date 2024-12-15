@@ -22,7 +22,7 @@ public class TestEntity extends BaseEntity {
     /**
      * Вопросы в тесте
      */
-    @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<QuestionEntity> question = new ArrayList<>();
 
     /**

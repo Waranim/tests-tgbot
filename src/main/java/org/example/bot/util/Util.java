@@ -48,4 +48,16 @@ public class Util {
         }
         return response.toString();
     }
+
+    /**
+     * Преобразует список ответов у вопроса в строку
+     */
+    public String answersListToString(List<AnswerEntity> answers) {
+        StringBuilder response = new StringBuilder();
+        for (int i = 0; i < answers.size(); i++) {
+            AnswerEntity answer = answers.get(i);
+            response.append(String.format("%d: %s%s\n", i + 1, answer.getAnswerText(), answer.isCorrect() ? " (верный)" : ""));
+        }
+        return response.toString();
+    }
 }
