@@ -10,7 +10,7 @@ public class HelpCommandProcessor extends AbstractCommandProcessor {
     /**
      * Конструктор для инициализации обработчика команды справки.
      */
-    protected HelpCommandProcessor() {
+    public HelpCommandProcessor() {
         super("/help");
     }
 

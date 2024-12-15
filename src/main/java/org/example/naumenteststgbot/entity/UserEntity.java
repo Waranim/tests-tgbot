@@ -42,6 +42,20 @@ public class UserEntity {
     protected UserSession userSession;
 
     /**
+     * Пустой конструктор
+     */
+    public UserEntity(){
+
+    }
+
+    /**
+     * Конструктор со списком тестов для тестирования
+     */
+    public UserEntity(List<TestEntity> tests){
+        this.tests = tests;
+    }
+
+    /**
      * Получить уникальный идентификатор пользователя
      */
     public Long getId() {
