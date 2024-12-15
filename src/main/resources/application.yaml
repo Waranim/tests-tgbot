@@ -1,6 +1,6 @@
 spring:
   application:
-    name: naumen-tests-tgbot
+    name: tests-tgbot
 
   jpa:
     open-in-view: false
