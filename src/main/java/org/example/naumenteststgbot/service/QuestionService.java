@@ -17,11 +17,15 @@ public class QuestionService {
      * Репозиторий для взаимодействия над сущностью вопросов в базе данных
      */
     private final QuestionRepository questionRepository;
+
+    /**
+     * Сервис для управления тестами
+     */
     private final TestService testService;
 
 
     /**
-     * Конструктор для инициализации сервисов и репозиториев
+     * Конструктор для инициализации сервиса и репозитория
      */
     public QuestionService(QuestionRepository questionRepository, TestService testService) {
         this.questionRepository = questionRepository;

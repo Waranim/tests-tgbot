@@ -26,7 +26,15 @@ public class AddQuestionProcessor extends AbstractStateProcessor {
      * Сервис для управления вопросами.
      */
     private final QuestionService questionService;
+
+    /**
+     * Утилита с вспомогательными методами
+     */
     private final Util util;
+
+    /**
+     * Сервис для управления тестами
+     */
     private final TestService testService;
 
     /**
@@ -35,10 +43,13 @@ public class AddQuestionProcessor extends AbstractStateProcessor {
      * @param stateService    сервис для управления состояниями
      * @param sessionService  сервис для управления сессиями
      * @param questionService сервис для управления тестами
+     * @param testService сервис для управления тестами
+     * @param util утилита с вспомогательными методами
      */
     public AddQuestionProcessor(StateService stateService,
                                 SessionService sessionService,
-                                QuestionService questionService, Util util, TestService testService) {
+                                QuestionService questionService,
+                                Util util, TestService testService) {
         super(stateService, UserState.ADD_QUESTION);
         this.sessionService = sessionService;
         this.questionService = questionService;
