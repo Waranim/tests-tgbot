@@ -50,11 +50,10 @@ public class EditSetCorrectAnswerProcessor extends AbstractStateProcessor {
     public String process(Long userId, String message) {
         QuestionEntity currentQuestion = sessionService.getCurrentQuestion(userId);
         String setCorrectAnswer = questionService.setCorrectAnswer(currentQuestion, Integer.parseInt(message));
-        if (setCorrectAnswer.startsWith("Некорректный")) {
-            return setCorrectAnswer;
-        } else {
+        if (!setCorrectAnswer.startsWith("Некорректный")) {
             stateService.changeStateById(userId, UserState.DEFAULT);
-            return setCorrectAnswer;
         }
+
+        return setCorrectAnswer;
     }
 }

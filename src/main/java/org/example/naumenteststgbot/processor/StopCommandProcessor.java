@@ -55,13 +55,13 @@ public class StopCommandProcessor extends AbstractCommandProcessor {
             return "Нет текущего вопроса. Пожалуйста, выберите или создайте вопрос.";
         }
         List<AnswerEntity> answers = currentQuestion.getAnswers();
-        if (userState == UserState.ADD_ANSWER) {
-            if (answers.size() < 2) {
-                return "Вы не создали необходимый минимум ответов (минимум: 2). Введите варианты ответа.";
-            }
-            stateService.changeStateById(userId, UserState.SET_CORRECT_ANSWER);
-            return "Укажите правильный вариант ответа:\n" + util.answersListToString(currentQuestion.getAnswers());
+        if (userState != UserState.ADD_ANSWER) {
+            return "Команда /stop используется только при создании вопроса";
         }
-        return "Команда /stop используется только при создании вопроса";
+        if (answers.size() < 2) {
+            return "Вы не создали необходимый минимум ответов (минимум: 2). Введите варианты ответа.";
+        }
+        stateService.changeStateById(userId, UserState.SET_CORRECT_ANSWER);
+        return "Укажите правильный вариант ответа:\n" + util.answersListToString(currentQuestion.getAnswers());
     }
 }

@@ -42,10 +42,9 @@ public class EditAnswerTextChoiceProcessor extends AbstractStateProcessor {
         int answerIndex = Integer.parseInt(message) - 1;
         if (answerIndex < 0 || answerIndex >= currentQuestion.getAnswers().size()) {
             return "Некорректный номер ответа. Попробуйте еще раз.";
-        } else {
-            sessionService.setEditingAnswerIndex(userId, answerIndex);
-            stateService.changeStateById(userId, UserState.EDIT_ANSWER_TEXT);
-            return "Введите новую формулировку ответа";
         }
+        sessionService.setEditingAnswerIndex(userId, answerIndex);
+        stateService.changeStateById(userId, UserState.EDIT_ANSWER_TEXT);
+        return "Введите новую формулировку ответа";
     }
 }

@@ -50,7 +50,10 @@ public class DelQuestionProcessor extends AbstractStateProcessor {
         QuestionEntity question = questionService.getQuestion(Long.parseLong(message));
         sessionService.setCurrentQuestion(userId, question);
         stateService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
-        if (question == null) return "Вопрос не найден!";
-        return String.format("Вопрос “%s” будет удалён, вы уверены? (Да/Нет)", question.getQuestion());
+        if (question == null)
+            return "Вопрос не найден!";
+
+        return String.format("Вопрос “%s” будет удалён, вы уверены? (Да/Нет)",
+                question.getQuestion());
     }
 }

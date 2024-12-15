@@ -54,8 +54,8 @@ public class ConfirmDelQuestion extends AbstractStateProcessor {
             sessionService.setCurrentQuestion(userId, null);
             questionService.delete(currentQuestion);
             return String.format("Вопрос “%s” из теста “%s” удален.", currentQuestion.getQuestion(), currentQuestion.getTest().getTitle());
-        } else {
-            return String.format("Вопрос “%s” из теста “%s” не удален.", currentQuestion.getQuestion(), currentQuestion.getTest().getTitle());
         }
+
+        return String.format("Вопрос “%s” из теста “%s” не удален.", currentQuestion.getQuestion(), currentQuestion.getTest().getTitle());
     }
 }
