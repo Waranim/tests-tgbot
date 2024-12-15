@@ -23,6 +23,19 @@ public class BaseEntity {
     protected Integer version;
 
     /**
+     * Конструктор без параметров
+     */
+    protected BaseEntity() {
+    }
+
+    /**
+     * Конструктор с идентификатором для тестов
+     */
+    protected BaseEntity(Long id) {
+        this.id = id;
+    }
+
+    /**
      * Получить уникальный идентификатор сущности
      */
     public Long getId() {

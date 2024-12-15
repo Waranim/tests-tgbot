@@ -49,6 +49,14 @@ public class TestEntity extends BaseEntity {
     }
 
     /**
+     * Конструктор с указанием идентификатора создателя теста и идентификатором теста
+     */
+    public TestEntity(Long creatorId, Long testId) {
+        super(testId);
+        this.creatorId = creatorId;
+    }
+
+    /**
      * Получить название теста
      */
     public String getTitle() {
@@ -81,5 +89,12 @@ public class TestEntity extends BaseEntity {
      */
     public Long getCreatorId() {
         return creatorId;
+    }
+
+    /**
+     * Получить описание теста
+     */
+    public String getDescription() {
+        return description;
     }
 }
