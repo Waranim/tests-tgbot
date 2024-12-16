@@ -42,6 +42,16 @@ public class QuestionEntity extends BaseEntity {
     }
 
     /**
+     * Конструктор с параметром теста
+     *
+     * @param test       тест, связанный с вопросом
+     * @param questionId идентификатор вопроса
+     */
+    public QuestionEntity(TestEntity test, Long questionId) {
+        super(questionId);
+        this.test = test;
+    }
+    /**
      * Получить формулировку вопроса
      */
     public String getQuestion() {
