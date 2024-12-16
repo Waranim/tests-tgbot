@@ -1,17 +1,17 @@
-package org.example.naumenteststgbot.service;
+package org.example.bot.service;
 
-import org.example.naumenteststgbot.entity.*;
-import org.example.naumenteststgbot.processor.Add.*;
-import org.example.naumenteststgbot.processor.Del.*;
-import org.example.naumenteststgbot.processor.Edit.*;
-import org.example.naumenteststgbot.processor.MessageProcessor;
-import org.example.naumenteststgbot.processor.StopCommandProcessor;
-import org.example.naumenteststgbot.processor.View.ViewQuestionCommandProcessor;
-import org.example.naumenteststgbot.repository.QuestionRepository;
-import org.example.naumenteststgbot.repository.TestRepository;
-import org.example.naumenteststgbot.repository.UserRepository;
-import org.example.naumenteststgbot.repository.UserSessionRepository;
-import org.example.naumenteststgbot.util.Util;
+import org.example.bot.entity.*;
+import org.example.bot.processor.Add.*;
+import org.example.bot.processor.Del.*;
+import org.example.bot.processor.Edit.*;
+import org.example.bot.processor.MessageProcessor;
+import org.example.bot.processor.StopCommandProcessor;
+import org.example.bot.processor.View.ViewQuestionCommandProcessor;
+import org.example.bot.repository.QuestionRepository;
+import org.example.bot.repository.TestRepository;
+import org.example.bot.repository.UserRepository;
+import org.example.bot.repository.UserSessionRepository;
+import org.example.bot.util.Util;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -212,7 +212,7 @@ public class QuestionMessageProcessorTest {
         createAnswer(question1, "4", true);
 
         UserEntity user = new UserEntity(Arrays.asList(test1));
-        user.setId(userId);
+        user.setUserId(userId);
         user.setSession(session);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
@@ -229,7 +229,7 @@ public class QuestionMessageProcessorTest {
         UserSession session = new UserSession(userId);
         TestEntity test = createTest(userId, 1L, "Математический тест");
         UserEntity user = new UserEntity(List.of(test));
-        user.setId(userId);
+        user.setUserId(userId);
         user.setSession(session);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
@@ -294,7 +294,7 @@ public class QuestionMessageProcessorTest {
         UserSession session = new UserSession(userId);
         TestEntity test = createTest(userId, 1L, "Математический тест");
         UserEntity user = new UserEntity(List.of(test));
-        user.setId(userId);
+        user.setUserId(userId);
         user.setSession(session);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
