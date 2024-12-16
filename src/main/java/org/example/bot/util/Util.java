@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * Утилитарный класс
+ */
 @Component
 public class Util {
     /**

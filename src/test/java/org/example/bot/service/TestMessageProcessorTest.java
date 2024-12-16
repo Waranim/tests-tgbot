@@ -27,19 +27,44 @@ import static org.mockito.Mockito.*;
 
 /**
  * Тестирование обработчика сообщений для управления тестами.
- * Проверяет функциональность создания, просмотра, редактирования и удаления тестов.
+ * Проверяет обработку создания, просмотра, редактирования и удаления тестов.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
 class TestMessageProcessorTest {
+    /**
+     * Репозиторий для тестов
+     */
     private TestRepository testRepository;
+    
+    /**
+     *  Репозиторий для пользователей
+     */
     private UserRepository userRepository;
+    
+    /**
+     * Репозиторий для сессий пользователей
+     */
     private UserSessionRepository sessionRepository;
 
+    /**
+     * Утилитарный класс
+     */
     private final Util util = new Util();
+    
+    /**
+     * Идентификатор пользователя
+     */
     private final Long userId = 42L;
+    
+    /**
+     * Обработчик сообщений
+     */
     private MessageHandler messageHandler;
 
+    /** 
+     * Инициализация тестов, создание моков и настройка обработчиков сообщений.
+     */
     @BeforeAll
     void init() {
         testRepository = mock(TestRepository.class);
@@ -87,6 +112,9 @@ class TestMessageProcessorTest {
         messageHandler = new MessageHandler(processors);
     }
 
+    /** 
+     * Очистка моков перед каждым тестом.
+     */
     @BeforeEach
     void clearMocks() {
         clearInvocations(testRepository, userRepository, sessionRepository);
