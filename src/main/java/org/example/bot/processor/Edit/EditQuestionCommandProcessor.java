@@ -3,9 +3,9 @@ package org.example.bot.processor.Edit;
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.QuestionService;
-import org.example.bot.service.SessionService;
+import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
-import org.example.bot.states.UserState;
+import org.example.bot.state.UserState;
 import org.example.bot.util.Util;
 import org.springframework.stereotype.Component;
 
@@ -21,9 +21,9 @@ public class EditQuestionCommandProcessor extends AbstractCommandProcessor {
     private final StateService stateService;
 
     /**
-     * Сервис для управления сессиями
+     * Сервис для управления контекстом
      */
-    private final SessionService sessionService;
+    private final ContextService contextService;
 
     /**
      * Сервис для управления вопросами
@@ -39,16 +39,16 @@ public class EditQuestionCommandProcessor extends AbstractCommandProcessor {
      * Конструктор для инициализации обработчика команды редактирования вопроса
      *
      * @param stateService    cервис для управления состояниями
-     * @param sessionService  cервис для управления сессиями
+     * @param contextService  cервис для управления контекстом
      * @param questionService cервис для управления вопросами
      * @param util утилита с вспомогательными методами
      */
     public EditQuestionCommandProcessor(StateService stateService,
-                                        SessionService sessionService,
+                                        ContextService contextService,
                                         QuestionService questionService, Util util) {
         super("/edit_question");
         this.stateService = stateService;
-        this.sessionService = sessionService;
+        this.contextService = contextService;
         this.questionService = questionService;
         this.util = util;
     }
@@ -67,7 +67,7 @@ public class EditQuestionCommandProcessor extends AbstractCommandProcessor {
         if (question == null) {
             return "Вопрос не найден!";
         }
-        sessionService.setCurrentQuestion(userId, question);
+        contextService.setCurrentQuestion(userId, question);
         stateService.changeStateById(userId, UserState.EDIT_QUESTION);
         return String.format("""
                 Вы выбрали вопрос “%s”. Что вы хотите изменить в вопросе?

@@ -4,10 +4,10 @@ import org.example.bot.entity.QuestionEntity;
 import org.example.bot.entity.TestEntity;
 import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.QuestionService;
-import org.example.bot.service.SessionService;
+import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
-import org.example.bot.states.UserState;
+import org.example.bot.state.UserState;
 import org.example.bot.util.Util;
 import org.springframework.stereotype.Component;
 
@@ -35,9 +35,9 @@ public class AddQuestionCommandProcessor extends AbstractCommandProcessor {
     private final StateService stateService;
 
     /**
-     * Сервис для управления сессиями
+     * Сервис для управления контекстом
      */
-    private final SessionService sessionService;
+    private final ContextService contextService;
 
     /**
      * Утилита с вспомогательными методами
@@ -50,19 +50,19 @@ public class AddQuestionCommandProcessor extends AbstractCommandProcessor {
      * @param testService     сервис для управления тестами
      * @param questionService сервис для управления вопросами
      * @param stateService    сервис для управления состояниями
-     * @param sessionService  сервис для управления сессиями
+     * @param contextService  сервис для управления контекстом
      * @param util            утилита с вспомогательными методами
      */
     public AddQuestionCommandProcessor(TestService testService,
                                        QuestionService questionService,
                                        StateService stateService,
-                                       SessionService sessionService,
+                                       ContextService contextService,
                                        Util util) {
         super("/add_question");
         this.testService = testService;
         this.questionService = questionService;
         this.stateService = stateService;
-        this.sessionService = sessionService;
+        this.contextService = contextService;
         this.util = util;
     }
 
@@ -88,7 +88,7 @@ public class AddQuestionCommandProcessor extends AbstractCommandProcessor {
         }
         QuestionEntity question = questionService.createQuestion(test);
         stateService.changeStateById(userId, UserState.ADD_QUESTION_TEXT);
-        sessionService.setCurrentQuestion(userId, question);
+        contextService.setCurrentQuestion(userId, question);
         return String.format("Введите название вопроса для теста “%s”", test.getTitle());
     }
 }

@@ -2,10 +2,10 @@ package org.example.bot.processor.Del;
 
 import org.example.bot.entity.TestEntity;
 import org.example.bot.processor.AbstractStateProcessor;
-import org.example.bot.service.SessionService;
+import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
-import org.example.bot.states.UserState;
+import org.example.bot.state.UserState;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,9 +19,9 @@ public class ConfirmDelTest extends AbstractStateProcessor {
     private final StateService stateService;
     
     /**
-     * Сервис для управления сессиями.
+     * Сервис для управления контекстом.
      */
-    private final SessionService sessionService;
+    private final ContextService contextService;
     
     /**
      * Сервис для управления тестами.
@@ -32,27 +32,27 @@ public class ConfirmDelTest extends AbstractStateProcessor {
      * Конструктор для инициализации обработчика подтверждения удаления теста.
      * 
      * @param stateService сервис для управления состояниями
-     * @param sessionService сервис для управления сессиями
+     * @param contextService сервис для управления контекстом
      * @param testService сервис для управления тестами
      */
     public ConfirmDelTest(StateService stateService,
-                          SessionService sessionService,
+                          ContextService contextService,
                           TestService testService) {
         super(stateService, UserState.CONFIRM_DELETE_TEST);
         this.stateService = stateService;
-        this.sessionService = sessionService;
+        this.contextService = contextService;
         this.testService = testService;
     }
 
     @Override
     public String process(Long userId, String message) {
         message = message.toLowerCase();
-        TestEntity currentTest = sessionService.getCurrentTest(userId);
+        TestEntity currentTest = contextService.getCurrentTest(userId);
         stateService.changeStateById(userId, UserState.DEFAULT);
         if (!message.equals("да"))
             return String.format("Тест “%s” не удалён", currentTest.getTitle());
-        sessionService.setCurrentTest(userId, null);
-        sessionService.setCurrentQuestion(userId, null);
+        contextService.setCurrentTest(userId, null);
+        contextService.setCurrentQuestion(userId, null);
         testService.delete(currentTest);
 
         return String.format("Тест “%s” удалён", currentTest.getTitle());

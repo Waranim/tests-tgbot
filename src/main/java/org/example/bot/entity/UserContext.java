@@ -3,13 +3,13 @@ package org.example.bot.entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;
-import org.example.bot.states.UserState;
+import org.example.bot.state.UserState;
 
 /**
- * Текущая сессия пользователя
+ * Текущий контекст пользователя
  */
 @Entity
-public class UserSession extends BaseEntity {
+public class UserContext extends BaseEntity {
 
     /**
      * Идентификатор пользователя
@@ -90,13 +90,13 @@ public class UserSession extends BaseEntity {
     /**
      * Конструктор без параметров
      */
-    public UserSession() {
+    public UserContext() {
     }
 
     /**
      * Конструктор с указанием идентификатора пользователя
      */
-    public UserSession(Long userId) {
+    public UserContext(Long userId) {
         this.userId = userId;
     }
 

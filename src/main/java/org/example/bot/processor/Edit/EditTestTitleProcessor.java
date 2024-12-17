@@ -2,10 +2,10 @@ package org.example.bot.processor.Edit;
 
 import org.example.bot.entity.TestEntity;
 import org.example.bot.processor.AbstractStateProcessor;
-import org.example.bot.service.SessionService;
+import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
-import org.example.bot.states.UserState;
+import org.example.bot.state.UserState;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,9 +19,9 @@ public class EditTestTitleProcessor extends AbstractStateProcessor {
     private final StateService stateService;
     
     /**
-     * Сервис для управления сессиями.
+     * Сервис для управления контекстом.
      */
-    private final SessionService sessionService;
+    private final ContextService contextService;
     
     /**
      * Сервис для управления тестами.
@@ -32,21 +32,21 @@ public class EditTestTitleProcessor extends AbstractStateProcessor {
      * Конструктор для инициализации обработчика редактирования названия теста.
      * 
      * @param stateService сервис для управления состояниями
-     * @param sessionService сервис для управления сессиями
+     * @param contextService сервис для управления контекстом
      * @param testService сервис для управления тестами
      */
     public EditTestTitleProcessor(StateService stateService,
-                                  SessionService sessionService,
+                                  ContextService contextService,
                                   TestService testService) {
         super(stateService, UserState.EDIT_TEST_TITLE);
         this.stateService = stateService;
-        this.sessionService = sessionService;
+        this.contextService = contextService;
         this.testService = testService;
     }
 
     @Override
     public String process(Long userId, String message) {
-        TestEntity currentTest = sessionService.getCurrentTest(userId);
+        TestEntity currentTest = contextService.getCurrentTest(userId);
         currentTest.setTitle(message);
         testService.update(currentTest);
         stateService.changeStateById(userId, UserState.DEFAULT);

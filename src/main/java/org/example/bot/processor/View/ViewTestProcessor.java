@@ -2,7 +2,7 @@ package org.example.bot.processor.View;
 
 import org.example.bot.processor.AbstractStateProcessor;
 import org.example.bot.service.StateService;
-import org.example.bot.states.UserState;
+import org.example.bot.state.UserState;
 import org.springframework.stereotype.Component;
 
 /**

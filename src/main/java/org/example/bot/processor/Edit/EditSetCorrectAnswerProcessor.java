@@ -3,9 +3,9 @@ package org.example.bot.processor.Edit;
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.processor.AbstractStateProcessor;
 import org.example.bot.service.QuestionService;
-import org.example.bot.service.SessionService;
+import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
-import org.example.bot.states.UserState;
+import org.example.bot.state.UserState;
 
 import org.springframework.stereotype.Component;
 
@@ -21,9 +21,9 @@ public class EditSetCorrectAnswerProcessor extends AbstractStateProcessor {
     private final StateService stateService;
 
     /**
-     * Сервис для управления сессиями
+     * Сервис для управления контекстом
      */
-    private final SessionService sessionService;
+    private final ContextService contextService;
 
     /**
      * Сервис для управления вопросами
@@ -34,21 +34,21 @@ public class EditSetCorrectAnswerProcessor extends AbstractStateProcessor {
      * Конструктор для инициализации обработчика редактирования правильного ответа
      *
      * @param stateService    сервис для управления состояниями
-     * @param sessionService  сервис для управления сессиями
+     * @param contextService  сервис для управления контекстом
      * @param questionService сервис для управления вопросами
      */
     public EditSetCorrectAnswerProcessor(StateService stateService,
-                                         SessionService sessionService,
+                                         ContextService contextService,
                                          QuestionService questionService) {
         super(stateService, UserState.SET_CORRECT_ANSWER);
         this.stateService = stateService;
-        this.sessionService = sessionService;
+        this.contextService = contextService;
         this.questionService = questionService;
     }
 
     @Override
     public String process(Long userId, String message) {
-        QuestionEntity currentQuestion = sessionService.getCurrentQuestion(userId);
+        QuestionEntity currentQuestion = contextService.getCurrentQuestion(userId);
         String setCorrectAnswer = questionService.setCorrectAnswer(currentQuestion, Integer.parseInt(message));
         if (!setCorrectAnswer.startsWith("Некорректный")) {
             stateService.changeStateById(userId, UserState.DEFAULT);

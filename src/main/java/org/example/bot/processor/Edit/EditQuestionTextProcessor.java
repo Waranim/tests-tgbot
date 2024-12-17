@@ -3,9 +3,9 @@ package org.example.bot.processor.Edit;
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.processor.AbstractStateProcessor;
 import org.example.bot.service.QuestionService;
-import org.example.bot.service.SessionService;
+import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
-import org.example.bot.states.UserState;
+import org.example.bot.state.UserState;
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,9 +20,9 @@ public class EditQuestionTextProcessor extends AbstractStateProcessor {
     private final StateService stateService;
 
     /**
-     * Сервис для управления сессиями
+     * Сервис для управления контекстом
      */
-    private final SessionService sessionService;
+    private final ContextService contextService;
 
     /**
      * Сервис для управления вопросами
@@ -33,21 +33,21 @@ public class EditQuestionTextProcessor extends AbstractStateProcessor {
      * Конструктор для инициализации обработчика редактирования формулировки вопроса
      *
      * @param stateService    cервис для управления состояниями
-     * @param sessionService  cервис для управления сессиями
+     * @param contextService  cервис для управления контекстом
      * @param questionService cервис для управления вопросами
      */
     public EditQuestionTextProcessor(StateService stateService,
-                                     SessionService sessionService,
+                                     ContextService contextService,
                                      QuestionService questionService) {
         super(stateService, UserState.EDIT_QUESTION_TEXT);
         this.stateService = stateService;
-        this.sessionService = sessionService;
+        this.contextService = contextService;
         this.questionService = questionService;
     }
 
     @Override
     public String process(Long userId, String message) {
-        QuestionEntity currentQuestion = sessionService.getCurrentQuestion(userId);
+        QuestionEntity currentQuestion = contextService.getCurrentQuestion(userId);
         currentQuestion.setQuestion(message);
         questionService.update(currentQuestion);
         stateService.changeStateById(userId, UserState.DEFAULT);

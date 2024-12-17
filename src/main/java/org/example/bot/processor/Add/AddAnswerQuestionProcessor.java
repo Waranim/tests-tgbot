@@ -4,9 +4,9 @@ import org.example.bot.entity.QuestionEntity;
 import org.example.bot.processor.AbstractStateProcessor;
 import org.example.bot.processor.StopCommandProcessor;
 import org.example.bot.service.QuestionService;
-import org.example.bot.service.SessionService;
+import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
-import org.example.bot.states.UserState;
+import org.example.bot.state.UserState;
 import org.springframework.stereotype.Component;
 
 /**
@@ -16,9 +16,9 @@ import org.springframework.stereotype.Component;
 public class AddAnswerQuestionProcessor extends AbstractStateProcessor {
 
     /**
-     * Сервис для управления сессиями
+     * Сервис для управления контекстом
      */
-    private final SessionService sessionService;
+    private final ContextService contextService;
 
     /**
      * Сервис для управления вопросами
@@ -34,15 +34,15 @@ public class AddAnswerQuestionProcessor extends AbstractStateProcessor {
      * Конструктор для инициализации обработчика состояния добавления ответа в вопрос
      *
      * @param stateService         сервис для управления состоянием
-     * @param sessionService       сервис для управления сессиями
+     * @param contextService       сервис для управления контекстом
      * @param questionService      сервис для управления вопросами
      * @param stopCommandProcessor обработчик команды /stop
      */
     public AddAnswerQuestionProcessor(StateService stateService,
-                                      SessionService sessionService,
+                                      ContextService contextService,
                                       QuestionService questionService, StopCommandProcessor stopCommandProcessor) {
         super(stateService, UserState.ADD_ANSWER);
-        this.sessionService = sessionService;
+        this.contextService = contextService;
         this.questionService = questionService;
         this.stopCommandProcessor = stopCommandProcessor;
     }
@@ -52,7 +52,7 @@ public class AddAnswerQuestionProcessor extends AbstractStateProcessor {
         if (message.equals("/stop")) {
             return stopCommandProcessor.process(userId, message);
         }
-        QuestionEntity currentQuestion = sessionService.getCurrentQuestion(userId);
+        QuestionEntity currentQuestion = contextService.getCurrentQuestion(userId);
         questionService.addAnswerOption(currentQuestion, message);
         return "Введите вариант ответа. Если вы хотите закончить добавлять варианты, введите команду “/stop”.";
     }

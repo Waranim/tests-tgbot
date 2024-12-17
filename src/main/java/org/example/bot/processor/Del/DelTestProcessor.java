@@ -2,10 +2,10 @@ package org.example.bot.processor.Del;
 
 import org.example.bot.entity.TestEntity;
 import org.example.bot.processor.AbstractStateProcessor;
-import org.example.bot.service.SessionService;
+import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
-import org.example.bot.states.UserState;
+import org.example.bot.state.UserState;
 import org.example.bot.util.Util;
 import org.springframework.stereotype.Component;
 
@@ -32,9 +32,9 @@ public class DelTestProcessor extends AbstractStateProcessor {
     private final Util util;
     
     /**
-     * Сервис для управления сессиями.
+     * Сервис для управления контекстом.
      */
-    private final SessionService sessionService;
+    private final ContextService contextService;
 
     /**
      * Конструктор для инициализации обработчика удаления теста.
@@ -42,17 +42,17 @@ public class DelTestProcessor extends AbstractStateProcessor {
      * @param stateService сервис для управления состояниями
      * @param testService сервис для управления тестами
      * @param util утилита с вспомогательными методами
-     * @param sessionService сервис для управления сессиями
+     * @param contextService сервис для управления контекстом
      */
     public DelTestProcessor(StateService stateService,
                             TestService testService,
                             Util util,
-                            SessionService sessionService) {
+                            ContextService contextService) {
         super(stateService, UserState.DELETE_TEST);
         this.stateService = stateService;
         this.testService = testService;
         this.util = util;
-        this.sessionService = sessionService;
+        this.contextService = contextService;
     }
 
     @Override
@@ -65,7 +65,7 @@ public class DelTestProcessor extends AbstractStateProcessor {
         if (test == null || !tests.contains(test))
             return "Тест не найден!";
 
-        sessionService.setCurrentTest(userId, test);
+        contextService.setCurrentTest(userId, test);
         stateService.changeStateById(userId, UserState.CONFIRM_DELETE_TEST);
         return String.format("Тест “%s” будет удалён, вы уверены? (Да/Нет)", test.getTitle());
     }

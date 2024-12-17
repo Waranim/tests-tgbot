@@ -1,8 +1,6 @@
 package org.example.bot.service;
 
 import org.example.bot.entity.*;
-import org.example.bot.states.UserState;
-import org.example.bot.repository.AnswerRepository;
 import org.example.bot.repository.QuestionRepository;
 import org.springframework.stereotype.Service;
 
