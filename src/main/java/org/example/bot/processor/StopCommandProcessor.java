@@ -39,7 +39,9 @@ public class StopCommandProcessor extends AbstractCommandProcessor {
      * @param contextService сервис для управления контекстом
      * @param util           утилита с вспомогательными методами
      */
-    public StopCommandProcessor(StateService stateService, ContextService contextService, Util util) {
+    public StopCommandProcessor(StateService stateService,
+                                ContextService contextService,
+                                Util util) {
         super("/stop");
         this.stateService = stateService;
         this.contextService = contextService;

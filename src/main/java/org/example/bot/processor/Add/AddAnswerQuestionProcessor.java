@@ -40,7 +40,8 @@ public class AddAnswerQuestionProcessor extends AbstractStateProcessor {
      */
     public AddAnswerQuestionProcessor(StateService stateService,
                                       ContextService contextService,
-                                      QuestionService questionService, StopCommandProcessor stopCommandProcessor) {
+                                      QuestionService questionService,
+                                      StopCommandProcessor stopCommandProcessor) {
         super(stateService, UserState.ADD_ANSWER);
         this.contextService = contextService;
         this.questionService = questionService;

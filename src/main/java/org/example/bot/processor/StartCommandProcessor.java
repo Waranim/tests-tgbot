@@ -24,7 +24,8 @@ public class StartCommandProcessor extends AbstractCommandProcessor {
      * @param userService сервис для управления пользователями
      * @param helpCommandProcessor обработчик команды справки
      */
-    public StartCommandProcessor(UserService userService, HelpCommandProcessor helpCommandProcessor) {
+    public StartCommandProcessor(UserService userService,
+                                 HelpCommandProcessor helpCommandProcessor) {
         super("/start");
         this.userService = userService;
         this.helpCommandProcessor = helpCommandProcessor;

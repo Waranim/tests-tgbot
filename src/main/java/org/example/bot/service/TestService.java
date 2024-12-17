@@ -57,7 +57,8 @@ public class TestService {
      */
     public List<TestEntity> getTestsByUserId(Long userId) {
         UserEntity user = userService.getUserById(userId);
-        if (user == null) return null;
+        if (user == null)
+            return null;
         return user.getTests();
     }
 
