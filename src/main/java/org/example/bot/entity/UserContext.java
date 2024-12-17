@@ -6,7 +6,7 @@ import jakarta.persistence.OneToOne;
 import org.example.bot.state.UserState;
 
 /**
- * Текущий контекст пользователя
+ * Контекст пользователя
  */
 @Entity
 public class UserContext extends BaseEntity {
