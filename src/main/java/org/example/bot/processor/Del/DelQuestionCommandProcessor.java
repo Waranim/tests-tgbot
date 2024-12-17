@@ -45,7 +45,8 @@ public class DelQuestionCommandProcessor extends AbstractCommandProcessor {
      */
     public DelQuestionCommandProcessor(StateService stateService,
                                        ContextService contextService,
-                                       QuestionService questionService, Util util) {
+                                       QuestionService questionService,
+                                       Util util) {
         super("/del_question");
         this.stateService = stateService;
         this.contextService = contextService;

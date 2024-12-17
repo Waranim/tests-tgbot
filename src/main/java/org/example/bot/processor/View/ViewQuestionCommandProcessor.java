@@ -31,7 +31,8 @@ public class ViewQuestionCommandProcessor extends AbstractCommandProcessor {
      * @param testService сервис для управления тестами
      * @param util утилита с вспомогательными методами
      */
-    public ViewQuestionCommandProcessor(TestService testService, Util util) {
+    public ViewQuestionCommandProcessor(TestService testService,
+                                        Util util) {
         super("/view_question");
         this.testService = testService;
         this.util = util;

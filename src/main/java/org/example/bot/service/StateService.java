@@ -30,7 +30,8 @@ public class StateService {
      */
     public void changeStateById(Long id, UserState state) {
         UserContext context = contextService.getContext(id);
-        if (context == null) return;
+        if (context == null)
+            return;
         context.setState(state);
         contextService.updateContext(context);
     }

@@ -36,7 +36,9 @@ public class ViewCommandProcessor extends AbstractCommandProcessor {
      * @param stateService сервис для управления состояниями
      * @param util утилита с вспомогательными методами
      */
-    public ViewCommandProcessor(TestService testService, StateService stateService, Util util) {
+    public ViewCommandProcessor(TestService testService,
+                                StateService stateService,
+                                Util util) {
         super("/view");
         this.testService = testService;
         this.stateService = stateService;

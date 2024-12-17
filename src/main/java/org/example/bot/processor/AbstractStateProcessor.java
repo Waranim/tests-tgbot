@@ -23,7 +23,8 @@ public abstract class AbstractStateProcessor implements MessageProcessor {
      * @param stateService сервис для управления состояниями
      * @param requiredState необходимое состояние для обработки
      */
-    protected AbstractStateProcessor(StateService stateService, UserState requiredState) {
+    protected AbstractStateProcessor(StateService stateService,
+                                     UserState requiredState) {
         this.stateService = stateService;
         this.requiredState = requiredState;
     }

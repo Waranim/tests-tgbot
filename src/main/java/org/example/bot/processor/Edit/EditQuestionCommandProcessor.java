@@ -45,7 +45,8 @@ public class EditQuestionCommandProcessor extends AbstractCommandProcessor {
      */
     public EditQuestionCommandProcessor(StateService stateService,
                                         ContextService contextService,
-                                        QuestionService questionService, Util util) {
+                                        QuestionService questionService,
+                                        Util util) {
         super("/edit_question");
         this.stateService = stateService;
         this.contextService = contextService;
