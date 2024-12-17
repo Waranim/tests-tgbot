@@ -1,4 +1,4 @@
-package org.example.bot.states;
+package org.example.bot.state;
 
 /**
  * Перечисление состояний пользователя в системе

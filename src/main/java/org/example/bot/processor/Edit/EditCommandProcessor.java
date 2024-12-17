@@ -2,10 +2,10 @@ package org.example.bot.processor.Edit;
 
 import org.example.bot.entity.TestEntity;
 import org.example.bot.processor.AbstractCommandProcessor;
-import org.example.bot.service.SessionService;
+import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
-import org.example.bot.states.UserState;
+import org.example.bot.state.UserState;
 import org.example.bot.util.Util;
 import org.springframework.stereotype.Component;
 
@@ -27,9 +27,9 @@ public class EditCommandProcessor extends AbstractCommandProcessor {
     private final Util util;
     
     /**
-     * Сервис для управления сессиями.
+     * Сервис для управления контекстом.
      */
-    private final SessionService sessionService;
+    private final ContextService contextService;
     
     /**
      * Сервис для управления состояниями.
@@ -41,17 +41,17 @@ public class EditCommandProcessor extends AbstractCommandProcessor {
      * 
      * @param testService сервис для управления тестами
      * @param util утилита с вспомогательными методами
-     * @param sessionService сервис для управления сессиями
+     * @param contextService сервис для управления контекстом
      * @param stateService сервис для управления состояниями
      */
     public EditCommandProcessor(TestService testService,
                                 Util util,
-                                SessionService sessionService,
+                                ContextService contextService,
                                 StateService stateService) {
         super("/edit");
         this.testService = testService;
         this.util = util;
-        this.sessionService = sessionService;
+        this.contextService = contextService;
         this.stateService = stateService;
     }
 
@@ -67,7 +67,7 @@ public class EditCommandProcessor extends AbstractCommandProcessor {
         TestEntity test = testService.getTest(testId);
         if (test == null || !tests.contains(test))
             return "Тест не найден!";
-        sessionService.setCurrentTest(userId, test);
+        contextService.setCurrentTest(userId, test);
         stateService.changeStateById(userId, UserState.EDIT_TEST);
         return String.format("""
                 Вы выбрали тест “%s”. Что вы хотите изменить?

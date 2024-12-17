@@ -1,4 +1,4 @@
-package org.example.bot.service;
+package org.example.bot.handler;
 
 import org.example.bot.processor.MessageProcessor;
 import org.springframework.stereotype.Component;

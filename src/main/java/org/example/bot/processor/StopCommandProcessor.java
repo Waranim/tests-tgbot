@@ -2,9 +2,9 @@ package org.example.bot.processor;
 
 import org.example.bot.entity.AnswerEntity;
 import org.example.bot.entity.QuestionEntity;
-import org.example.bot.service.SessionService;
+import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
-import org.example.bot.states.UserState;
+import org.example.bot.state.UserState;
 import org.example.bot.util.Util;
 import org.springframework.stereotype.Component;
 
@@ -23,9 +23,9 @@ public class StopCommandProcessor extends AbstractCommandProcessor {
     private final StateService stateService;
 
     /**
-     * Сервис для управления сессиями
+     * Сервис для управления контекстом
      */
-    private final SessionService sessionService;
+    private final ContextService contextService;
 
     /**
      * Утилита с вспомогательными методами
@@ -36,21 +36,21 @@ public class StopCommandProcessor extends AbstractCommandProcessor {
      * Конструктор для инициализации обработчика команды /stop
      *
      * @param stateService   сервис для управления состояниями
-     * @param sessionService сервис для управления сессиями
+     * @param contextService сервис для управления контекстом
      * @param util           утилита с вспомогательными методами
      */
-    public StopCommandProcessor(StateService stateService, SessionService sessionService, Util util) {
+    public StopCommandProcessor(StateService stateService, ContextService contextService, Util util) {
         super("/stop");
         this.stateService = stateService;
-        this.sessionService = sessionService;
+        this.contextService = contextService;
         this.util = util;
 
     }
 
     @Override
     public String process(Long userId, String message) {
-        UserState userState = sessionService.getSession(userId).getState();
-        QuestionEntity currentQuestion = sessionService.getCurrentQuestion(userId);
+        UserState userState = contextService.getContext(userId).getState();
+        QuestionEntity currentQuestion = contextService.getCurrentQuestion(userId);
         if (currentQuestion == null) {
             return "Нет текущего вопроса. Пожалуйста, выберите или создайте вопрос.";
         }

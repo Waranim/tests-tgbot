@@ -4,10 +4,10 @@ import org.example.bot.entity.QuestionEntity;
 import org.example.bot.entity.TestEntity;
 import org.example.bot.processor.AbstractStateProcessor;
 import org.example.bot.service.QuestionService;
-import org.example.bot.service.SessionService;
+import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
-import org.example.bot.states.UserState;
+import org.example.bot.state.UserState;
 import org.example.bot.util.Util;
 import org.springframework.stereotype.Component;
 
@@ -18,9 +18,9 @@ import org.springframework.stereotype.Component;
 public class AddQuestionProcessor extends AbstractStateProcessor {
 
     /**
-     * Сервис для управления сессиями.
+     * Сервис для управления контекстом
      */
-    private final SessionService sessionService;
+    private final ContextService contextService;
 
     /**
      * Сервис для управления вопросами.
@@ -41,17 +41,17 @@ public class AddQuestionProcessor extends AbstractStateProcessor {
      * Конструктор для инициализации обработчика добавления вопроса
      *
      * @param stateService    сервис для управления состояниями
-     * @param sessionService  сервис для управления сессиями
+     * @param contextService  сервис для управления контекстом
      * @param questionService сервис для управления тестами
      * @param testService сервис для управления тестами
      * @param util утилита с вспомогательными методами
      */
     public AddQuestionProcessor(StateService stateService,
-                                SessionService sessionService,
+                                ContextService contextService,
                                 QuestionService questionService,
                                 Util util, TestService testService) {
         super(stateService, UserState.ADD_QUESTION);
-        this.sessionService = sessionService;
+        this.contextService = contextService;
         this.questionService = questionService;
         this.util = util;
         this.testService = testService;
@@ -69,7 +69,7 @@ public class AddQuestionProcessor extends AbstractStateProcessor {
             return "Тест не найден!";
         }
         QuestionEntity nquestion = questionService.createQuestion(selectedTest);
-        sessionService.setCurrentQuestion(userId, nquestion);
+        contextService.setCurrentQuestion(userId, nquestion);
         stateService.changeStateById(userId, UserState.ADD_QUESTION_TEXT);
         return String.format("Введите название вопроса для теста “%s”", selectedTest.getTitle());
     }

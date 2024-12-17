@@ -1,7 +1,7 @@
 package org.example.bot.processor;
 
 import org.example.bot.service.StateService;
-import org.example.bot.states.UserState;
+import org.example.bot.state.UserState;
 
 /**
  * Абстрактный класс для обработки состояний.

@@ -1,7 +1,7 @@
 package org.example.bot.service;
 
 import org.example.bot.entity.UserEntity;
-import org.example.bot.entity.UserSession;
+import org.example.bot.entity.UserContext;
 import org.example.bot.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +37,7 @@ public class UserService {
         UserEntity userEntity = new UserEntity();
         userEntity.setUserId(id);
         userEntity.setUsername(username);
-        userEntity.setSession(new UserSession(id));
+        userEntity.setContext(new UserContext(id));
         userRepository.save(userEntity);
     }
 

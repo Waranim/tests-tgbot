@@ -36,10 +36,10 @@ public class UserEntity {
     private List<TestEntity> tests;
 
     /**
-     * Сессия пользователя
+     * Контекст пользователя
      */
     @OneToOne(cascade = CascadeType.ALL)
-    protected UserSession userSession;
+    protected UserContext userContext;
 
     /**
      * Пустой конструктор
@@ -91,17 +91,17 @@ public class UserEntity {
     }
 
     /**
-     * Установить сессию пользователя
+     * Установить контекст пользователя
      */
-    public void setSession(UserSession userSession) {
-        this.userSession = userSession;
+    public void setContext(UserContext userContext) {
+        this.userContext = userContext;
     }
 
     /**
-     * Получить сессию пользователя
+     * Получить контекст пользователя
      */
-    public UserSession getSession() {
-        return userSession;
+    public UserContext getContext() {
+        return userContext;
     }
 
     /**

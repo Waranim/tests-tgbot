@@ -1,6 +1,7 @@
 package org.example.bot.service;
 
 import org.example.bot.entity.*;
+import org.example.bot.handler.MessageHandler;
 import org.example.bot.processor.*;
 import org.example.bot.processor.Add.*;
 import org.example.bot.processor.Del.*;
@@ -8,7 +9,7 @@ import org.example.bot.processor.Edit.*;
 import org.example.bot.processor.View.*;
 import org.example.bot.repository.TestRepository;
 import org.example.bot.repository.UserRepository;
-import org.example.bot.repository.UserSessionRepository;
+import org.example.bot.repository.UserContextRepository;
 import org.example.bot.util.Util;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,9 +44,9 @@ class TestMessageProcessorTest {
     private UserRepository userRepository;
     
     /**
-     * Репозиторий для сессий пользователей
+     * Репозиторий для контекстов пользователей
      */
-    private UserSessionRepository sessionRepository;
+    private UserContextRepository contextRepository;
 
     /**
      * Утилитарный класс
@@ -69,28 +70,28 @@ class TestMessageProcessorTest {
     void init() {
         testRepository = mock(TestRepository.class);
         userRepository = mock(UserRepository.class);
-        sessionRepository = mock(UserSessionRepository.class);
+        contextRepository = mock(UserContextRepository.class);
 
         UserService userService = new UserService(userRepository);
-        SessionService sessionService = new SessionService(sessionRepository, userService);
-        StateService stateService = new StateService(sessionService);
+        ContextService contextService = new ContextService(contextRepository, userService);
+        StateService stateService = new StateService(contextService);
         TestService testService = new TestService(testRepository, userService);
 
         HelpCommandProcessor helpCommandProcessor = new HelpCommandProcessor();
         StartCommandProcessor startCommandProcessor = new StartCommandProcessor(userService, helpCommandProcessor);
-        AddCommandProcessor addCommandProcessor = new AddCommandProcessor(testService, stateService, sessionService);
+        AddCommandProcessor addCommandProcessor = new AddCommandProcessor(testService, stateService, contextService);
         ViewCommandProcessor viewCommandProcessor = new ViewCommandProcessor(testService, stateService, util);
-        EditCommandProcessor editCommandProcessor = new EditCommandProcessor(testService, util, sessionService, stateService);
+        EditCommandProcessor editCommandProcessor = new EditCommandProcessor(testService, util, contextService, stateService);
         DelCommandProcessor delCommandProcessor = new DelCommandProcessor(stateService, testService, util);
 
-        AddTestTitleProcessor addTestTitleProcessor = new AddTestTitleProcessor(stateService, sessionService, testService);
-        AddTestDescriptionProcessor addTestDescriptionProcessor = new AddTestDescriptionProcessor(stateService, sessionService, testService);
+        AddTestTitleProcessor addTestTitleProcessor = new AddTestTitleProcessor(stateService, contextService, testService);
+        AddTestDescriptionProcessor addTestDescriptionProcessor = new AddTestDescriptionProcessor(stateService, contextService, testService);
         ViewTestProcessor viewTestProcessor = new ViewTestProcessor(stateService, viewCommandProcessor);
         EditTestProcessor editTestProcessor = new EditTestProcessor(stateService);
-        EditTestTitleProcessor editTestTitleProcessor = new EditTestTitleProcessor(stateService, sessionService, testService);
-        EditTestDescriptionProcessor editTestDescriptionProcessor = new EditTestDescriptionProcessor(stateService, sessionService, testService);
-        DelTestProcessor delTestProcessor = new DelTestProcessor(stateService, testService, util, sessionService);
-        ConfirmDelTest confirmDelTest = new ConfirmDelTest(stateService, sessionService, testService);
+        EditTestTitleProcessor editTestTitleProcessor = new EditTestTitleProcessor(stateService, contextService, testService);
+        EditTestDescriptionProcessor editTestDescriptionProcessor = new EditTestDescriptionProcessor(stateService, contextService, testService);
+        DelTestProcessor delTestProcessor = new DelTestProcessor(stateService, testService, util, contextService);
+        ConfirmDelTest confirmDelTest = new ConfirmDelTest(stateService, contextService, testService);
 
         List<MessageProcessor> processors = Arrays.asList(
                 helpCommandProcessor,
@@ -117,7 +118,7 @@ class TestMessageProcessorTest {
      */
     @BeforeEach
     void clearMocks() {
-        clearInvocations(testRepository, userRepository, sessionRepository);
+        clearInvocations(testRepository, userRepository, contextRepository);
     }
 
     /**
@@ -138,13 +139,13 @@ class TestMessageProcessorTest {
      */
     @Test
     void testAddTest() {
-        UserSession session = new UserSession(userId);
+        UserContext context = new UserContext(userId);
         UserEntity user = new UserEntity();
         user.setUserId(userId);
-        user.setSession(session);
+        user.setContext(context);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(sessionRepository.findById(userId)).thenReturn(Optional.of(session));
+        when(contextRepository.findById(userId)).thenReturn(Optional.of(context));
         when(testRepository.save(any(TestEntity.class))).thenAnswer(i -> i.getArgument(0));
 
         String response1 = messageHandler.handle("/add", userId);
@@ -163,16 +164,16 @@ class TestMessageProcessorTest {
      * Подготавливает данные для использования в тестах
      */
     private void prepareTestData() {
-        UserSession session = new UserSession(userId);
+        UserContext context = new UserContext(userId);
         TestEntity test1 = createTest(userId, 123L, "Математический тест");
         TestEntity test2 = createTest(userId, 312L, "Тест по знаниям ПДД");
         UserEntity user = new UserEntity(Arrays.asList(test1, test2));
 
         user.setUserId(userId);
-        user.setSession(session);
+        user.setContext(context);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(sessionRepository.findById(userId)).thenReturn(Optional.of(session));
+        when(contextRepository.findById(userId)).thenReturn(Optional.of(context));
         when(testRepository.findById(123L)).thenReturn(Optional.of(test1));
         when(testRepository.findById(312L)).thenReturn(Optional.of(test2));
     }

@@ -1,38 +1,38 @@
 package org.example.bot.service;
 
-import org.example.bot.entity.UserSession;
-import org.example.bot.states.UserState;
+import org.example.bot.entity.UserContext;
+import org.example.bot.state.UserState;
 import org.springframework.stereotype.Service;
 
 /**
- * Сервис для управления состоянием пользователя
+ * Сервис для управления контекстом пользователя
  */
 @Service
 public class StateService {
 
     /**
-     * Сервис сессии
+     * Сервис контекста пользователя
      */
-    private final SessionService sessionService;
+    private final ContextService contextService;
 
     /**
      * Конструктор сервиса состояний
-     * @param sessionService Сервис сессии
+     * @param contextService Сервис контекста
      */
-    public StateService(SessionService sessionService) {
-        this.sessionService = sessionService;
+    public StateService(ContextService contextService) {
+        this.contextService = contextService;
     }
 
     /**
-     * Изменить состояние сессии пользователя по идентификатору
+     * Изменить состояние контекста пользователя по идентификатору
      * @param id идентификатор пользователя
      * @param state состояние пользователя
      */
     public void changeStateById(Long id, UserState state) {
-        UserSession session = sessionService.getSession(id);
-        if (session == null) return;
-        session.setState(state);
-        sessionService.updateSession(session);
+        UserContext context = contextService.getContext(id);
+        if (context == null) return;
+        context.setState(state);
+        contextService.updateContext(context);
     }
 
     /**
@@ -41,9 +41,9 @@ public class StateService {
      * @return текущее состояние или null, если пользователь не найден
      */
     public UserState getCurrentState(Long id) {
-        UserSession session = sessionService.getSession(id);
-        return session != null
-                ? session.getState()
+        UserContext context = contextService.getContext(id);
+        return context != null
+                ? context.getState()
                 : null;
     }
 }
