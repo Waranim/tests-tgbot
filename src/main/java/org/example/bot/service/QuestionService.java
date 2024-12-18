@@ -55,16 +55,15 @@ public class QuestionService {
     /**
      * Устанавливает правильный ответ для вопроса.
      */
-    public String setCorrectAnswer(QuestionEntity question, int optionIndex) {
+    public void setCorrectAnswer(QuestionEntity question, int optionIndex) {
         List<AnswerEntity> answers = question.getAnswers();
         if (optionIndex < 1 || optionIndex > answers.size()) {
-            return "Некорректный номер варианта ответа. Введите число от 1 до " + answers.size();
+            throw new IllegalArgumentException("Некорректный номер варианта ответа.");
         }
         for (int i = 0; i < answers.size(); i++) {
             answers.get(i).setCorrect(i == optionIndex - 1);
         }
         questionRepository.save(question);
-        return String.format("Вариант ответа %s назначен правильным.", optionIndex);
     }
 
     /**

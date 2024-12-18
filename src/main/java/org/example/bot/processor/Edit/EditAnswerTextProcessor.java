@@ -8,6 +8,8 @@ import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 /**
  * Обработчик состояния редактирования формулировки ответа
  */
@@ -47,11 +49,17 @@ public class EditAnswerTextProcessor extends AbstractStateProcessor {
 
     @Override
     public String process(Long userId, String message) {
-        QuestionEntity currentQuestion = contextService.getCurrentQuestion(userId);
-        int editingAnswerIndex = contextService.getEditingAnswerIndex(userId);
+        Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
+        Optional<Integer> optionalEditingAnswerIndex = contextService.getEditingAnswerIndex(userId);
+        if (optionalCurrentQuestion.isEmpty() || optionalEditingAnswerIndex.isEmpty()) {
+            return "Вопрос не найден";
+        }
+        QuestionEntity currentQuestion = optionalCurrentQuestion.get();
+        int editingAnswerIndex = optionalEditingAnswerIndex.get();
         currentQuestion.getAnswers().get(editingAnswerIndex).setAnswerText(message);
         questionService.update(currentQuestion);
         stateService.changeStateById(userId, UserState.DEFAULT);
+
         return String.format("Формулировка изменена на “%s”", message);
     }
 }
