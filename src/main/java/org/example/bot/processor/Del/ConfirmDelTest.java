@@ -8,6 +8,8 @@ import org.example.bot.service.TestService;
 import org.example.bot.state.UserState;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 /**
  * Обработчик состояния подтверждения удаления теста.
  */
@@ -47,14 +49,18 @@ public class ConfirmDelTest extends AbstractStateProcessor {
     @Override
     public String process(Long userId, String message) {
         message = message.toLowerCase();
-        TestEntity currentTest = contextService.getCurrentTest(userId);
+        Optional<TestEntity> optionalCurrentTest = contextService.getCurrentTest(userId);
+        if (optionalCurrentTest.isEmpty()) {
+            return "Вопрос не найден";
+        }
+        TestEntity currentTest = optionalCurrentTest.get();
         stateService.changeStateById(userId, UserState.DEFAULT);
-        if (!message.equals("да"))
+        if (!message.equals("да")) {
             return String.format("Тест “%s” не удалён", currentTest.getTitle());
+        }
         contextService.setCurrentTest(userId, null);
         contextService.setCurrentQuestion(userId, null);
         testService.delete(currentTest);
-
         return String.format("Тест “%s” удалён", currentTest.getTitle());
     }
 }

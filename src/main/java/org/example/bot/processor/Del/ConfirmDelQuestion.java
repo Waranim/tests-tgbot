@@ -8,6 +8,8 @@ import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 /**
  * Обработчик состояния подтверждения удаления вопроса
  */
@@ -48,14 +50,17 @@ public class ConfirmDelQuestion extends AbstractStateProcessor {
     @Override
     public String process(Long userId, String message) {
         message = message.toLowerCase();
-        QuestionEntity currentQuestion = contextService.getCurrentQuestion(userId);
+        Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
+        if (optionalCurrentQuestion.isEmpty()) {
+            return "Вопрос не найден";
+        }
+        QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         stateService.changeStateById(userId, UserState.DEFAULT);
         if (message.equals("да")) {
             contextService.setCurrentQuestion(userId, null);
             questionService.delete(currentQuestion);
             return String.format("Вопрос “%s” из теста “%s” удален.", currentQuestion.getQuestion(), currentQuestion.getTest().getTitle());
         }
-
         return String.format("Вопрос “%s” из теста “%s” не удален.", currentQuestion.getQuestion(), currentQuestion.getTest().getTitle());
     }
 }

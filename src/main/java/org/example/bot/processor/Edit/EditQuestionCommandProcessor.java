@@ -9,6 +9,8 @@ import org.example.bot.state.UserState;
 import org.example.bot.util.Util;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 /**
  * Обработчик команды редактирования вопрса
  */
@@ -64,16 +66,15 @@ public class EditQuestionCommandProcessor extends AbstractCommandProcessor {
             return "Ошибка ввода. Укажите корректный id теста.";
         }
         Long questionId = Long.parseLong(parts[1]);
-        QuestionEntity question = questionService.getQuestion(questionId);
-        if (question == null) {
-            return "Вопрос не найден!";
-        }
-        contextService.setCurrentQuestion(userId, question);
-        stateService.changeStateById(userId, UserState.EDIT_QUESTION);
-        return String.format("""
+        Optional<QuestionEntity> questionOpt = questionService.getQuestion(questionId);
+        return questionOpt.map(question -> {
+            contextService.setCurrentQuestion(userId, question);
+            stateService.changeStateById(userId, UserState.EDIT_QUESTION);
+            return String.format("""
                 Вы выбрали вопрос “%s”. Что вы хотите изменить в вопросе?
                 1: Формулировку вопроса
                 2: Варианты ответа
                 """, question.getQuestion());
+        }).orElse("Вопрос не найден!");
     }
 }

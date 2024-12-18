@@ -2,6 +2,7 @@ package org.example.bot.processor;
 
 import org.example.bot.entity.AnswerEntity;
 import org.example.bot.entity.QuestionEntity;
+import org.example.bot.entity.UserContext;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Обработчик команды /stop
@@ -51,14 +53,19 @@ public class StopCommandProcessor extends AbstractCommandProcessor {
 
     @Override
     public String process(Long userId, String message) {
-        UserState userState = contextService.getContext(userId).getState();
-        QuestionEntity currentQuestion = contextService.getCurrentQuestion(userId);
-        if (currentQuestion == null) {
+        Optional<UserContext> optionalContext = contextService.getContext(userId);
+        if (optionalContext.isEmpty()) {
+            return "Ошибка";
+        }
+        UserState userState = optionalContext.get().getState();
+        Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
+        if (optionalCurrentQuestion.isEmpty()) {
             return "Нет текущего вопроса. Пожалуйста, выберите или создайте вопрос.";
         }
+        QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         List<AnswerEntity> answers = currentQuestion.getAnswers();
         if (userState != UserState.ADD_ANSWER) {
-            return "Команда /stop используется только при создании вопроса";
+            return "Команда /stop используется только при создании вопроса.";
         }
         if (answers.size() < 2) {
             return "Вы не создали необходимый минимум ответов (минимум: 2). Введите варианты ответа.";

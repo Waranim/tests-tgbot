@@ -8,6 +8,8 @@ import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 /**
  * Обработчик состояния добавления названия вопроса
  */
@@ -47,7 +49,11 @@ public class AddQuestionTextProcessor extends AbstractStateProcessor {
 
     @Override
     public String process(Long userId, String message) {
-        QuestionEntity currentQuestion = contextService.getCurrentQuestion(userId);
+        Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
+        if (optionalCurrentQuestion.isEmpty()) {
+            return "Вопрос не найден";
+        }
+        QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         currentQuestion.setQuestion(message);
         questionService.update(currentQuestion);
         stateService.changeStateById(userId, UserState.ADD_ANSWER);

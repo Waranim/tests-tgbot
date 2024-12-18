@@ -8,6 +8,8 @@ import org.example.bot.state.UserState;
 import org.example.bot.util.Util;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 /**
  * Oбработчик состояния редактирования ответа
  */
@@ -48,14 +50,20 @@ public class EditAnswerOptionChoiceProcessor extends AbstractStateProcessor {
 
     @Override
     public String process(Long userId, String message) {
-        QuestionEntity currentQuestion = contextService.getCurrentQuestion(userId);
+        Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
+        if (optionalCurrentQuestion.isEmpty()) {
+            return "Вопрос не найден";
+        }
+        QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         if (message.equals("1")) {
             stateService.changeStateById(userId, UserState.EDIT_ANSWER_TEXT_CHOICE);
-            return "Сейчас варианты ответа выглядят так\n" + util.answersListToString(currentQuestion.getAnswers())
+            return "Сейчас варианты ответа выглядят так\n"
+                    + util.answersListToString(currentQuestion.getAnswers())
                     + "\nКакой вариант ответа вы хотите изменить?";
         } else if (message.equals("2")) {
             stateService.changeStateById(userId, UserState.SET_CORRECT_ANSWER);
-            return "Сейчас варианты ответа выглядят так:\n" + util.answersListToString(currentQuestion.getAnswers())
+            return "Сейчас варианты ответа выглядят так:\n"
+                    + util.answersListToString(currentQuestion.getAnswers())
                     + "\nКакой вариант ответа вы хотите сделать правильным?";
         }
         return "Некорректный ввод";
