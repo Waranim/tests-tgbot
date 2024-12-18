@@ -6,7 +6,7 @@ import org.example.bot.entity.UserContext;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
-import org.example.bot.util.Util;
+import org.example.bot.util.AnswerUtils;
 import org.springframework.stereotype.Component;
 
 
@@ -30,25 +30,24 @@ public class StopCommandProcessor extends AbstractCommandProcessor {
     private final ContextService contextService;
 
     /**
-     * Утилита с вспомогательными методами
+     * Утилита с вспомогательными методами для вопросов
      */
-    private final Util util;
+    private final AnswerUtils answerUtils;
 
     /**
      * Конструктор для инициализации обработчика команды /stop
      *
      * @param stateService   сервис для управления состояниями
      * @param contextService сервис для управления контекстом
-     * @param util           утилита с вспомогательными методами
+     * @param answerUtils    утилита с вспомогательными методами для вопросов
      */
     public StopCommandProcessor(StateService stateService,
                                 ContextService contextService,
-                                Util util) {
+                                AnswerUtils answerUtils) {
         super("/stop");
         this.stateService = stateService;
         this.contextService = contextService;
-        this.util = util;
-
+        this.answerUtils = answerUtils;
     }
 
     @Override
@@ -71,6 +70,6 @@ public class StopCommandProcessor extends AbstractCommandProcessor {
             return "Вы не создали необходимый минимум ответов (минимум: 2). Введите варианты ответа.";
         }
         stateService.changeStateById(userId, UserState.SET_CORRECT_ANSWER);
-        return "Укажите правильный вариант ответа:\n" + util.answersListToString(currentQuestion.getAnswers());
+        return "Укажите правильный вариант ответа:\n" + answerUtils.answersToString(currentQuestion.getAnswers());
     }
 }

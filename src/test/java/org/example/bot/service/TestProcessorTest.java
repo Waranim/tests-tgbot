@@ -10,11 +10,9 @@ import org.example.bot.processor.View.*;
 import org.example.bot.repository.TestRepository;
 import org.example.bot.repository.UserRepository;
 import org.example.bot.repository.UserContextRepository;
-import org.example.bot.util.Util;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.example.bot.util.TestUtils;
+import org.example.bot.util.NumberUtils;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -32,7 +30,7 @@ import static org.mockito.Mockito.*;
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
-class TestMessageProcessorTest {
+class TestProcessorTest {
     /**
      * Репозиторий для тестов
      */
@@ -51,7 +49,12 @@ class TestMessageProcessorTest {
     /**
      * Утилитарный класс
      */
-    private final Util util = new Util();
+    private final NumberUtils numberUtils = new NumberUtils();
+
+    /**
+     * Утилитарный класс для тестов
+     */
+    private final TestUtils testUtils = new TestUtils();
     
     /**
      * Идентификатор пользователя
@@ -80,9 +83,9 @@ class TestMessageProcessorTest {
         HelpCommandProcessor helpCommandProcessor = new HelpCommandProcessor();
         StartCommandProcessor startCommandProcessor = new StartCommandProcessor(userService, helpCommandProcessor);
         AddCommandProcessor addCommandProcessor = new AddCommandProcessor(testService, stateService, contextService);
-        ViewCommandProcessor viewCommandProcessor = new ViewCommandProcessor(testService, stateService, util);
-        EditCommandProcessor editCommandProcessor = new EditCommandProcessor(testService, util, contextService, stateService);
-        DelCommandProcessor delCommandProcessor = new DelCommandProcessor(stateService, testService, util);
+        ViewCommandProcessor viewCommandProcessor = new ViewCommandProcessor(testService, stateService, numberUtils, testUtils);
+        EditCommandProcessor editCommandProcessor = new EditCommandProcessor(testService, numberUtils, contextService, stateService);
+        DelCommandProcessor delCommandProcessor = new DelCommandProcessor(stateService, testService, testUtils);
 
         AddTestTitleProcessor addTestTitleProcessor = new AddTestTitleProcessor(stateService, contextService, testService);
         AddTestDescriptionProcessor addTestDescriptionProcessor = new AddTestDescriptionProcessor(stateService, contextService, testService);
@@ -90,7 +93,7 @@ class TestMessageProcessorTest {
         EditTestProcessor editTestProcessor = new EditTestProcessor(stateService);
         EditTestTitleProcessor editTestTitleProcessor = new EditTestTitleProcessor(stateService, contextService, testService);
         EditTestDescriptionProcessor editTestDescriptionProcessor = new EditTestDescriptionProcessor(stateService, contextService, testService);
-        DelTestProcessor delTestProcessor = new DelTestProcessor(stateService, testService, util, contextService);
+        DelTestProcessor delTestProcessor = new DelTestProcessor(stateService, testService, numberUtils, contextService);
         ConfirmDelTest confirmDelTest = new ConfirmDelTest(stateService, contextService, testService);
 
         List<MessageProcessor> processors = Arrays.asList(
@@ -114,9 +117,9 @@ class TestMessageProcessorTest {
     }
 
     /** 
-     * Очистка моков перед каждым тестом.
+     * Очистка моков после каждого теста.
      */
-    @BeforeEach
+    @AfterEach
     void clearMocks() {
         clearInvocations(testRepository, userRepository, contextRepository);
     }
@@ -132,6 +135,25 @@ class TestMessageProcessorTest {
         TestEntity test = new TestEntity(userId, testId);
         test.setTitle(title);
         return test;
+    }
+
+    /**
+     * Подготавливает данные для использования в тестах
+     */
+    @BeforeEach
+    void prepareTestData() {
+        UserContext context = new UserContext(userId);
+        TestEntity test1 = createTest(userId, 123L, "Математический тест");
+        TestEntity test2 = createTest(userId, 312L, "Тест по знаниям ПДД");
+        UserEntity user = new UserEntity(Arrays.asList(test1, test2));
+
+        user.setUserId(userId);
+        user.setContext(context);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(contextRepository.findById(userId)).thenReturn(Optional.of(context));
+        when(testRepository.findById(123L)).thenReturn(Optional.of(test1));
+        when(testRepository.findById(312L)).thenReturn(Optional.of(test2));
     }
 
     /**
@@ -161,30 +183,10 @@ class TestMessageProcessorTest {
     }
 
     /**
-     * Подготавливает данные для использования в тестах
-     */
-    private void prepareTestData() {
-        UserContext context = new UserContext(userId);
-        TestEntity test1 = createTest(userId, 123L, "Математический тест");
-        TestEntity test2 = createTest(userId, 312L, "Тест по знаниям ПДД");
-        UserEntity user = new UserEntity(Arrays.asList(test1, test2));
-
-        user.setUserId(userId);
-        user.setContext(context);
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(contextRepository.findById(userId)).thenReturn(Optional.of(context));
-        when(testRepository.findById(123L)).thenReturn(Optional.of(test1));
-        when(testRepository.findById(312L)).thenReturn(Optional.of(test2));
-    }
-
-    /**
      * Тестирует просмотр списка тестов
      */
     @Test
     void testViewTests() {
-        prepareTestData();
-
         String response = messageHandler.handle("/view", userId);
         assertEquals("Выберите тест для просмотра:\n" +
                 "1)  id: 123 Математический тест\n" +
@@ -202,8 +204,6 @@ class TestMessageProcessorTest {
      */
     @Test
     void testViewTestsWithNotExistId() {
-        prepareTestData();
-
         messageHandler.handle("/view", userId);
         String response2 = messageHandler.handle("999", userId);
         assertEquals("Тест не найден!", response2);
@@ -217,8 +217,6 @@ class TestMessageProcessorTest {
      */
     @Test
     void testViewTestsWithInvalidId() {
-        prepareTestData();
-
         messageHandler.handle("/view", userId);
         String response = messageHandler.handle("abc", userId);
         assertEquals("Ошибка ввода!", response);
@@ -233,8 +231,6 @@ class TestMessageProcessorTest {
      */
     @Test
     void testEditTestTitle() {
-        prepareTestData();
-
         String response1 = messageHandler.handle("/edit 123", userId);
         assertEquals("Вы выбрали тест “Математический тест”. " +
                 "Что вы хотите изменить?\n" +
@@ -258,8 +254,6 @@ class TestMessageProcessorTest {
      */
     @Test
     void testEditTestWithInvalidId() {
-        prepareTestData();
-        
         String response1 = messageHandler.handle("/edit 999", userId);
         assertEquals("Тест не найден!", response1);
 
@@ -272,8 +266,6 @@ class TestMessageProcessorTest {
      */
     @Test
     void testDeleteTest() {
-        prepareTestData();
-        
         String response1 = messageHandler.handle("/del", userId);
         assertEquals("Выберите тест:\n" +
                 "1)  id: 123 Математический тест\n" +
@@ -296,8 +288,6 @@ class TestMessageProcessorTest {
      */
     @Test
     void testDeleteTestCancel() {
-        prepareTestData();
-        
         messageHandler.handle("/del", userId);
         messageHandler.handle("123", userId);
         
@@ -312,8 +302,6 @@ class TestMessageProcessorTest {
      */
     @Test
     void testDeleteTestWithInvalidId() {
-        prepareTestData();
-        
         messageHandler.handle("/del", userId);
         
         String response1 = messageHandler.handle("999", userId);
@@ -328,8 +316,6 @@ class TestMessageProcessorTest {
      */
     @Test
     void testEditTestDescription() {
-        prepareTestData();
-        
         String response1 = messageHandler.handle("/edit 123", userId);
         assertEquals("Вы выбрали тест “Математический тест”. Что вы хотите изменить?\n" +
                 "1: Название теста\n" +

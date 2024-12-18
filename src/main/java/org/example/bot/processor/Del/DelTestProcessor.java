@@ -6,10 +6,11 @@ import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
 import org.example.bot.state.UserState;
-import org.example.bot.util.Util;
+import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Обработчик состояния удаления теста.
@@ -27,9 +28,9 @@ public class DelTestProcessor extends AbstractStateProcessor {
     private final TestService testService;
     
     /**
-     * Утилита с вспомогательными методами.
+     * Утилита с вспомогательными числовыми методами.
      */
-    private final Util util;
+    private final NumberUtils numberUtils;
     
     /**
      * Сервис для управления контекстом.
@@ -41,30 +42,30 @@ public class DelTestProcessor extends AbstractStateProcessor {
      * 
      * @param stateService сервис для управления состояниями
      * @param testService сервис для управления тестами
-     * @param util утилита с вспомогательными методами
+     * @param numberUtils утилита с вспомогательными числовыми методами
      * @param contextService сервис для управления контекстом
      */
     public DelTestProcessor(StateService stateService,
                             TestService testService,
-                            Util util,
+                            NumberUtils numberUtils,
                             ContextService contextService) {
         super(stateService, UserState.DELETE_TEST);
         this.stateService = stateService;
         this.testService = testService;
-        this.util = util;
+        this.numberUtils = numberUtils;
         this.contextService = contextService;
     }
 
     @Override
     public String process(Long userId, String message) {
-        if(!util.isNumber(message))
+        if(!numberUtils.isNumber(message))
             return  "Введите число!";
-
-        TestEntity test = testService.getTest(Long.parseLong(message));
         List<TestEntity> tests = testService.getTestsByUserId(userId);
-        if (test == null || !tests.contains(test))
+        Optional<TestEntity> testOptional = testService.getTest(Long.parseLong(message));
+        if (testOptional.isEmpty() || !tests.contains(testOptional.get()))
             return "Тест не найден!";
 
+        TestEntity test = testOptional.get();
         contextService.setCurrentTest(userId, test);
         stateService.changeStateById(userId, UserState.CONFIRM_DELETE_TEST);
         return String.format("Тест “%s” будет удалён, вы уверены? (Да/Нет)", test.getTitle());

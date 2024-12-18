@@ -4,10 +4,11 @@ import org.example.bot.entity.QuestionEntity;
 import org.example.bot.entity.TestEntity;
 import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.TestService;
-import org.example.bot.util.Util;
+import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Обработчик команды просмотра вопросов
@@ -21,21 +22,21 @@ public class ViewQuestionCommandProcessor extends AbstractCommandProcessor {
     private final TestService testService;
 
     /**
-     * Утилита с вспомогательными методами
+     * Утилита с вспомогательными числовыми методами
      */
-    private final Util util;
+    private final NumberUtils numberUtils;
 
     /**
      * Конструктор для инициализации обработчика команды просмотра вопросов
      *
      * @param testService сервис для управления тестами
-     * @param util утилита с вспомогательными методами
+     * @param numberUtils утилита с вспомогательными числовыми методами
      */
     public ViewQuestionCommandProcessor(TestService testService,
-                                        Util util) {
+                                        NumberUtils numberUtils) {
         super("/view_question");
         this.testService = testService;
-        this.util = util;
+        this.numberUtils = numberUtils;
     }
 
     @Override
@@ -44,15 +45,16 @@ public class ViewQuestionCommandProcessor extends AbstractCommandProcessor {
         if (parts.length == 1) {
             return "Используйте команду вместе с идентификатором вопроса!";
         }
-        if (!util.isNumber(parts[1])) {
+        if (!numberUtils.isNumber(parts[1])) {
             return "Ошибка ввода. Укажите корректный id теста.";
 
         }
         Long testId = Long.parseLong(parts[1]);
-        TestEntity test = testService.getTest(testId);
-        if (test == null || !test.getCreatorId().equals(userId)) {
+        Optional<TestEntity> testOptional = testService.getTest(testId);
+        if (testOptional.isEmpty() || !testOptional.get().getCreatorId().equals(userId)) {
             return "Тест не найден!";
         }
+        TestEntity test = testOptional.get();
         List<QuestionEntity> questions = test.getQuestions();
         if (questions.isEmpty()) {
             return "В этом тесте пока нет вопросов.";

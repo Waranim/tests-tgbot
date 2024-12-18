@@ -6,7 +6,7 @@ import org.example.bot.service.QuestionService;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
-import org.example.bot.util.Util;
+import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -35,7 +35,7 @@ public class EditQuestionCommandProcessor extends AbstractCommandProcessor {
     /**
      * Утилита с вспомогательными методами
      */
-    private final Util util;
+    private final NumberUtils numberUtils;
 
     /**
      * Конструктор для инициализации обработчика команды редактирования вопроса
@@ -43,17 +43,17 @@ public class EditQuestionCommandProcessor extends AbstractCommandProcessor {
      * @param stateService    cервис для управления состояниями
      * @param contextService  cервис для управления контекстом
      * @param questionService cервис для управления вопросами
-     * @param util утилита с вспомогательными методами
+     * @param numberUtils утилита с вспомогательными методами
      */
     public EditQuestionCommandProcessor(StateService stateService,
                                         ContextService contextService,
                                         QuestionService questionService,
-                                        Util util) {
+                                        NumberUtils numberUtils) {
         super("/edit_question");
         this.stateService = stateService;
         this.contextService = contextService;
         this.questionService = questionService;
-        this.util = util;
+        this.numberUtils = numberUtils;
     }
 
     @Override
@@ -62,7 +62,7 @@ public class EditQuestionCommandProcessor extends AbstractCommandProcessor {
         if (parts.length == 1) {
             return "Используйте команду вместе с идентификатором вопроса!";
         }
-        if (!util.isNumber(parts[1])) {
+        if (!numberUtils.isNumber(parts[1])) {
             return "Ошибка ввода. Укажите корректный id теста.";
         }
         Long questionId = Long.parseLong(parts[1]);
