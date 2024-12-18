@@ -5,6 +5,7 @@ import org.example.bot.repository.TestRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Сервис для создания, обновления, получения и удаления теста
@@ -34,16 +35,16 @@ public class TestService {
     /**
      * Получить тест по идентификатору
      * @param id Идентификатор теста
-     * @return тест или null, если не найден
+     * @return Optional с тестом
      */
-    public TestEntity getTest(Long id) {
-        return testRepository.findById(id).orElse(null);
+    public Optional<TestEntity> getTest(Long id) {
+        return testRepository.findById(id);
     }
 
     /**
      * Создать тест
      * @param creatorId Идентификатор создателя
-     * @return Созданный тесть
+     * @return Созданный тест
      */
     public TestEntity createTest(Long creatorId){
         TestEntity test = new TestEntity(creatorId);

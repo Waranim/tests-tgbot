@@ -1,13 +1,17 @@
 package org.example.bot.processor.View;
 
+import org.example.bot.entity.AnswerEntity;
+import org.example.bot.entity.QuestionEntity;
 import org.example.bot.entity.TestEntity;
 import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
 import org.example.bot.state.UserState;
-import org.example.bot.util.Util;
+import org.example.bot.util.TestUtils;
+import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Обработчик команды просмотра тестов.
@@ -25,24 +29,32 @@ public class ViewCommandProcessor extends AbstractCommandProcessor {
     private final StateService stateService;
     
     /**
-     * Утилита с вспомогательными методами.
+     * Утилита с вспомогательными числовыми методами.
      */
-    private final Util util;
+    private final NumberUtils numberUtils;
+
+    /**
+     * Утилита с вспомогательными методами для тестов.
+     */
+    private final TestUtils testUtils;
 
     /**
      * Конструктор для инициализации обработчика команды просмотра тестов.
      * 
      * @param testService сервис для управления тестами
      * @param stateService сервис для управления состояниями
-     * @param util утилита с вспомогательными методами
+     * @param numberUtils утилита с вспомогательными числовыми методами
+     * @param testUtils утилита с вспомогательными методами для тестов
      */
     public ViewCommandProcessor(TestService testService,
                                 StateService stateService,
-                                Util util) {
+                                NumberUtils numberUtils,
+                                TestUtils testUtils) {
         super("/view");
         this.testService = testService;
         this.stateService = stateService;
-        this.util = util;
+        this.numberUtils = numberUtils;
+        this.testUtils = testUtils;
     }
 
     @Override
@@ -53,14 +65,43 @@ public class ViewCommandProcessor extends AbstractCommandProcessor {
         if (parts.length == 1) {
             stateService.changeStateById(userId, UserState.VIEW_TEST);
             return "Выберите тест для просмотра:\n"
-                    + util.testsListToString(tests);
-        } else if (util.isNumber(parts[1])){
+                    + testUtils.testsToString(tests);
+        } else if (numberUtils.isNumber(parts[1])){
             stateService.changeStateById(userId, UserState.DEFAULT);
             Long testId = Long.parseLong(parts[1]);
-            TestEntity test = testService.getTest(testId);
-            if (test == null || !tests.contains(test)) return "Тест не найден!";
-            return util.testToString(test);
+            Optional<TestEntity> test = testService.getTest(testId);
+            if (test.isEmpty() || !tests.contains(test.get()))
+                return "Тест не найден!";
+            return testToString(test.get());
         }
         return "Ошибка ввода!";
+    }
+
+    /**
+     * Получить развернутое строковое представление сущности теста
+     */
+    private String testToString(TestEntity test) {
+        List<QuestionEntity> questions = test.getQuestions();
+        StringBuilder response = new StringBuilder(String.format("Тест “%s”. Всего вопросов: %s\n",
+                test.getTitle(),
+                questions.size()));
+
+        for (QuestionEntity question : questions) {
+            response.append("Вопрос: %s\nВарианты ответов:\n"
+                    .formatted(question.getQuestion()));
+            List<AnswerEntity> answers = question.getAnswers();
+            AnswerEntity correctAnswer = null;
+
+            for (int i = 0; i < answers.size(); i++) {
+                var answer = answers.get(i);
+                response.append("%s - %s\n"
+                        .formatted(i + 1, answer.getAnswerText()));
+                if(answer.isCorrect()) correctAnswer = answer;
+            }
+            response.append("Правильный вариант: ")
+                    .append(correctAnswer != null ? correctAnswer
+                            .getAnswerText() : null).append("\n\n");
+        }
+        return response.toString();
     }
 }

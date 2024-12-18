@@ -5,7 +5,7 @@ import org.example.bot.processor.AbstractStateProcessor;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
-import org.example.bot.util.Util;
+import org.example.bot.util.AnswerUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -27,9 +27,9 @@ public class EditAnswerOptionChoiceProcessor extends AbstractStateProcessor {
     private final ContextService contextService;
 
     /**
-     * Утилита с вспомогательными методами
+     * Утилита с вспомогательными методами для вопросов
      */
-    private final Util util;
+    private final AnswerUtils answerUtils;
 
 
     /**
@@ -37,15 +37,15 @@ public class EditAnswerOptionChoiceProcessor extends AbstractStateProcessor {
      *
      * @param stateService   сервис для управления состояниями
      * @param contextService сервис для управления контекстом
-     * @param util           утилита с вспомогательными методами
+     * @param answerUtils    утилита с вспомогательными методами для вопросов
      */
     public EditAnswerOptionChoiceProcessor(StateService stateService,
                                            ContextService contextService,
-                                           Util util) {
+                                           AnswerUtils answerUtils) {
         super(stateService, UserState.EDIT_ANSWER_OPTION_CHOICE);
         this.stateService = stateService;
         this.contextService = contextService;
-        this.util = util;
+        this.answerUtils = answerUtils;
     }
 
     @Override
@@ -58,12 +58,12 @@ public class EditAnswerOptionChoiceProcessor extends AbstractStateProcessor {
         if (message.equals("1")) {
             stateService.changeStateById(userId, UserState.EDIT_ANSWER_TEXT_CHOICE);
             return "Сейчас варианты ответа выглядят так\n"
-                    + util.answersListToString(currentQuestion.getAnswers())
+                    + answerUtils.answersToString(currentQuestion.getAnswers())
                     + "\nКакой вариант ответа вы хотите изменить?";
         } else if (message.equals("2")) {
             stateService.changeStateById(userId, UserState.SET_CORRECT_ANSWER);
             return "Сейчас варианты ответа выглядят так:\n"
-                    + util.answersListToString(currentQuestion.getAnswers())
+                    + answerUtils.answersToString(currentQuestion.getAnswers())
                     + "\nКакой вариант ответа вы хотите сделать правильным?";
         }
         return "Некорректный ввод";

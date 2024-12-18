@@ -6,7 +6,7 @@ import org.example.bot.service.QuestionService;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
-import org.example.bot.util.Util;
+import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -33,9 +33,9 @@ public class DelQuestionCommandProcessor extends AbstractCommandProcessor {
     private final QuestionService questionService;
 
     /**
-     * Утилита с вспомогательными методами
+     * Утилита с вспомогательными числовыми методами
      */
-    private final Util util;
+    private final NumberUtils numberUtils;
 
     /**
      * Конструктор для инициализации обработчика команды удаления теста.
@@ -43,17 +43,17 @@ public class DelQuestionCommandProcessor extends AbstractCommandProcessor {
      * @param stateService    сервис для управления состояниями
      * @param contextService  сервис для управления тестами
      * @param questionService cервис для управления вопросами
-     * @param util утилита с вспомогательными методами
+     * @param numberUtils утилита с вспомогательными числовыми методами
      */
     public DelQuestionCommandProcessor(StateService stateService,
                                        ContextService contextService,
                                        QuestionService questionService,
-                                       Util util) {
+                                       NumberUtils numberUtils) {
         super("/del_question");
         this.stateService = stateService;
         this.contextService = contextService;
         this.questionService = questionService;
-        this.util = util;
+        this.numberUtils = numberUtils;
     }
 
     @Override
@@ -61,7 +61,7 @@ public class DelQuestionCommandProcessor extends AbstractCommandProcessor {
         String[] parts = message.split(" ");
         if (parts.length == 2) {
             String questionIdStr = parts[1];
-            if (!util.isNumber(questionIdStr)) {
+            if (!numberUtils.isNumber(questionIdStr)) {
                 return "Некорректный формат id вопроса. Пожалуйста, введите число.";
             }
             Long questionId = Long.parseLong(questionIdStr);

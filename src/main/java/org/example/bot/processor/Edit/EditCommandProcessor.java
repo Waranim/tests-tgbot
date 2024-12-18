@@ -6,10 +6,11 @@ import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
 import org.example.bot.state.UserState;
-import org.example.bot.util.Util;
+import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Обработчик команды редактирования теста.
@@ -22,9 +23,9 @@ public class EditCommandProcessor extends AbstractCommandProcessor {
     private final TestService testService;
     
     /**
-     * Утилита с вспомогательными методами.
+     * Утилита с вспомогательными числовыми методами.
      */
-    private final Util util;
+    private final NumberUtils numberUtils;
     
     /**
      * Сервис для управления контекстом.
@@ -40,17 +41,17 @@ public class EditCommandProcessor extends AbstractCommandProcessor {
      * Конструктор для инициализации обработчика команды редактирования теста.
      * 
      * @param testService сервис для управления тестами
-     * @param util утилита с вспомогательными методами
+     * @param numberUtils утилита с вспомогательными числовыми методами
      * @param contextService сервис для управления контекстом
      * @param stateService сервис для управления состояниями
      */
     public EditCommandProcessor(TestService testService,
-                                Util util,
+                                NumberUtils numberUtils,
                                 ContextService contextService,
                                 StateService stateService) {
         super("/edit");
         this.testService = testService;
-        this.util = util;
+        this.numberUtils = numberUtils;
         this.contextService = contextService;
         this.stateService = stateService;
     }
@@ -61,12 +62,14 @@ public class EditCommandProcessor extends AbstractCommandProcessor {
         List<TestEntity> tests = testService.getTestsByUserId(userId);
         if (parts.length == 1)
             return "Используйте команду вместе с идентификатором теста!";
-        else if (!util.isNumber(parts[1]))
+        else if (!numberUtils.isNumber(parts[1]))
             return "Ошибка ввода!";
         Long testId = Long.parseLong(parts[1]);
-        TestEntity test = testService.getTest(testId);
-        if (test == null || !tests.contains(test))
+        Optional<TestEntity> testOptional = testService.getTest(testId);
+        if (testOptional.isEmpty() || !tests.contains(testOptional.get()))
             return "Тест не найден!";
+
+        TestEntity test = testOptional.get();
         contextService.setCurrentTest(userId, test);
         stateService.changeStateById(userId, UserState.EDIT_TEST);
         return String.format("""

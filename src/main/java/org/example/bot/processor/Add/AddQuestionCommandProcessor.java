@@ -8,10 +8,12 @@ import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
 import org.example.bot.state.UserState;
-import org.example.bot.util.Util;
+import org.example.bot.util.TestUtils;
+import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Обработчик команды добавления вопроса в тест
@@ -40,9 +42,14 @@ public class AddQuestionCommandProcessor extends AbstractCommandProcessor {
     private final ContextService contextService;
 
     /**
-     * Утилита с вспомогательными методами
+     * Утилита с вспомогательными числовыми методами
      */
-    private final Util util;
+    private final NumberUtils numberUtils;
+
+    /**
+     * Утилита с вспомогательными методами для тестов
+     */
+    private final TestUtils testUtils;
 
     /**
      * Конструктор для инициализации обработчика команды добавления вопроса в тест
@@ -51,19 +58,21 @@ public class AddQuestionCommandProcessor extends AbstractCommandProcessor {
      * @param questionService сервис для управления вопросами
      * @param stateService    сервис для управления состояниями
      * @param contextService  сервис для управления контекстом
-     * @param util            утилита с вспомогательными методами
+     * @param numberUtils     утилита с вспомогательными числовыми методами
      */
     public AddQuestionCommandProcessor(TestService testService,
                                        QuestionService questionService,
                                        StateService stateService,
                                        ContextService contextService,
-                                       Util util) {
+                                       NumberUtils numberUtils,
+                                       TestUtils testUtils) {
         super("/add_question");
         this.testService = testService;
         this.questionService = questionService;
         this.stateService = stateService;
         this.contextService = contextService;
-        this.util = util;
+        this.numberUtils = numberUtils;
+        this.testUtils = testUtils;
     }
 
     @Override
@@ -75,17 +84,19 @@ public class AddQuestionCommandProcessor extends AbstractCommandProcessor {
                 return "У вас нет доступных тестов для добавления вопросов.";
             }
             stateService.changeStateById(userId, UserState.ADD_QUESTION);
-            return "Выберите тест:\n" + util.testsListToString(tests);
+            return "Выберите тест:\n" + testUtils.testsToString(tests);
         }
         String testIdStr = parts[1];
-        if (!util.isNumber(testIdStr)) {
+        if (!numberUtils.isNumber(testIdStr)) {
             return "Ошибка ввода. Укажите корректный id теста.";
         }
         long testId = Long.parseLong(testIdStr);
-        TestEntity test = testService.getTest(testId);
-        if (test == null || !tests.contains(test)) {
+        Optional<TestEntity> testOptional = testService.getTest(testId);
+        if (testOptional.isEmpty() || !tests.contains(testOptional.get())) {
             return "Тест не найден!";
         }
+
+        TestEntity test = testOptional.get();
         QuestionEntity question = questionService.createQuestion(test);
         stateService.changeStateById(userId, UserState.ADD_QUESTION_TEXT);
         contextService.setCurrentQuestion(userId, question);

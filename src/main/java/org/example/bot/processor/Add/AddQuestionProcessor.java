@@ -8,8 +8,10 @@ import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
 import org.example.bot.state.UserState;
-import org.example.bot.util.Util;
+import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 /**
  * Обработчик состояния добавления вопроса
@@ -28,9 +30,9 @@ public class AddQuestionProcessor extends AbstractStateProcessor {
     private final QuestionService questionService;
 
     /**
-     * Утилита с вспомогательными методами
+     * Утилита с вспомогательными числовыми методами
      */
-    private final Util util;
+    private final NumberUtils numberUtils;
 
     /**
      * Сервис для управления тестами
@@ -44,30 +46,33 @@ public class AddQuestionProcessor extends AbstractStateProcessor {
      * @param contextService  сервис для управления контекстом
      * @param questionService сервис для управления тестами
      * @param testService сервис для управления тестами
-     * @param util утилита с вспомогательными методами
+     * @param numberUtils утилита с вспомогательными числовыми методами
      */
     public AddQuestionProcessor(StateService stateService,
                                 ContextService contextService,
                                 QuestionService questionService,
-                                Util util, TestService testService) {
+                                NumberUtils numberUtils,
+                                TestService testService) {
         super(stateService, UserState.ADD_QUESTION);
         this.contextService = contextService;
         this.questionService = questionService;
-        this.util = util;
+        this.numberUtils = numberUtils;
         this.testService = testService;
     }
 
     @Override
     public String process(Long userId, String message) {
-        if (!util.isNumber(message)) {
+        if (!numberUtils.isNumber(message)) {
             return "Некорректный id теста. Пожалуйста, введите число.";
         }
 
         long testId = Long.parseLong(message);
-        TestEntity selectedTest = testService.getTest(testId);
-        if (selectedTest == null || !testService.getTestsByUserId(userId).contains(selectedTest)) {
+        Optional<TestEntity> testOptional = testService.getTest(testId);
+        if (testOptional.isEmpty() || !testService.getTestsByUserId(userId).contains(testOptional.get())) {
             return "Тест не найден!";
         }
+
+        TestEntity selectedTest = testOptional.get();
         QuestionEntity nquestion = questionService.createQuestion(selectedTest);
         contextService.setCurrentQuestion(userId, nquestion);
         stateService.changeStateById(userId, UserState.ADD_QUESTION_TEXT);

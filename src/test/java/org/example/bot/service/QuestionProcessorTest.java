@@ -12,7 +12,9 @@ import org.example.bot.repository.QuestionRepository;
 import org.example.bot.repository.TestRepository;
 import org.example.bot.repository.UserRepository;
 import org.example.bot.repository.UserContextRepository;
-import org.example.bot.util.Util;
+import org.example.bot.util.AnswerUtils;
+import org.example.bot.util.TestUtils;
+import org.example.bot.util.NumberUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,7 +60,17 @@ public class QuestionProcessorTest {
     /**
      * Утилита с вспомогательными методами
      */
-    private final Util util = new Util();
+    private final NumberUtils numberUtils = new NumberUtils();
+
+    /**
+     * Утилита с вспомогательными методами для ответов
+     */
+    private final AnswerUtils answerUtils = new AnswerUtils();
+
+    /**
+     * Утилита с вспомогательными методами для тестов
+     */
+    private final TestUtils testUtils = new TestUtils();
 
     /**
      * Идентификатор пользователя
@@ -88,21 +100,21 @@ public class QuestionProcessorTest {
 
         AddQuestionCommandProcessor addQuestionCommandProcessor = new AddQuestionCommandProcessor(testService,
                 questionService, stateService,
-                sessionService, util);
+                sessionService, numberUtils, testUtils);
         AddQuestionProcessor addQuestionProcessor = new AddQuestionProcessor(stateService,
                 sessionService, questionService,
-                util, testService);
+                numberUtils, testService);
         AddQuestionTextProcessor addQuestionTextProcessor = new AddQuestionTextProcessor(stateService,
                 sessionService, questionService);
         StopCommandProcessor stopCommandProcessor = new StopCommandProcessor(stateService,
-                sessionService, util);
+                sessionService, answerUtils);
         AddAnswerQuestionProcessor addAnswerQuestionProcessor = new AddAnswerQuestionProcessor(stateService,
                 sessionService, questionService,
                 stopCommandProcessor);
 
         DelQuestionCommandProcessor delQuestionCommandProcessor = new DelQuestionCommandProcessor(stateService,
                 sessionService,
-                questionService, util);
+                questionService, numberUtils);
         DelQuestionProcessor delQuestionProcessor = new DelQuestionProcessor(stateService,
                 sessionService, questionService);
         ConfirmDelQuestion confirmDelQuestion = new ConfirmDelQuestion(stateService,
@@ -110,12 +122,12 @@ public class QuestionProcessorTest {
 
         EditQuestionCommandProcessor editQuestionCommandProcessor = new EditQuestionCommandProcessor(stateService,
                 sessionService,
-                questionService, util);
+                questionService, numberUtils);
         EditQuestionProcessor editQuestionProcessor = new EditQuestionProcessor(stateService);
         EditQuestionTextProcessor editQuestionTextProcessor = new EditQuestionTextProcessor(stateService,
                 sessionService, questionService);
         EditAnswerOptionChoiceProcessor editAnswerOptionChoiceProcessor = new EditAnswerOptionChoiceProcessor(stateService,
-                sessionService, util);
+                sessionService, answerUtils);
         EditAnswerTextChoiceProcessor editAnswerTextChoiceProcessor = new EditAnswerTextChoiceProcessor(stateService,
                 sessionService);
         EditAnswerTextProcessor editAnswerTextProcessor = new EditAnswerTextProcessor(stateService,
@@ -123,7 +135,7 @@ public class QuestionProcessorTest {
         EditSetCorrectAnswerProcessor editSetCorrectAnswerProcessor = new EditSetCorrectAnswerProcessor(stateService,
                 sessionService, questionService);
 
-        ViewQuestionCommandProcessor viewQuestionCommandProcessor = new ViewQuestionCommandProcessor(testService, util);
+        ViewQuestionCommandProcessor viewQuestionCommandProcessor = new ViewQuestionCommandProcessor(testService, numberUtils);
 
         List<MessageProcessor> processors = Arrays.asList(
                 addAnswerQuestionProcessor,

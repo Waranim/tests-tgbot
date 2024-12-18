@@ -4,7 +4,7 @@ import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
 import org.example.bot.state.UserState;
-import org.example.bot.util.Util;
+import org.example.bot.util.TestUtils;
 import org.springframework.stereotype.Component;
 
 /**
@@ -23,24 +23,24 @@ public class DelCommandProcessor extends AbstractCommandProcessor {
     private final TestService testService;
     
     /**
-     * Утилита с вспомогательными методами.
+     * Утилита с вспомогательными методами для тестов.
      */
-    private final Util util;
+    private final TestUtils testUtils;
 
     /**
      * Конструктор для инициализации обработчика команды удаления теста.
      * 
      * @param stateService сервис для управления состояниями
      * @param testService сервис для управления тестами
-     * @param util утилита с вспомогательными методами
+     * @param testUtils утилита с вспомогательными методами для тестов
      */
     public DelCommandProcessor(StateService stateService,
                                TestService testService,
-                               Util util) {
+                               TestUtils testUtils) {
         super("/del");
         this.stateService = stateService;
         this.testService = testService;
-        this.util = util;
+        this.testUtils = testUtils;
     }
 
 
@@ -48,6 +48,6 @@ public class DelCommandProcessor extends AbstractCommandProcessor {
     public String process(Long userId, String message) {
         stateService.changeStateById(userId, UserState.DELETE_TEST);
         return "Выберите тест:\n"
-                + util.testsListToString(testService.getTestsByUserId(userId));
+                + testUtils.testsToString(testService.getTestsByUserId(userId));
     }
 }
