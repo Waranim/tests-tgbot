@@ -79,8 +79,9 @@ class UserServiceTest {
 
         when(userRepository.findById(id)).thenReturn(Optional.of(existingUser));
 
-        UserEntity user = userService.getUserById(id);
-        assertNotNull(user);
+        Optional<UserEntity> optionalUser = userService.getUserById(id);
+        assertTrue(optionalUser.isPresent());
+        UserEntity user = optionalUser.get();
         assertEquals(id, user.getUserId());
         assertEquals(username, user.getUsername());
     }
@@ -94,7 +95,7 @@ class UserServiceTest {
 
         when(userRepository.findById(id)).thenReturn(Optional.empty());
 
-        UserEntity user = userService.getUserById(id);
-        assertNull(user);
+        Optional<UserEntity> user = userService.getUserById(id);
+        assertTrue(user.isEmpty());
     }
 }

@@ -60,9 +60,9 @@ public class DelTestProcessor extends AbstractStateProcessor {
     public String process(Long userId, String message) {
         if(!numberUtils.isNumber(message))
             return  "Введите число!";
-        List<TestEntity> tests = testService.getTestsByUserId(userId);
+        Optional<List<TestEntity>> testsOptional = testService.getTestsByUserId(userId);
         Optional<TestEntity> testOptional = testService.getTest(Long.parseLong(message));
-        if (testOptional.isEmpty() || !tests.contains(testOptional.get()))
+        if (testOptional.isEmpty() || testsOptional.isEmpty() || !testsOptional.get().contains(testOptional.get()))
             return "Тест не найден!";
 
         TestEntity test = testOptional.get();

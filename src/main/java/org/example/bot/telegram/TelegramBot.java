@@ -90,7 +90,7 @@ class TelegramBot extends TelegramLongPollingBot {
      * Инициализирует телеграм бота
      */
     @PostConstruct
-    public void init() {
+    private void init() {
         try {
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
             botsApi.registerBot(this);

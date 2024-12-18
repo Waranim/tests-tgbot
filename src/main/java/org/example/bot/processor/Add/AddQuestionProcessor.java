@@ -11,6 +11,7 @@ import org.example.bot.state.UserState;
 import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -68,7 +69,8 @@ public class AddQuestionProcessor extends AbstractStateProcessor {
 
         long testId = Long.parseLong(message);
         Optional<TestEntity> testOptional = testService.getTest(testId);
-        if (testOptional.isEmpty() || !testService.getTestsByUserId(userId).contains(testOptional.get())) {
+        Optional<List<TestEntity>> testsOptional = testService.getTestsByUserId(userId);
+        if (testOptional.isEmpty() || testsOptional.isEmpty() || !testsOptional.get().contains(testOptional.get())) {
             return "Тест не найден!";
         }
 
