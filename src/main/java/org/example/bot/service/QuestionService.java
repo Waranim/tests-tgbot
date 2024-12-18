@@ -5,6 +5,7 @@ import org.example.bot.repository.QuestionRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Сервис для создания, обновления, получения и удаления вопроса
@@ -55,16 +56,15 @@ public class QuestionService {
     /**
      * Устанавливает правильный ответ для вопроса.
      */
-    public String setCorrectAnswer(QuestionEntity question, int optionIndex) {
+    public void setCorrectAnswer(QuestionEntity question, int optionIndex) {
         List<AnswerEntity> answers = question.getAnswers();
         if (optionIndex < 1 || optionIndex > answers.size()) {
-            return "Некорректный номер варианта ответа. Введите число от 1 до " + answers.size();
+            throw new IllegalArgumentException("Некорректный номер варианта ответа.");
         }
         for (int i = 0; i < answers.size(); i++) {
             answers.get(i).setCorrect(i == optionIndex - 1);
         }
         questionRepository.save(question);
-        return String.format("Вариант ответа %s назначен правильным.", optionIndex);
     }
 
     /**
@@ -92,9 +92,9 @@ public class QuestionService {
      * Получить вопрос по идентификатору
      *
      * @param id идентификатор вопроса
-     * @return вопрос или null, если не найден
+     * @return Optional с вопросом, или пустой Optional, если не найден
      */
-    public QuestionEntity getQuestion(Long id) {
-        return questionRepository.findById(id).orElse(null);
+    public Optional<QuestionEntity> getQuestion(Long id) {
+        return questionRepository.findById(id);
     }
 }

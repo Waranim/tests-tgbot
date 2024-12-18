@@ -4,6 +4,8 @@ import org.example.bot.entity.UserContext;
 import org.example.bot.state.UserState;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 /**
  * Сервис для управления контекстом пользователя
  */
@@ -29,22 +31,20 @@ public class StateService {
      * @param state состояние пользователя
      */
     public void changeStateById(Long id, UserState state) {
-        UserContext context = contextService.getContext(id);
-        if (context == null)
-            return;
-        context.setState(state);
-        contextService.updateContext(context);
+        Optional<UserContext> contextOpt = contextService.getContext(id);
+        contextOpt.ifPresent(context -> {
+            context.setState(state);
+            contextService.updateContext(context);
+        });
     }
 
     /**
      * Получить текущее состояние пользователя
      * @param id идентификатор пользователя
-     * @return текущее состояние или null, если пользователь не найден
+     * @return текущее состояние пользователя, если контекст существует, иначе пустой Optional
      */
-    public UserState getCurrentState(Long id) {
-        UserContext context = contextService.getContext(id);
-        return context != null
-                ? context.getState()
-                : null;
+    public Optional<UserState> getCurrentState(Long id) {
+        return contextService.getContext(id)
+                .map(UserContext::getState);
     }
 }

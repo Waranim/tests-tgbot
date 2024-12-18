@@ -9,6 +9,8 @@ import org.example.bot.state.UserState;
 
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 /**
  * Обработчик состояния редактирования правильного ответа
  */
@@ -48,12 +50,21 @@ public class EditSetCorrectAnswerProcessor extends AbstractStateProcessor {
 
     @Override
     public String process(Long userId, String message) {
-        QuestionEntity currentQuestion = contextService.getCurrentQuestion(userId);
-        String setCorrectAnswer = questionService.setCorrectAnswer(currentQuestion, Integer.parseInt(message));
-        if (!setCorrectAnswer.startsWith("Некорректный")) {
-            stateService.changeStateById(userId, UserState.DEFAULT);
+        Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
+        if (optionalCurrentQuestion.isEmpty()) {
+            return "Вопрос не найден";
         }
-
-        return setCorrectAnswer;
+        QuestionEntity currentQuestion = optionalCurrentQuestion.get();
+        try {
+            int optionIndex = Integer.parseInt(message);
+            questionService.setCorrectAnswer(currentQuestion, optionIndex);
+            stateService.changeStateById(userId, UserState.DEFAULT);
+            return String.format("Вариант ответа %s назначен правильным.", optionIndex);
+        } catch (NumberFormatException e) {
+            return "Некорректный формат ввода. Пожалуйста, введите число.";
+        } catch (IllegalArgumentException e) {
+            return String.format("Некорректный номер варианта ответа. Введите число от 1 до %d",
+                    currentQuestion.getAnswers().size());
+        }
     }
 }

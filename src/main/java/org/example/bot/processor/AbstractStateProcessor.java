@@ -3,6 +3,8 @@ package org.example.bot.processor;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
 
+import java.util.Optional;
+
 /**
  * Абстрактный класс для обработки состояний.
  */
@@ -30,8 +32,8 @@ public abstract class AbstractStateProcessor implements MessageProcessor {
     }
 
     @Override
-    public boolean canProcess(Long userId, String message) {
-        UserState state = stateService.getCurrentState(userId);
-        return state != null && state.equals(requiredState);
+    public final boolean canProcess(Long userId, String message) {
+        Optional<UserState> stateOpt = stateService.getCurrentState(userId);
+        return stateOpt.map(state -> state.equals(requiredState)).orElse(false);
     }
 }

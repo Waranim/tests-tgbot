@@ -1,6 +1,7 @@
 package org.example.bot.service;
 
 import org.example.bot.entity.*;
+import org.example.bot.handler.MessageHandler;
 import org.example.bot.processor.Add.*;
 import org.example.bot.processor.Del.*;
 import org.example.bot.processor.Edit.*;
@@ -10,7 +11,7 @@ import org.example.bot.processor.View.ViewQuestionCommandProcessor;
 import org.example.bot.repository.QuestionRepository;
 import org.example.bot.repository.TestRepository;
 import org.example.bot.repository.UserRepository;
-import org.example.bot.repository.UserSessionRepository;
+import org.example.bot.repository.UserContextRepository;
 import org.example.bot.util.Util;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +33,7 @@ import static org.mockito.Mockito.when;
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
-public class QuestionMessageProcessorTest {
+public class QuestionProcessorTest {
 
     /**
      * Репозиторий для работы с тестом в базе данных
@@ -47,7 +48,7 @@ public class QuestionMessageProcessorTest {
     /**
      * Репозиторий для взаимодействия над сущностью сессии пользователя в базе данных
      */
-    private UserSessionRepository sessionRepository;
+    private UserContextRepository userContextRepository;
 
     /**
      * Репозиторий для работы с вопросом в базе данных
@@ -76,11 +77,11 @@ public class QuestionMessageProcessorTest {
     void init() {
         testRepository = mock(TestRepository.class);
         userRepository = mock(UserRepository.class);
-        sessionRepository = mock(UserSessionRepository.class);
+        userContextRepository = mock(UserContextRepository.class);
         questionRepository = mock(QuestionRepository.class);
 
         UserService userService = new UserService(userRepository);
-        SessionService sessionService = new SessionService(sessionRepository, userService);
+        ContextService sessionService = new ContextService(userContextRepository, userService);
         StateService stateService = new StateService(sessionService);
         TestService testService = new TestService(testRepository, userService);
         QuestionService questionService = new QuestionService(questionRepository, testService);
@@ -149,8 +150,23 @@ public class QuestionMessageProcessorTest {
      * Сброс вызовов моков перед выполнением каждого теста
      */
     @BeforeEach
-    void clearMocks() {
-        clearInvocations(testRepository, userRepository, sessionRepository, questionRepository);
+    void initEach() {
+        UserContext session = new UserContext(userId);
+        TestEntity test1 = createTest(userId, 1L, "Математический тест");
+        QuestionEntity question1 = createQuestion(test1, 1L, "Сколько будет 2 + 2?");
+
+        createAnswer(question1, "1", false);
+        createAnswer(question1, "4", true);
+
+        UserEntity user = new UserEntity(Arrays.asList(test1));
+        user.setUserId(userId);
+        user.setContext(session);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userContextRepository.findById(userId)).thenReturn(Optional.of(session));
+        when(testRepository.findById(1L)).thenReturn(Optional.of(test1));
+        when(questionRepository.findById(1L)).thenReturn(Optional.of(question1));
+        clearInvocations(testRepository, userRepository, userContextRepository, questionRepository);
     }
 
     /**
@@ -200,40 +216,18 @@ public class QuestionMessageProcessorTest {
     }
 
     /**
-     * Подготавливает данные для тестирования операций с вопросами
-     * Создает пользователя, тесты, вопросы и ответы
-     */
-    private void prepareQuestionData() {
-        UserSession session = new UserSession(userId);
-        TestEntity test1 = createTest(userId, 1L, "Математический тест");
-        QuestionEntity question1 = createQuestion(test1, 1L, "Сколько будет 2 + 2?");
-
-        createAnswer(question1, "1", false);
-        createAnswer(question1, "4", true);
-
-        UserEntity user = new UserEntity(Arrays.asList(test1));
-        user.setUserId(userId);
-        user.setSession(session);
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(sessionRepository.findById(userId)).thenReturn(Optional.of(session));
-        when(testRepository.findById(1L)).thenReturn(Optional.of(test1));
-        when(questionRepository.findById(1L)).thenReturn(Optional.of(question1));
-    }
-
-    /**
      * Тестирует обработку команды добавления вопроса без указания id вопроса
      */
     @Test
     void testAddQuestionWithoutId() {
-        UserSession session = new UserSession(userId);
+        UserContext session = new UserContext(userId);
         TestEntity test = createTest(userId, 1L, "Математический тест");
         UserEntity user = new UserEntity(List.of(test));
         user.setUserId(userId);
-        user.setSession(session);
+        user.setContext(session);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(sessionRepository.findById(userId)).thenReturn(Optional.of(session));
+        when(userContextRepository.findById(userId)).thenReturn(Optional.of(session));
         when(questionRepository.save(any(QuestionEntity.class))).thenAnswer(i -> i.getArgument(0));
         when(testRepository.findById(1L)).thenReturn(Optional.of(test));
 
@@ -291,14 +285,14 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testAddQuestionWithId() {
-        UserSession session = new UserSession(userId);
+        UserContext session = new UserContext(userId);
         TestEntity test = createTest(userId, 1L, "Математический тест");
         UserEntity user = new UserEntity(List.of(test));
         user.setUserId(userId);
-        user.setSession(session);
+        user.setContext(session);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(sessionRepository.findById(userId)).thenReturn(Optional.of(session));
+        when(userContextRepository.findById(userId)).thenReturn(Optional.of(session));
         when(questionRepository.save(any(QuestionEntity.class))).thenAnswer(i -> i.getArgument(0));
         when(testRepository.findById(1L)).thenReturn(Optional.of(test));
 
@@ -353,8 +347,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testAddQuestionNotFound() {
-        prepareQuestionData();
-
         String response = messageHandler.handle("/add_question 1234", userId);
         assertEquals("Тест не найден!", response);
     }
@@ -364,8 +356,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testAddQuestionWithInvalidId() {
-        prepareQuestionData();
-
         String response = messageHandler.handle("/add_question f", userId);
         assertEquals("Ошибка ввода. Укажите корректный id теста.", response);
     }
@@ -375,8 +365,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testViewQuestion() {
-        prepareQuestionData();
-
         String response = messageHandler.handle("/view_question 1", userId);
         assertEquals("Вопросы теста \"Математический тест\":\n" +
                 "1) id:1  \"Сколько будет 2 + 2?\"\n", response);
@@ -387,8 +375,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testViewQuestionNotFound() {
-        prepareQuestionData();
-
         String response = messageHandler.handle("/view_question 1234", userId);
         assertEquals("Тест не найден!", response);
     }
@@ -398,8 +384,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testViewQuestionWithoutId() {
-        prepareQuestionData();
-
         String response = messageHandler.handle("/view_question", userId);
         assertEquals("Используйте команду вместе с идентификатором вопроса!", response);
     }
@@ -409,8 +393,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testViewQuestionWithInvalidId() {
-        prepareQuestionData();
-
         String response = messageHandler.handle("/view_question f", userId);
         assertEquals("Ошибка ввода. Укажите корректный id теста.", response);
     }
@@ -420,8 +402,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testEditQuestionTitle() {
-        prepareQuestionData();
-
         String response1 = messageHandler.handle("/edit_question 1", userId);
         assertEquals("Вы выбрали вопрос “Сколько будет 2 + 2?”. " +
                 "Что вы хотите изменить в вопросе?\n" +
@@ -446,8 +426,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testEditAnswerText() {
-        prepareQuestionData();
-
         String response1 = messageHandler.handle("/edit_question 1", userId);
         assertEquals("Вы выбрали вопрос “Сколько будет 2 + 2?”. " +
                 "Что вы хотите изменить в вопросе?\n" +
@@ -486,8 +464,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testEditCorrectAnswer() {
-        prepareQuestionData();
-
         String response1 = messageHandler.handle("/edit_question 1", userId);
         assertEquals("Вы выбрали вопрос “Сколько будет 2 + 2?”. " +
                 "Что вы хотите изменить в вопросе?\n" +
@@ -524,8 +500,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testEditQuestionNotFound() {
-        prepareQuestionData();
-
         String response = messageHandler.handle("/edit_question 1234", userId);
         assertEquals("Вопрос не найден!", response);
     }
@@ -535,8 +509,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testEditQuestionWithoutId() {
-        prepareQuestionData();
-
         String response = messageHandler.handle("/edit_question", userId);
         assertEquals("Используйте команду вместе с идентификатором вопроса!", response);
     }
@@ -546,8 +518,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testEditQuestionWithInvalidId() {
-        prepareQuestionData();
-
         String response = messageHandler.handle("/edit_question f", userId);
         assertEquals("Ошибка ввода. Укажите корректный id теста.", response);
     }
@@ -557,7 +527,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testConfirmDeleteQuestionWithQuestionId() {
-        prepareQuestionData();
         String response1 = messageHandler.handle("/del_question 1", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
                 "будет удалён, вы уверены? (Да/Нет)", response1);
@@ -578,7 +547,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testCancelDeleteQuestionWithQuestionId() {
-        prepareQuestionData();
         String response1 = messageHandler.handle("/del_question 1", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
                 "будет удалён, вы уверены? (Да/Нет)", response1);
@@ -595,7 +563,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testConfirmDeleteQuestionWithoutQuestionId() {
-        prepareQuestionData();
         String response1 = messageHandler.handle("/del_question", userId);
         assertEquals("Введите id вопроса для удаления:\n", response1);
 
@@ -619,7 +586,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testCancelDeleteQuestionWithoutQuestionId() {
-        prepareQuestionData();
         String response1 = messageHandler.handle("/del_question", userId);
         assertEquals("Введите id вопроса для удаления:\n", response1);
 
@@ -639,8 +605,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testDeleteQuestionNotFound() {
-        prepareQuestionData();
-
         String response = messageHandler.handle("/del_question 1234", userId);
         assertEquals("Вопрос не найден!", response);
     }
@@ -650,8 +614,6 @@ public class QuestionMessageProcessorTest {
      */
     @Test
     void testDeleteQuestionWithInvalidId() {
-        prepareQuestionData();
-
         String response = messageHandler.handle("/del_question f", userId);
         assertEquals("Некорректный формат id вопроса. Пожалуйста, введите число.", response);
     }

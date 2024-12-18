@@ -9,6 +9,8 @@ import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 /**
  * Обработчик состояния добавления ответа в вопрос
  */
@@ -53,7 +55,12 @@ public class AddAnswerQuestionProcessor extends AbstractStateProcessor {
         if (message.equals("/stop")) {
             return stopCommandProcessor.process(userId, message);
         }
-        QuestionEntity currentQuestion = contextService.getCurrentQuestion(userId);
+        Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
+
+        if (optionalCurrentQuestion.isEmpty()) {
+            return "Вопрос не найден";
+        }
+        QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         questionService.addAnswerOption(currentQuestion, message);
         return "Введите вариант ответа. Если вы хотите закончить добавлять варианты, введите команду “/stop”.";
     }

@@ -19,14 +19,14 @@ public abstract class AbstractCommandProcessor implements MessageProcessor {
     }
 
     @Override
-    public boolean canProcess(Long userId, String message) {
+    public final boolean canProcess(Long userId, String message) {
         return extractCommand(message).equals(command);
     }
 
     /**
      * Извлечь команду из сообщения
      */
-    protected String extractCommand(String message) {
+    protected final String extractCommand(String message) {
         int spaceIndex = message.indexOf(' ');
         return spaceIndex == -1 ? message : message.substring(0, spaceIndex);
     }

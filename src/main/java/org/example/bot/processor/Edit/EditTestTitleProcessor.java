@@ -8,6 +8,8 @@ import org.example.bot.service.TestService;
 import org.example.bot.state.UserState;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 /**
  * Обработчик состояния редактирования названия теста.
  */
@@ -46,7 +48,11 @@ public class EditTestTitleProcessor extends AbstractStateProcessor {
 
     @Override
     public String process(Long userId, String message) {
-        TestEntity currentTest = contextService.getCurrentTest(userId);
+        Optional<TestEntity> optionalCurrentTest = contextService.getCurrentTest(userId);
+        if (optionalCurrentTest.isEmpty()) {
+            return "Тест не найден";
+        }
+        TestEntity currentTest = optionalCurrentTest.get();
         currentTest.setTitle(message);
         testService.update(currentTest);
         stateService.changeStateById(userId, UserState.DEFAULT);

@@ -4,6 +4,8 @@ import org.example.bot.entity.*;
 import org.example.bot.repository.UserContextRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 /**
  * Сервис для управления контекстом пользователя
  */
@@ -34,13 +36,11 @@ public class ContextService {
     /**
      * Получить контекст пользователя
      * @param userId идентификатор пользователя
-     * @return контекст пользователя или null, если пользователь не найден
+     * @return контекст пользователя в Optional, пустой Optional если пользователь не найден
      */
-    public UserContext getContext(Long userId) {
-        UserEntity user = userService.getUserById(userId);
-        if (user == null)
-            return null;
-        return user.getContext();
+    public Optional<UserContext> getContext(Long userId) {
+        return Optional.ofNullable(userService.getUserById(userId))
+                .map(UserEntity::getContext);
     }
 
     /**
@@ -49,11 +49,10 @@ public class ContextService {
      * @param testEntity тест
      */
     public void setCurrentTest(Long userId, TestEntity testEntity) {
-        UserContext context = getContext(userId);
-        if (context == null)
-            return;
-        context.setCurrentTest(testEntity);
-        userContextRepository.save(context);
+        getContext(userId).ifPresent(context -> {
+            context.setCurrentTest(testEntity);
+            userContextRepository.save(context);
+        });
     }
 
     /**
@@ -62,35 +61,28 @@ public class ContextService {
      * @param question вопрос
      */
     public void setCurrentQuestion(Long userId, QuestionEntity question) {
-        UserContext context = getContext(userId);
-        if (context == null)
-            return;
-        context.setCurrentQuestion(question);
-        userContextRepository.save(context);
+        getContext(userId).ifPresent(context -> {
+            context.setCurrentQuestion(question);
+            userContextRepository.save(context);
+        });
     }
 
     /**
      * Получить текущий вопрос из контекста
      * @param userId идентификатор пользователя
-     * @return текущий вопрос или null, если пользователь не найден
+     * @return текущий вопрос в Optional
      */
-    public QuestionEntity getCurrentQuestion(Long userId) {
-        UserContext context = getContext(userId);
-        if (context == null)
-            return null;
-        return context.getCurrentQuestion();
+    public Optional<QuestionEntity> getCurrentQuestion(Long userId) {
+        return getContext(userId).map(UserContext::getCurrentQuestion);
     }
 
     /**
      * Получить текущий тест из контекста
      * @param userId идентификатор пользователя
-     * @return текущий тест или null, если пользователь не найден
+     * @return текущий тест в Optional
      */
-    public TestEntity getCurrentTest(Long userId) {
-        UserContext context = getContext(userId);
-        if (context == null)
-            return null;
-        return context.getCurrentTest();
+    public Optional<TestEntity> getCurrentTest(Long userId) {
+        return getContext(userId).map(UserContext::getCurrentTest);
     }
 
     /**
@@ -99,23 +91,19 @@ public class ContextService {
      * @param editingAnswerIndex индекс редактируемого ответа
      */
     public void setEditingAnswerIndex(Long userId, Integer editingAnswerIndex) {
-        UserContext context = getContext(userId);
-        if (context == null)
-            return;
-        context.setEditingAnswerIndex(editingAnswerIndex);
-        userContextRepository.save(context);
+        getContext(userId).ifPresent(context -> {
+            context.setEditingAnswerIndex(editingAnswerIndex);
+            userContextRepository.save(context);
+        });
     }
 
     /**
      * Получить индекс редактируемого ответа
      * @param userId идентификатор пользователя
-     * @return индекс редактируемого ответа или null, если пользователь не найден
+     * @return индекс редактируемого ответа в Optional
      */
-    public Integer getEditingAnswerIndex(Long userId) {
-        UserContext context = getContext(userId);
-        if (context == null)
-            return null;
-        return context.getEditingAnswerIndex();
+    public Optional<Integer> getEditingAnswerIndex(Long userId) {
+        return getContext(userId).map(UserContext::getEditingAnswerIndex);
     }
 
     /**
