@@ -5,6 +5,7 @@ import org.example.bot.repository.QuestionRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Сервис для создания, обновления, получения и удаления вопроса
@@ -91,9 +92,9 @@ public class QuestionService {
      * Получить вопрос по идентификатору
      *
      * @param id идентификатор вопроса
-     * @return вопрос или null, если не найден
+     * @return Optional с вопросом, или пустой Optional, если не найден
      */
-    public QuestionEntity getQuestion(Long id) {
-        return questionRepository.findById(id).orElse(null);
+    public Optional<QuestionEntity> getQuestion(Long id) {
+        return questionRepository.findById(id);
     }
 }

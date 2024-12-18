@@ -8,6 +8,8 @@ import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 /**
  * Обработчик состояния удаления вопроса
  */
@@ -47,13 +49,17 @@ public class DelQuestionProcessor extends AbstractStateProcessor {
 
     @Override
     public String process(Long userId, String message) {
-        QuestionEntity question = questionService.getQuestion(Long.parseLong(message));
-        contextService.setCurrentQuestion(userId, question);
-        stateService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
-        if (question == null)
-            return "Вопрос не найден!";
+        try {
+            Long questionId = Long.parseLong(message);
+            Optional<QuestionEntity> questionOpt = questionService.getQuestion(questionId);
+            return questionOpt.map(question -> {
+                contextService.setCurrentQuestion(userId, question);
+                stateService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
+                return String.format("Вопрос “%s” будет удалён, вы уверены? (Да/Нет)", question.getQuestion());
+            }).orElse("Вопрос не найден!");
 
-        return String.format("Вопрос “%s” будет удалён, вы уверены? (Да/Нет)",
-                question.getQuestion());
+        } catch (NumberFormatException e) {
+            return "Некорректный формат идентификатора вопроса. Пожалуйста, введите число.";
+        }
     }
 }
