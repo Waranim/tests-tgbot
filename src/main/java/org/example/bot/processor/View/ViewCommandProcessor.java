@@ -7,9 +7,10 @@ import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
 import org.example.bot.state.UserState;
-import org.example.bot.util.TestUtils;
 import org.example.bot.util.NumberUtils;
+import org.example.bot.util.TestUtils;
 import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -60,17 +61,18 @@ public class ViewCommandProcessor extends AbstractCommandProcessor {
     @Override
     public String process(Long userId, String message) {
         String[] parts = message.split(" ");
-        List<TestEntity> tests = testService.getTestsByUserId(userId);
+        Optional<List<TestEntity>> testsOptional = testService.getTestsByUserId(userId);
 
         if (parts.length == 1) {
             stateService.changeStateById(userId, UserState.VIEW_TEST);
+            String text = testsOptional.isPresent()? testUtils.testsToString(testsOptional.get()) : "";
             return "Выберите тест для просмотра:\n"
-                    + testUtils.testsToString(tests);
+                    + text;
         } else if (numberUtils.isNumber(parts[1])){
             stateService.changeStateById(userId, UserState.DEFAULT);
             Long testId = Long.parseLong(parts[1]);
             Optional<TestEntity> test = testService.getTest(testId);
-            if (test.isEmpty() || !tests.contains(test.get()))
+            if (test.isEmpty() || testsOptional.isEmpty() || !testsOptional.get().contains(test.get()))
                 return "Тест не найден!";
             return testToString(test.get());
         }

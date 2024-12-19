@@ -78,13 +78,13 @@ public class AddQuestionCommandProcessor extends AbstractCommandProcessor {
     @Override
     public String process(Long userId, String message) {
         String[] parts = message.split(" ");
-        List<TestEntity> tests = testService.getTestsByUserId(userId);
+        Optional<List<TestEntity>> tests = testService.getTestsByUserId(userId);
         if (parts.length == 1) {
             if (tests.isEmpty()) {
                 return "У вас нет доступных тестов для добавления вопросов.";
             }
             stateService.changeStateById(userId, UserState.ADD_QUESTION);
-            return "Выберите тест:\n" + testUtils.testsToString(tests);
+            return "Выберите тест:\n" + testUtils.testsToString(tests.get());
         }
         String testIdStr = parts[1];
         if (!numberUtils.isNumber(testIdStr)) {
@@ -92,7 +92,7 @@ public class AddQuestionCommandProcessor extends AbstractCommandProcessor {
         }
         long testId = Long.parseLong(testIdStr);
         Optional<TestEntity> testOptional = testService.getTest(testId);
-        if (testOptional.isEmpty() || !tests.contains(testOptional.get())) {
+        if (tests.isEmpty() || testOptional.isEmpty() || !tests.get().contains(testOptional.get())) {
             return "Тест не найден!";
         }
 

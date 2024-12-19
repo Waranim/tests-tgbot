@@ -59,14 +59,14 @@ public class EditCommandProcessor extends AbstractCommandProcessor {
     @Override
     public String process(Long userId, String message) {
         String[] parts = message.split(" ");
-        List<TestEntity> tests = testService.getTestsByUserId(userId);
+        Optional<List<TestEntity>> testsOptional = testService.getTestsByUserId(userId);
         if (parts.length == 1)
             return "Используйте команду вместе с идентификатором теста!";
         else if (!numberUtils.isNumber(parts[1]))
             return "Ошибка ввода!";
         Long testId = Long.parseLong(parts[1]);
         Optional<TestEntity> testOptional = testService.getTest(testId);
-        if (testOptional.isEmpty() || !tests.contains(testOptional.get()))
+        if (testOptional.isEmpty() || testsOptional.isEmpty() || !testsOptional.get().contains(testOptional.get()))
             return "Тест не найден!";
 
         TestEntity test = testOptional.get();

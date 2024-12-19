@@ -5,6 +5,8 @@ import org.example.bot.entity.UserContext;
 import org.example.bot.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 /**
  * Взаимодействие с сущностью пользователя
  */
@@ -29,15 +31,12 @@ public class UserService {
      * @param username псевдоним пользователя в телеграм
      */
     public void create(Long id, String username) {
-        UserEntity user = getUserById(id);
-        if (user != null) {
+        Optional<UserEntity> user = getUserById(id);
+        if (user.isPresent()) {
             return;
         }
 
-        UserEntity userEntity = new UserEntity();
-        userEntity.setUserId(id);
-        userEntity.setUsername(username);
-        userEntity.setContext(new UserContext(id));
+        UserEntity userEntity = new UserEntity(id, username, new UserContext(id));
         userRepository.save(userEntity);
     }
 
@@ -46,7 +45,7 @@ public class UserService {
      * @param id идентификатор пользователя
      * @return пользователь, или null, если пользователь не найден
      */
-    public UserEntity getUserById(Long id) {
-        return userRepository.findById(id).orElse(null);
+    public Optional<UserEntity> getUserById(Long id) {
+        return userRepository.findById(id);
     }
 }
