@@ -5,6 +5,7 @@ import org.example.bot.processor.AbstractStateProcessor;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
+import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.AnswerUtils;
 import org.springframework.stereotype.Component;
 
@@ -49,23 +50,23 @@ public class EditAnswerOptionChoiceProcessor extends AbstractStateProcessor {
     }
 
     @Override
-    public String process(Long userId, String message) {
+    public BotResponse process(Long userId, String message) {
         Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
         if (optionalCurrentQuestion.isEmpty()) {
-            return "Вопрос не найден";
+            return new BotResponse("Вопрос не найден");
         }
         QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         if (message.equals("1")) {
             stateService.changeStateById(userId, UserState.EDIT_ANSWER_TEXT_CHOICE);
-            return "Сейчас варианты ответа выглядят так\n"
+            return new BotResponse("Сейчас варианты ответа выглядят так\n"
                     + answerUtils.answersToString(currentQuestion.getAnswers())
-                    + "\nКакой вариант ответа вы хотите изменить?";
+                    + "\nКакой вариант ответа вы хотите изменить?");
         } else if (message.equals("2")) {
             stateService.changeStateById(userId, UserState.SET_CORRECT_ANSWER);
-            return "Сейчас варианты ответа выглядят так:\n"
+            return new BotResponse("Сейчас варианты ответа выглядят так:\n"
                     + answerUtils.answersToString(currentQuestion.getAnswers())
-                    + "\nКакой вариант ответа вы хотите сделать правильным?";
+                    + "\nКакой вариант ответа вы хотите сделать правильным?");
         }
-        return "Некорректный ввод";
+        return new BotResponse("Некорректный ввод");
     }
 }

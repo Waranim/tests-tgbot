@@ -5,6 +5,7 @@ import org.example.bot.processor.AbstractStateProcessor;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
+import org.example.bot.telegram.BotResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -39,19 +40,19 @@ public class EditAnswerTextChoiceProcessor extends AbstractStateProcessor {
     }
 
     @Override
-    public String process(Long userId, String message) {
+    public BotResponse process(Long userId, String message) {
         Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
         if (optionalCurrentQuestion.isEmpty()) {
-            return "Вопрос не найден";
+            return new BotResponse("Вопрос не найден");
         }
         QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         int answerIndex = Integer.parseInt(message) - 1;
         if (answerIndex < 0 || answerIndex >= currentQuestion.getAnswers().size()) {
-            return "Некорректный номер ответа. Попробуйте еще раз.";
+            return new BotResponse("Некорректный номер ответа. Попробуйте еще раз.");
         }
         contextService.setEditingAnswerIndex(userId, answerIndex);
         stateService.changeStateById(userId, UserState.EDIT_ANSWER_TEXT);
-        return "Введите новую формулировку ответа";
+        return new BotResponse("Введите новую формулировку ответа");
     }
 
 }

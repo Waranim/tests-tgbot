@@ -6,6 +6,7 @@ import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
 import org.example.bot.state.UserState;
+import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
 
@@ -57,17 +58,17 @@ public class DelTestProcessor extends AbstractStateProcessor {
     }
 
     @Override
-    public String process(Long userId, String message) {
+    public BotResponse process(Long userId, String message) {
         if(!numberUtils.isNumber(message))
-            return  "Введите число!";
+            return  new BotResponse("Введите число!");
         List<TestEntity> tests = testService.getTestsByUserId(userId);
         Optional<TestEntity> testOptional = testService.getTest(Long.parseLong(message));
         if (testOptional.isEmpty() || !tests.contains(testOptional.get()))
-            return "Тест не найден!";
+            return new BotResponse("Тест не найден!");
 
         TestEntity test = testOptional.get();
         contextService.setCurrentTest(userId, test);
         stateService.changeStateById(userId, UserState.CONFIRM_DELETE_TEST);
-        return String.format("Тест “%s” будет удалён, вы уверены? (Да/Нет)", test.getTitle());
+        return new BotResponse(String.format("Тест “%s” будет удалён, вы уверены? (Да/Нет)", test.getTitle()));
     }
 }

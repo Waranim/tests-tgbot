@@ -4,6 +4,7 @@ import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
 import org.example.bot.state.UserState;
+import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.TestUtils;
 import org.springframework.stereotype.Component;
 
@@ -45,9 +46,9 @@ public class DelCommandProcessor extends AbstractCommandProcessor {
 
 
     @Override
-    public String process(Long userId, String message) {
+    public BotResponse process(Long userId, String message) {
         stateService.changeStateById(userId, UserState.DELETE_TEST);
-        return "Выберите тест:\n"
-                + testUtils.testsToString(testService.getTestsByUserId(userId));
+        return new BotResponse("Выберите тест:\n"
+                + testUtils.testsToString(testService.getTestsByUserId(userId)));
     }
 }

@@ -7,6 +7,7 @@ import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
 
+import org.example.bot.telegram.BotResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -49,22 +50,22 @@ public class EditSetCorrectAnswerProcessor extends AbstractStateProcessor {
     }
 
     @Override
-    public String process(Long userId, String message) {
+    public BotResponse process(Long userId, String message) {
         Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
         if (optionalCurrentQuestion.isEmpty()) {
-            return "Вопрос не найден";
+            return new BotResponse("Вопрос не найден");
         }
         QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         try {
             int optionIndex = Integer.parseInt(message);
             questionService.setCorrectAnswer(currentQuestion, optionIndex);
             stateService.changeStateById(userId, UserState.DEFAULT);
-            return String.format("Вариант ответа %s назначен правильным.", optionIndex);
+            return new BotResponse(String.format("Вариант ответа %s назначен правильным.", optionIndex));
         } catch (NumberFormatException e) {
-            return "Некорректный формат ввода. Пожалуйста, введите число.";
+            return new BotResponse("Некорректный формат ввода. Пожалуйста, введите число.");
         } catch (IllegalArgumentException e) {
-            return String.format("Некорректный номер варианта ответа. Введите число от 1 до %d",
-                    currentQuestion.getAnswers().size());
+            return new BotResponse(String.format("Некорректный номер варианта ответа. Введите число от 1 до %d",
+                    currentQuestion.getAnswers().size()));
         }
     }
 }

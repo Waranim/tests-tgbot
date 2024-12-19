@@ -6,6 +6,7 @@ import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
 import org.example.bot.state.UserState;
+import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
 
@@ -57,25 +58,25 @@ public class EditCommandProcessor extends AbstractCommandProcessor {
     }
 
     @Override
-    public String process(Long userId, String message) {
+    public BotResponse process(Long userId, String message) {
         String[] parts = message.split(" ");
         List<TestEntity> tests = testService.getTestsByUserId(userId);
         if (parts.length == 1)
-            return "Используйте команду вместе с идентификатором теста!";
+            return new BotResponse("Используйте команду вместе с идентификатором теста!");
         else if (!numberUtils.isNumber(parts[1]))
-            return "Ошибка ввода!";
+            return new BotResponse("Ошибка ввода!");
         Long testId = Long.parseLong(parts[1]);
         Optional<TestEntity> testOptional = testService.getTest(testId);
         if (testOptional.isEmpty() || !tests.contains(testOptional.get()))
-            return "Тест не найден!";
+            return new BotResponse("Тест не найден!");
 
         TestEntity test = testOptional.get();
         contextService.setCurrentTest(userId, test);
         stateService.changeStateById(userId, UserState.EDIT_TEST);
-        return String.format("""
+        return new BotResponse(String.format("""
                 Вы выбрали тест “%s”. Что вы хотите изменить?
                 1: Название теста
                 2: Описание теста
-                """, test.getTitle());
+                """, test.getTitle()));
     }
 }

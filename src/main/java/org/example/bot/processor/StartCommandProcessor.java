@@ -1,6 +1,7 @@
 package org.example.bot.processor;
 
 import org.example.bot.service.UserService;
+import org.example.bot.telegram.BotResponse;
 import org.springframework.stereotype.Component;
 
 /**
@@ -32,7 +33,7 @@ public class StartCommandProcessor extends AbstractCommandProcessor {
     }
 
     @Override
-    public String process(Long userId, String message) {
+    public BotResponse process(Long userId, String message) {
         userService.create(userId, message.split(" ")[1]);
         return helpCommandProcessor.process(null, null);
     }

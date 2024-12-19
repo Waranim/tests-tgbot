@@ -6,6 +6,7 @@ import org.example.bot.service.QuestionService;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
+import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
 
@@ -57,26 +58,26 @@ public class DelQuestionCommandProcessor extends AbstractCommandProcessor {
     }
 
     @Override
-    public String process(Long userId, String message) {
+    public BotResponse process(Long userId, String message) {
         String[] parts = message.split(" ");
         if (parts.length == 2) {
             String questionIdStr = parts[1];
             if (!numberUtils.isNumber(questionIdStr)) {
-                return "Некорректный формат id вопроса. Пожалуйста, введите число.";
+                return new BotResponse("Некорректный формат id вопроса. Пожалуйста, введите число.");
             }
             Long questionId = Long.parseLong(questionIdStr);
             Optional<QuestionEntity> questionOpt = questionService.getQuestion(questionId);
 
-            return questionOpt.map(question -> {
+            return new BotResponse(questionOpt.map(question -> {
                 contextService.setCurrentQuestion(userId, question);
                 stateService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
                 return String.format("Вопрос “%s” будет удалён, вы уверены? (Да/Нет)", question.getQuestion());
-            }).orElse("Вопрос не найден!");
+            }).orElse("Вопрос не найден!"));
         }
         if (parts.length == 1) {
             stateService.changeStateById(userId, UserState.DELETE_QUESTION);
-            return "Введите id вопроса для удаления:\n";
+            return new BotResponse("Введите id вопроса для удаления:\n");
         }
-        return "Ошибка ввода. Укажите корректный id теста.";
+        return new BotResponse("Ошибка ввода. Укажите корректный id теста.");
     }
 }
