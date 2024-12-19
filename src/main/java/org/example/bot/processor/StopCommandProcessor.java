@@ -8,9 +8,12 @@ import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
 import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.AnswerUtils;
+import org.example.bot.util.ButtonUtils;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +37,7 @@ public class StopCommandProcessor extends AbstractCommandProcessor {
      * Утилита с вспомогательными методами для вопросов
      */
     private final AnswerUtils answerUtils;
+    private final ButtonUtils buttonUtils;
 
     /**
      * Конструктор для инициализации обработчика команды /stop
@@ -44,11 +48,12 @@ public class StopCommandProcessor extends AbstractCommandProcessor {
      */
     public StopCommandProcessor(StateService stateService,
                                 ContextService contextService,
-                                AnswerUtils answerUtils) {
+                                AnswerUtils answerUtils, ButtonUtils buttonUtils) {
         super("/stop");
         this.stateService = stateService;
         this.contextService = contextService;
         this.answerUtils = answerUtils;
+        this.buttonUtils = buttonUtils;
     }
 
     @Override
@@ -71,6 +76,12 @@ public class StopCommandProcessor extends AbstractCommandProcessor {
             return new BotResponse("Вы не создали необходимый минимум ответов (минимум: 2). Введите варианты ответа.");
         }
         stateService.changeStateById(userId, UserState.SET_CORRECT_ANSWER);
-        return new BotResponse("Укажите правильный вариант ответа:\n" + answerUtils.answersToString(currentQuestion.getAnswers()));
+        List<InlineKeyboardButton> button = new ArrayList<>();
+        for (int i = 0; i < answers.size(); i++) {
+            AnswerEntity answer = answers.get(i);
+            String text = answer.getAnswerText();
+            button.add(buttonUtils.createButton(text, "SET_CORRECT_ANSWER " + i));
+        }
+        return new BotResponse("Укажите правильный вариант ответа:\n" + answerUtils.answersToString(currentQuestion.getAnswers()), button, false);
     }
 }

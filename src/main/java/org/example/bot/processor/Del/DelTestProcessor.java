@@ -7,9 +7,12 @@ import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
 import org.example.bot.state.UserState;
 import org.example.bot.telegram.BotResponse;
+import org.example.bot.util.ButtonUtils;
 import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +40,7 @@ public class DelTestProcessor extends AbstractStateProcessor {
      * Сервис для управления контекстом.
      */
     private final ContextService contextService;
+    private final ButtonUtils buttonUtils;
 
     /**
      * Конструктор для инициализации обработчика удаления теста.
@@ -49,26 +53,32 @@ public class DelTestProcessor extends AbstractStateProcessor {
     public DelTestProcessor(StateService stateService,
                             TestService testService,
                             NumberUtils numberUtils,
-                            ContextService contextService) {
+                            ContextService contextService, ButtonUtils buttonUtils) {
         super(stateService, UserState.DELETE_TEST);
         this.stateService = stateService;
         this.testService = testService;
         this.numberUtils = numberUtils;
         this.contextService = contextService;
+        this.buttonUtils = buttonUtils;
     }
 
     @Override
     public BotResponse process(Long userId, String message) {
+        String[] parts = message.split(" ");
+        Long testId = Long.parseLong(parts[0]);
         if(!numberUtils.isNumber(message))
             return  new BotResponse("Введите число!");
+        List<InlineKeyboardButton> buttons = new ArrayList<>();
+        buttons.add(buttonUtils.createButton("Да", "DEL_TEST_CONFIRM " + testId + " да"));
+        buttons.add(buttonUtils.createButton("Нет", "DEL_TEST_CONFIRM " + testId + " нет"));
         List<TestEntity> tests = testService.getTestsByUserId(userId);
-        Optional<TestEntity> testOptional = testService.getTest(Long.parseLong(message));
+        Optional<TestEntity> testOptional = testService.getTest(testId);
         if (testOptional.isEmpty() || !tests.contains(testOptional.get()))
             return new BotResponse("Тест не найден!");
 
         TestEntity test = testOptional.get();
         contextService.setCurrentTest(userId, test);
         stateService.changeStateById(userId, UserState.CONFIRM_DELETE_TEST);
-        return new BotResponse(String.format("Тест “%s” будет удалён, вы уверены? (Да/Нет)", test.getTitle()));
+        return new BotResponse(String.format("Тест “%s” будет удалён, вы уверены? (Да/Нет)", test.getTitle()), buttons, false);
     }
 }

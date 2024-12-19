@@ -7,8 +7,12 @@ import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
 import org.example.bot.telegram.BotResponse;
+import org.example.bot.util.ButtonUtils;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -31,6 +35,7 @@ public class DelQuestionProcessor extends AbstractStateProcessor {
      * Сервис для управления вопросами
      */
     private final QuestionService questionService;
+    private final ButtonUtils buttonUtils;
 
     /**
      * Конструктор для инициализации обработчика удаления вопроса
@@ -41,23 +46,27 @@ public class DelQuestionProcessor extends AbstractStateProcessor {
      */
     public DelQuestionProcessor(StateService stateService,
                                 ContextService contextService,
-                                QuestionService questionService) {
+                                QuestionService questionService, ButtonUtils buttonUtils) {
         super(stateService, UserState.DELETE_QUESTION);
         this.stateService = stateService;
         this.contextService = contextService;
         this.questionService = questionService;
+        this.buttonUtils = buttonUtils;
     }
 
     @Override
     public BotResponse process(Long userId, String message) {
         try {
             Long questionId = Long.parseLong(message);
+            List<InlineKeyboardButton> buttons = new ArrayList<>();
+            buttons.add(buttonUtils.createButton("Да", "DEL_QUESTION_CONFIRM " + questionId + " да"));
+            buttons.add(buttonUtils.createButton("Нет", "DEL_QUESTION_CONFIRM " + questionId + " нет"));
             Optional<QuestionEntity> questionOpt = questionService.getQuestion(questionId);
             return new BotResponse(questionOpt.map(question -> {
                 contextService.setCurrentQuestion(userId, question);
                 stateService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
-                return String.format("Вопрос “%s” будет удалён, вы уверены? (Да/Нет)", question.getQuestion());
-            }).orElse("Вопрос не найден!"));
+                return String.format("Вопрос “%s” будет удалён, вы уверены?", question.getQuestion());
+            }).orElse("Вопрос не найден!"), buttons, false);
 
         } catch (NumberFormatException e) {
             return new BotResponse("Некорректный формат идентификатора вопроса. Пожалуйста, введите число.");

@@ -48,6 +48,15 @@ public class BotResponse {
     }
 
     /**
+     * Получить кнопку
+     *
+     * @return возвращает кнопку
+     */
+    public List<InlineKeyboardButton> getButtons() {
+        return buttons;
+    }
+
+    /**
      * Получить сообщение
      */
     public String getMessage() {

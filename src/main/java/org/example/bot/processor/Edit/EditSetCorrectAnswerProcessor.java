@@ -1,7 +1,7 @@
 package org.example.bot.processor.Edit;
 
 import org.example.bot.entity.QuestionEntity;
-import org.example.bot.processor.AbstractStateProcessor;
+import org.example.bot.processor.AbstractCallbackProcessor;
 import org.example.bot.service.QuestionService;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
@@ -16,7 +16,7 @@ import java.util.Optional;
  * Обработчик состояния редактирования правильного ответа
  */
 @Component
-public class EditSetCorrectAnswerProcessor extends AbstractStateProcessor {
+public class EditSetCorrectAnswerProcessor extends AbstractCallbackProcessor {
 
     /**
      * Сервис для управления состояниями
@@ -43,7 +43,7 @@ public class EditSetCorrectAnswerProcessor extends AbstractStateProcessor {
     public EditSetCorrectAnswerProcessor(StateService stateService,
                                          ContextService contextService,
                                          QuestionService questionService) {
-        super(stateService, UserState.SET_CORRECT_ANSWER);
+        super("SET_CORRECT_ANSWER");
         this.stateService = stateService;
         this.contextService = contextService;
         this.questionService = questionService;
@@ -51,13 +51,14 @@ public class EditSetCorrectAnswerProcessor extends AbstractStateProcessor {
 
     @Override
     public BotResponse process(Long userId, String message) {
+        message = extractData(message);
         Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
         if (optionalCurrentQuestion.isEmpty()) {
             return new BotResponse("Вопрос не найден");
         }
         QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         try {
-            int optionIndex = Integer.parseInt(message);
+            int optionIndex = Integer.parseInt(message) + 1;
             questionService.setCorrectAnswer(currentQuestion, optionIndex);
             stateService.changeStateById(userId, UserState.DEFAULT);
             return new BotResponse(String.format("Вариант ответа %s назначен правильным.", optionIndex));
