@@ -43,7 +43,7 @@ public class TestCommandProcessor extends AbstractCommandProcessor {
         List<String> testsTitles = tests.stream().map(t-> userId.equals(t.getCreatorId())
                 ? t.getTitle()
                 : "%s (%s)".formatted(t.getTitle()
-                , userService.getUserById(t.getCreatorId()).getUsername())).toList();
+                , userService.getUserById(t.getCreatorId()).get().getUsername())).toList();
         List<String> testsIds = tests.stream().map(t -> t.getId().toString()).toList();
         List<InlineKeyboardButton> buttons = new ArrayList<>();
         for(int i = 0; i < testsIds.size(); i++){

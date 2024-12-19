@@ -42,9 +42,10 @@ public class ShareChooseUserProcessor extends AbstractStateProcessor {
         if(!numberUtils.isNumber(message))
             return new BotResponse("Некорректный id пользователя");
         Long recipientId = Long.parseLong(message);
-        UserEntity recipientUser = userService.getUserById(recipientId);
-        if(recipientUser == null)
+        Optional<UserEntity> recipientUserOpt = userService.getUserById(recipientId);
+        if(recipientUserOpt.isEmpty())
             return new BotResponse("Пользователь не найден");
+        UserEntity recipientUser = recipientUserOpt.get();
         Optional<TestEntity> testOpt = contextService.getCurrentTest(userId);
         if(testOpt.isEmpty())
             return new BotResponse("Тест не найден");

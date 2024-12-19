@@ -41,7 +41,7 @@ public class ShareUnsubscribeChoseTestProcessor extends AbstractCallbackProcesso
 
         InlineKeyboardButton button = buttonUtils.createButton("Отписаться"
                 , "SHARE_UNSUBSCRIBE_TEST " + testId);
-        String creatorUsername = userService.getUserById(test.getCreatorId()).getUsername();
+        String creatorUsername = userService.getUserById(test.getCreatorId()).get().getUsername();
         return new BotResponse(
                 "Вы выбрали “%s (%s)”. Всего вопросов: %s."
                         .formatted(test.getTitle(), creatorUsername, test.getQuestions().size())

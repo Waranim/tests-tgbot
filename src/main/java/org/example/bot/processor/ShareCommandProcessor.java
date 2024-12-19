@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Обработать команду поделится
@@ -29,9 +30,9 @@ public class ShareCommandProcessor extends AbstractCommandProcessor {
 
     @Override
     public BotResponse process(Long userId, String message) {
-        List<TestEntity> tests = testService.getTestsByUserId(userId);
+        Optional<List<TestEntity>> tests = testService.getTestsByUserId(userId);
         List<InlineKeyboardButton> buttons = new ArrayList<>();
-        tests.forEach(t ->
+        tests.get().forEach(t ->
                 buttons.add(buttonUtils.createButton(t.getTitle()
                         , "SHARE_CHOOSE_TEST " + t.getId().toString())));
         return new BotResponse("Выберите тест: ", buttons, false);
