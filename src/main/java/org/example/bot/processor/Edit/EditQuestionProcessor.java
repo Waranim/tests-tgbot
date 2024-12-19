@@ -3,6 +3,7 @@ package org.example.bot.processor.Edit;
 import org.example.bot.processor.AbstractStateProcessor;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
+import org.example.bot.telegram.BotResponse;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,14 +28,14 @@ public class EditQuestionProcessor extends AbstractStateProcessor {
     }
 
     @Override
-    public String process(Long userId, String message) {
+    public BotResponse process(Long userId, String message) {
         if (message.equals("1")) {
             stateService.changeStateById(userId, UserState.EDIT_QUESTION_TEXT);
-            return "Введите новый текст вопроса";
+            return new BotResponse("Введите новый текст вопроса");
         } else if (message.equals("2")) {
             stateService.changeStateById(userId, UserState.EDIT_ANSWER_OPTION_CHOICE);
-            return "Что вы хотите сделать с вариантом ответа?\n1: Изменить формулировку ответа\n2: Изменить правильность варианта ответа";
+            return new BotResponse("Что вы хотите сделать с вариантом ответа?\n1: Изменить формулировку ответа\n2: Изменить правильность варианта ответа");
         }
-        return "Некорректный ввод";
+        return new BotResponse("Некорректный ввод");
     }
 }

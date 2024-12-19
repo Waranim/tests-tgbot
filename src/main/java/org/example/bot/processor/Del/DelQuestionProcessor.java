@@ -6,6 +6,7 @@ import org.example.bot.service.QuestionService;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
+import org.example.bot.telegram.BotResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -48,18 +49,18 @@ public class DelQuestionProcessor extends AbstractStateProcessor {
     }
 
     @Override
-    public String process(Long userId, String message) {
+    public BotResponse process(Long userId, String message) {
         try {
             Long questionId = Long.parseLong(message);
             Optional<QuestionEntity> questionOpt = questionService.getQuestion(questionId);
-            return questionOpt.map(question -> {
+            return new BotResponse(questionOpt.map(question -> {
                 contextService.setCurrentQuestion(userId, question);
                 stateService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
                 return String.format("Вопрос “%s” будет удалён, вы уверены? (Да/Нет)", question.getQuestion());
-            }).orElse("Вопрос не найден!");
+            }).orElse("Вопрос не найден!"));
 
         } catch (NumberFormatException e) {
-            return "Некорректный формат идентификатора вопроса. Пожалуйста, введите число.";
+            return new BotResponse("Некорректный формат идентификатора вопроса. Пожалуйста, введите число.");
         }
     }
 }

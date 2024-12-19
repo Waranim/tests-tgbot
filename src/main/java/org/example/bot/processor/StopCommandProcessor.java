@@ -6,6 +6,7 @@ import org.example.bot.entity.UserContext;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
+import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.AnswerUtils;
 import org.springframework.stereotype.Component;
 
@@ -51,25 +52,25 @@ public class StopCommandProcessor extends AbstractCommandProcessor {
     }
 
     @Override
-    public String process(Long userId, String message) {
+    public BotResponse process(Long userId, String message) {
         Optional<UserContext> optionalContext = contextService.getContext(userId);
         if (optionalContext.isEmpty()) {
-            return "Ошибка";
+            return new BotResponse("Ошибка");
         }
         UserState userState = optionalContext.get().getState();
         Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
         if (optionalCurrentQuestion.isEmpty()) {
-            return "Нет текущего вопроса. Пожалуйста, выберите или создайте вопрос.";
+            return new BotResponse("Нет текущего вопроса. Пожалуйста, выберите или создайте вопрос.");
         }
         QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         List<AnswerEntity> answers = currentQuestion.getAnswers();
         if (userState != UserState.ADD_ANSWER) {
-            return "Команда /stop используется только при создании вопроса.";
+            return new BotResponse("Команда /stop используется только при создании вопроса.");
         }
         if (answers.size() < 2) {
-            return "Вы не создали необходимый минимум ответов (минимум: 2). Введите варианты ответа.";
+            return new BotResponse("Вы не создали необходимый минимум ответов (минимум: 2). Введите варианты ответа.");
         }
         stateService.changeStateById(userId, UserState.SET_CORRECT_ANSWER);
-        return "Укажите правильный вариант ответа:\n" + answerUtils.answersToString(currentQuestion.getAnswers());
+        return new BotResponse("Укажите правильный вариант ответа:\n" + answerUtils.answersToString(currentQuestion.getAnswers()));
     }
 }

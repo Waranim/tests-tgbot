@@ -7,6 +7,7 @@ import org.example.bot.service.QuestionService;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
+import org.example.bot.telegram.BotResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -51,17 +52,18 @@ public class AddAnswerQuestionProcessor extends AbstractStateProcessor {
     }
 
     @Override
-    public String process(Long userId, String message) {
+    public BotResponse process(Long userId, String message) {
         if (message.equals("/stop")) {
             return stopCommandProcessor.process(userId, message);
         }
         Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
 
         if (optionalCurrentQuestion.isEmpty()) {
-            return "Вопрос не найден";
+            return new BotResponse("Вопрос не найден");
         }
         QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         questionService.addAnswerOption(currentQuestion, message);
-        return "Введите вариант ответа. Если вы хотите закончить добавлять варианты, введите команду “/stop”.";
+        return new BotResponse("Введите вариант ответа. " +
+                "Если вы хотите закончить добавлять варианты, введите команду “/stop”.");
     }
 }
