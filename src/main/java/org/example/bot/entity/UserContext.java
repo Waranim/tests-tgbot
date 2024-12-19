@@ -2,7 +2,7 @@ package org.example.bot.entity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import org.example.bot.state.UserState;
 
 /**
@@ -24,7 +24,7 @@ public class UserContext extends BaseEntity {
     /**
      * Тест, который в данный момент использует пользователь
      */
-    @OneToOne
+    @ManyToOne
     private TestEntity currentTest;
 
     /**
@@ -35,7 +35,7 @@ public class UserContext extends BaseEntity {
     /**
      * Вопрос, который в данный момент использует пользователь
      */
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     private QuestionEntity currentQuestion;
 
     /**
