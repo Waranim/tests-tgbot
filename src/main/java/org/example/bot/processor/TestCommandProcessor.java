@@ -8,6 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Обработчик команды справки.
@@ -30,7 +31,10 @@ public class TestCommandProcessor extends AbstractCommandProcessor {
     @Override
     public BotResponse process(Long userId, String message) {
 
-        List<TestEntity> tests = testService.getTestsByUserId(userId);
+        Optional<List<TestEntity>> testsOpt = testService.getTestsByUserId(userId);
+        if(testsOpt.isEmpty())
+            return new BotResponse("Тесты не найдены");
+        List<TestEntity> tests = testsOpt.get();
         List<String> testsTitles = tests.stream().map(TestEntity::getTitle).toList();
         List<String> testsIds = tests.stream().map(t -> t.getId().toString()).toList();
         List<InlineKeyboardButton> buttons = new ArrayList<>();

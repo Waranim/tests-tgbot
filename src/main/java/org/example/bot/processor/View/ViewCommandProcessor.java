@@ -10,7 +10,9 @@ import org.example.bot.state.UserState;
 import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.TestUtils;
 import org.example.bot.util.NumberUtils;
+import org.example.bot.util.TestUtils;
 import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -61,17 +63,18 @@ public class ViewCommandProcessor extends AbstractCommandProcessor {
     @Override
     public BotResponse process(Long userId, String message) {
         String[] parts = message.split(" ");
-        List<TestEntity> tests = testService.getTestsByUserId(userId);
+        Optional<List<TestEntity>> testsOptional = testService.getTestsByUserId(userId);
 
         if (parts.length == 1) {
             stateService.changeStateById(userId, UserState.VIEW_TEST);
+            String text = testsOptional.isPresent()? testUtils.testsToString(testsOptional.get()) : "";
             return new BotResponse("Выберите тест для просмотра:\n"
-                    + testUtils.testsToString(tests));
+                    + text);
         } else if (numberUtils.isNumber(parts[1])){
             stateService.changeStateById(userId, UserState.DEFAULT);
             Long testId = Long.parseLong(parts[1]);
             Optional<TestEntity> test = testService.getTest(testId);
-            if (test.isEmpty() || !tests.contains(test.get()))
+            if (test.isEmpty() || testsOptional.isEmpty() || !testsOptional.get().contains(test.get()))
                 return new BotResponse("Тест не найден!");
             return new BotResponse(testToString(test.get()));
         }

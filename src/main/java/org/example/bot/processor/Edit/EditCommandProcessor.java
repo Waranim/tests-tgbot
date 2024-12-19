@@ -65,7 +65,7 @@ public class EditCommandProcessor extends AbstractCommandProcessor {
     @Override
     public BotResponse process(Long userId, String message) {
         String[] parts = message.split(" ");
-        List<TestEntity> tests = testService.getTestsByUserId(userId);
+        Optional<List<TestEntity>> testsOptional = testService.getTestsByUserId(userId);
         if (parts.length == 1)
             return new BotResponse("Используйте команду вместе с идентификатором теста!");
         else if (!numberUtils.isNumber(parts[1]))
@@ -76,7 +76,7 @@ public class EditCommandProcessor extends AbstractCommandProcessor {
         buttons.add(buttonUtils.createButton("Название теста", "EDIT_TEST " + testId + " 1"));
         buttons.add(buttonUtils.createButton("Описание теста", "EDIT_TEST " + testId + " 2"));
         Optional<TestEntity> testOptional = testService.getTest(testId);
-        if (testOptional.isEmpty() || !tests.contains(testOptional.get()))
+        if (testOptional.isEmpty() || testsOptional.isEmpty() || !testsOptional.get().contains(testOptional.get()))
             return new BotResponse("Тест не найден!");
 
         TestEntity test = testOptional.get();
