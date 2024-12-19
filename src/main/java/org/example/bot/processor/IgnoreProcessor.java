@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 
 /**
- * Обработка ответа на вопрос
+ * Обработка игнорирования действия пользователя
  */
 @Component
 public class IgnoreProcessor extends AbstractCallbackProcessor {

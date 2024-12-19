@@ -1,5 +1,6 @@
 package org.example.bot.telegram;
 
+import org.example.bot.dto.InlineButtonDTO;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -22,7 +23,7 @@ public class BotResponse {
     /**
      * Inline кнопки
      */
-    private final List<InlineKeyboardButton> buttons;
+    private final List<List<InlineButtonDTO>> buttons;
 
     /**
      * Редактировать ли сообщение
@@ -32,7 +33,7 @@ public class BotResponse {
     /**
      * Конструктор для ответа бота
      */
-    public BotResponse(String message, List<InlineKeyboardButton> buttons, boolean isEdit) {
+    public BotResponse(String message, List<List<InlineButtonDTO>> buttons, boolean isEdit) {
         this.message = message;
         this.buttons = buttons;
         this.isEdit = isEdit;
@@ -69,15 +70,11 @@ public class BotResponse {
      * @return SendMessage или EditMessageText в зависимости от isEdit
      */
     public BotApiMethod<?> convertToMessage(String chatId, Integer messageId) {
-        InlineKeyboardMarkup markup = null;
-        if (buttons != null && !buttons.isEmpty()) {
-            markup = new InlineKeyboardMarkup();
-            List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-            for (InlineKeyboardButton button : buttons) {
-                keyboard.add(List.of(button));
-            }
-            markup.setKeyboard(keyboard);
+        if (message.isBlank()) {
+            return null;
         }
+
+        InlineKeyboardMarkup markup = getInlineKeyboardMarkup();
 
         if (isEdit && messageId != null) {
             return EditMessageText.builder()
@@ -93,5 +90,31 @@ public class BotResponse {
                     .replyMarkup(markup)
                     .build();
         }
+    }
+
+    /**
+     * Создаёт инлайн клавиатуру
+     */
+    private InlineKeyboardMarkup getInlineKeyboardMarkup() {
+        if (buttons == null || buttons.isEmpty()) {
+            return null;
+        }
+
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+
+        for (List<InlineButtonDTO> buttonsRow : buttons) {
+            List<InlineKeyboardButton> row = buttonsRow.stream()
+                    .map(button -> {
+                        InlineKeyboardButton inlineButton = new InlineKeyboardButton(button.text());
+                        inlineButton.setCallbackData(button.callbackData());
+                        return inlineButton;
+                    })
+                    .toList();
+            keyboard.add(row);
+        }
+
+        markup.setKeyboard(keyboard);
+        return markup;
     }
 }
