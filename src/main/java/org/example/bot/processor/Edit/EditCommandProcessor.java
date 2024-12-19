@@ -60,7 +60,7 @@ public class EditCommandProcessor extends AbstractCommandProcessor {
     @Override
     public BotResponse process(Long userId, String message) {
         String[] parts = message.split(" ");
-        List<TestEntity> tests = testService.getTestsByUserId(userId);
+        Optional<List<TestEntity>> testsOptional = testService.getTestsByUserId(userId);
         if (parts.length == 1)
             return new BotResponse("Используйте команду вместе с идентификатором теста!");
         else if (!numberUtils.isNumber(parts[1]))
