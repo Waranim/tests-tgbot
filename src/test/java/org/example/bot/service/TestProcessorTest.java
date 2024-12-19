@@ -332,5 +332,4 @@ class TestProcessorTest {
             savedTest.getDescription().equals("Новое описание математического теста")
         ));
     }
-
 }

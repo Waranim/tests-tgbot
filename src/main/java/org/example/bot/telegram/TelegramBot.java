@@ -87,10 +87,12 @@ class TelegramBot extends TelegramLongPollingBot {
      * Отправка сообщений
      */
     private void sendMessage(BotApiMethod<?> message) {
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            log.error("Не удалось отправить сообщение: {}", e.getMessage());
+        if (message != null) {
+            try {
+                execute(message);
+            } catch (TelegramApiException e) {
+                log.error("Не удалось отправить сообщение: {}", e.getMessage());
+            }
         }
     }
 

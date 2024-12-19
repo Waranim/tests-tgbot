@@ -1,11 +1,11 @@
 package org.example.bot.processor;
 
+import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.entity.TestEntity;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.TestService;
 import org.example.bot.telegram.BotResponse;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,14 +44,12 @@ public class TestChooseProcessor extends AbstractCallbackProcessor {
             return new BotResponse("Тест с указанным ID не найден.");
         }
 
-        InlineKeyboardButton button = new InlineKeyboardButton();
-        button.setText("Начать");
-        button.setCallbackData("START_TEST");
         contextService.setCurrentTest(userId, test.get());
         return new BotResponse(String.format(
                 "Вы выбрали тест “%s”. Всего вопросов: %d.",
                 test.get().getTitle(),
-                test.get().getQuestions().size()), List.of(button),
+                test.get().getQuestions().size()),
+                List.of(List.of(new InlineButtonDTO("Начать", "START_TEST"))),
                 false);
     }
 }
