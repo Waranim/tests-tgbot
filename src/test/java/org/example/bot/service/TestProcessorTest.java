@@ -233,11 +233,9 @@ class TestProcessorTest {
     void testEditTestTitle() {
         String response1 = messageHandler.handle("/edit 123", userId).getMessage();
         assertEquals("Вы выбрали тест “Математический тест”. " +
-                "Что вы хотите изменить?\n" +
-                "1: Название теста\n" +
-                "2: Описание теста\n", response1);
+                "Что вы хотите изменить?\n", response1);
 
-        String response2 = messageHandler.handle("1", userId).getMessage();
+        String response2 = messageHandler.handle("EDIT_TEST 123 1", userId).getMessage();
         assertEquals("Введите новое название теста", response2);
 
         String response3 = messageHandler.handle("Новый математический тест", userId).getMessage();
@@ -274,7 +272,7 @@ class TestProcessorTest {
         String response2 = messageHandler.handle("123", userId).getMessage();
         assertEquals("Тест “Математический тест” будет удалён, вы уверены? (Да/Нет)", response2);
 
-        String response3 = messageHandler.handle("Да", userId).getMessage();
+        String response3 = messageHandler.handle("DEL_TEST_CONFIRM 123 да", userId).getMessage();
         assertEquals("Тест “Математический тест” удалён", response3);
 
         verify(testRepository, times(1)).delete(argThat(deletedTest -> 
@@ -291,7 +289,7 @@ class TestProcessorTest {
         messageHandler.handle("/del", userId);
         messageHandler.handle("123", userId);
         
-        String response = messageHandler.handle("Нет", userId).getMessage();
+        String response = messageHandler.handle("DEL_TEST_CONFIRM 123 нет", userId).getMessage();
         assertEquals("Тест “Математический тест” не удалён", response);
         
         verify(testRepository, never()).delete(any(TestEntity.class));
@@ -317,11 +315,9 @@ class TestProcessorTest {
     @Test
     void testEditTestDescription() {
         String response1 = messageHandler.handle("/edit 123", userId).getMessage();
-        assertEquals("Вы выбрали тест “Математический тест”. Что вы хотите изменить?\n" +
-                "1: Название теста\n" +
-                "2: Описание теста\n", response1);
+        assertEquals("Вы выбрали тест “Математический тест”. Что вы хотите изменить?\n", response1);
 
-        String response2 = messageHandler.handle("2", userId).getMessage();
+        String response2 = messageHandler.handle("EDIT_TEST 123 2", userId).getMessage();
         assertEquals("Введите новое описание теста", response2);
 
         String response3 = messageHandler.handle("Новое описание математического теста", userId).getMessage();

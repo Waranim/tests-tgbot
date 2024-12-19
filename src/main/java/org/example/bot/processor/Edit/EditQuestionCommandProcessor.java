@@ -1,5 +1,6 @@
 package org.example.bot.processor.Edit;
 
+import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.QuestionService;
@@ -7,10 +8,8 @@ import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
 import org.example.bot.telegram.BotResponse;
-import org.example.bot.util.ButtonUtils;
 import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +40,6 @@ public class EditQuestionCommandProcessor extends AbstractCommandProcessor {
      * Утилита с вспомогательными методами
      */
     private final NumberUtils numberUtils;
-    private final ButtonUtils buttonUtils;
 
     /**
      * Конструктор для инициализации обработчика команды редактирования вопроса
@@ -54,13 +52,12 @@ public class EditQuestionCommandProcessor extends AbstractCommandProcessor {
     public EditQuestionCommandProcessor(StateService stateService,
                                         ContextService contextService,
                                         QuestionService questionService,
-                                        NumberUtils numberUtils, ButtonUtils buttonUtils) {
+                                        NumberUtils numberUtils) {
         super("/edit_question");
         this.stateService = stateService;
         this.contextService = contextService;
         this.questionService = questionService;
         this.numberUtils = numberUtils;
-        this.buttonUtils = buttonUtils;
     }
 
     @Override
@@ -75,9 +72,11 @@ public class EditQuestionCommandProcessor extends AbstractCommandProcessor {
 
         Long questionId = Long.parseLong(parts[1]);
         Optional<QuestionEntity> questionOpt = questionService.getQuestion(questionId);
-        List<InlineKeyboardButton> buttons = new ArrayList<>();
-        buttons.add(buttonUtils.createButton("Формулировку вопроса", "EDIT_QUESTION " + questionId + " 1"));
-        buttons.add(buttonUtils.createButton("Варианты ответа", "EDIT_QUESTION " + questionId + " 2"));
+        List<List<InlineButtonDTO>> buttons = new ArrayList<>();
+        buttons.add(List.of(
+                new InlineButtonDTO("Формулировку вопроса", "EDIT_QUESTION " + questionId + " 1")));
+        buttons.add(List.of(
+                new InlineButtonDTO("Варианты ответа", "EDIT_QUESTION " + questionId + " 2")));
         return new BotResponse(questionOpt.map(question -> {
             contextService.setCurrentQuestion(userId, question);
             stateService.changeStateById(userId, UserState.EDIT_QUESTION);

@@ -1,5 +1,6 @@
 package org.example.bot.processor.Del;
 
+import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.processor.AbstractStateProcessor;
 import org.example.bot.service.QuestionService;
@@ -7,9 +8,7 @@ import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
 import org.example.bot.telegram.BotResponse;
-import org.example.bot.util.ButtonUtils;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +34,6 @@ public class DelQuestionProcessor extends AbstractStateProcessor {
      * Сервис для управления вопросами
      */
     private final QuestionService questionService;
-    private final ButtonUtils buttonUtils;
 
     /**
      * Конструктор для инициализации обработчика удаления вопроса
@@ -46,21 +44,20 @@ public class DelQuestionProcessor extends AbstractStateProcessor {
      */
     public DelQuestionProcessor(StateService stateService,
                                 ContextService contextService,
-                                QuestionService questionService, ButtonUtils buttonUtils) {
+                                QuestionService questionService) {
         super(stateService, UserState.DELETE_QUESTION);
         this.stateService = stateService;
         this.contextService = contextService;
         this.questionService = questionService;
-        this.buttonUtils = buttonUtils;
     }
 
     @Override
     public BotResponse process(Long userId, String message) {
         try {
             Long questionId = Long.parseLong(message);
-            List<InlineKeyboardButton> buttons = new ArrayList<>();
-            buttons.add(buttonUtils.createButton("Да", "DEL_QUESTION_CONFIRM " + questionId + " да"));
-            buttons.add(buttonUtils.createButton("Нет", "DEL_QUESTION_CONFIRM " + questionId + " нет"));
+            List<List<InlineButtonDTO>> buttons = new ArrayList<>();
+            buttons.add(List.of(new InlineButtonDTO("Да", "DEL_QUESTION_CONFIRM " + questionId + " да")));
+            buttons.add(List.of(new InlineButtonDTO("Нет", "DEL_QUESTION_CONFIRM " + questionId + " нет")));
             Optional<QuestionEntity> questionOpt = questionService.getQuestion(questionId);
             return new BotResponse(questionOpt.map(question -> {
                 contextService.setCurrentQuestion(userId, question);

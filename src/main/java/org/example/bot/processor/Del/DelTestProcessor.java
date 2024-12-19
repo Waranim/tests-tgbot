@@ -1,5 +1,6 @@
 package org.example.bot.processor.Del;
 
+import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.entity.TestEntity;
 import org.example.bot.processor.AbstractStateProcessor;
 import org.example.bot.service.ContextService;
@@ -7,10 +8,8 @@ import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
 import org.example.bot.state.UserState;
 import org.example.bot.telegram.BotResponse;
-import org.example.bot.util.ButtonUtils;
 import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +39,6 @@ public class DelTestProcessor extends AbstractStateProcessor {
      * Сервис для управления контекстом.
      */
     private final ContextService contextService;
-    private final ButtonUtils buttonUtils;
 
     /**
      * Конструктор для инициализации обработчика удаления теста.
@@ -53,24 +51,23 @@ public class DelTestProcessor extends AbstractStateProcessor {
     public DelTestProcessor(StateService stateService,
                             TestService testService,
                             NumberUtils numberUtils,
-                            ContextService contextService, ButtonUtils buttonUtils) {
+                            ContextService contextService) {
         super(stateService, UserState.DELETE_TEST);
         this.stateService = stateService;
         this.testService = testService;
         this.numberUtils = numberUtils;
         this.contextService = contextService;
-        this.buttonUtils = buttonUtils;
     }
 
     @Override
     public BotResponse process(Long userId, String message) {
         String[] parts = message.split(" ");
-        Long testId = Long.parseLong(parts[0]);
         if(!numberUtils.isNumber(message))
             return  new BotResponse("Введите число!");
-        List<InlineKeyboardButton> buttons = new ArrayList<>();
-        buttons.add(buttonUtils.createButton("Да", "DEL_TEST_CONFIRM " + testId + " да"));
-        buttons.add(buttonUtils.createButton("Нет", "DEL_TEST_CONFIRM " + testId + " нет"));
+        Long testId = Long.parseLong(parts[0]);
+        List<List<InlineButtonDTO>> buttons = new ArrayList<>();
+        buttons.add(List.of(new InlineButtonDTO("Да", "DEL_TEST_CONFIRM " + testId + " да")));
+        buttons.add(List.of(new InlineButtonDTO("Нет", "DEL_TEST_CONFIRM " + testId + " нет")));
         Optional<List<TestEntity>> tests = testService.getTestsByUserId(userId);
         Optional<TestEntity> testOptional = testService.getTest(testId);
         if (testOptional.isEmpty() || tests.isEmpty() || !tests.get().contains(testOptional.get()))
