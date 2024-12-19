@@ -1,8 +1,24 @@
 spring:
   application:
-    name: naumen-tests-tgbot
+    name: tests-tgbot
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        order_updates: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+          time_zone: UTC
 
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB_NAME:tests_bot}
     username: ${POSTGRES_USERNAME:postgres}
-    password: ${pg_password:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+
+bot:
+  name: ${BOT_NAME}
+  token: ${BOT_TOKEN}
