@@ -6,6 +6,7 @@ import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
 import org.example.bot.state.UserState;
+import org.example.bot.telegram.BotResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -47,20 +48,20 @@ public class ConfirmDelTest extends AbstractStateProcessor {
     }
 
     @Override
-    public String process(Long userId, String message) {
+    public BotResponse process(Long userId, String message) {
         message = message.toLowerCase();
         Optional<TestEntity> optionalCurrentTest = contextService.getCurrentTest(userId);
         if (optionalCurrentTest.isEmpty()) {
-            return "Вопрос не найден";
+            return new BotResponse("Вопрос не найден");
         }
         TestEntity currentTest = optionalCurrentTest.get();
         stateService.changeStateById(userId, UserState.DEFAULT);
         if (!message.equals("да")) {
-            return String.format("Тест “%s” не удалён", currentTest.getTitle());
+            return new BotResponse(String.format("Тест “%s” не удалён", currentTest.getTitle()));
         }
         contextService.setCurrentTest(userId, null);
         contextService.setCurrentQuestion(userId, null);
         testService.delete(currentTest);
-        return String.format("Тест “%s” удалён", currentTest.getTitle());
+        return new BotResponse(String.format("Тест “%s” удалён", currentTest.getTitle()));
     }
 }

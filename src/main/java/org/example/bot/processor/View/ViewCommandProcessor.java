@@ -7,6 +7,8 @@ import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
 import org.example.bot.state.UserState;
+import org.example.bot.telegram.BotResponse;
+import org.example.bot.util.TestUtils;
 import org.example.bot.util.NumberUtils;
 import org.example.bot.util.TestUtils;
 import org.springframework.stereotype.Component;
@@ -59,24 +61,24 @@ public class ViewCommandProcessor extends AbstractCommandProcessor {
     }
 
     @Override
-    public String process(Long userId, String message) {
+    public BotResponse process(Long userId, String message) {
         String[] parts = message.split(" ");
         Optional<List<TestEntity>> testsOptional = testService.getTestsByUserId(userId);
 
         if (parts.length == 1) {
             stateService.changeStateById(userId, UserState.VIEW_TEST);
             String text = testsOptional.isPresent()? testUtils.testsToString(testsOptional.get()) : "";
-            return "Выберите тест для просмотра:\n"
-                    + text;
+            return new BotResponse("Выберите тест для просмотра:\n"
+                    + text);
         } else if (numberUtils.isNumber(parts[1])){
             stateService.changeStateById(userId, UserState.DEFAULT);
             Long testId = Long.parseLong(parts[1]);
             Optional<TestEntity> test = testService.getTest(testId);
             if (test.isEmpty() || testsOptional.isEmpty() || !testsOptional.get().contains(test.get()))
-                return "Тест не найден!";
-            return testToString(test.get());
+                return new BotResponse("Тест не найден!");
+            return new BotResponse(testToString(test.get()));
         }
-        return "Ошибка ввода!";
+        return new BotResponse("Ошибка ввода!");
     }
 
     /**
@@ -84,9 +86,11 @@ public class ViewCommandProcessor extends AbstractCommandProcessor {
      */
     private String testToString(TestEntity test) {
         List<QuestionEntity> questions = test.getQuestions();
-        StringBuilder response = new StringBuilder(String.format("Тест “%s”. Всего вопросов: %s\n",
+        StringBuilder response = new StringBuilder(String.format("Тест “%s”. Всего вопросов: %s\n" +
+                        "Пользователей с доступом к тесту: %d\n",
                 test.getTitle(),
-                questions.size()));
+                questions.size(),
+                test.getRecipients().size()));
 
         for (QuestionEntity question : questions) {
             response.append("Вопрос: %s\nВарианты ответов:\n"

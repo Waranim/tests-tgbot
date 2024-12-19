@@ -1,9 +1,6 @@
 package org.example.bot.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +21,12 @@ public class TestEntity extends BaseEntity {
      */
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<QuestionEntity> question = new ArrayList<>();
+
+    /**
+     * Пользователи, которые получили доступ к данному тесту
+     */
+    @ManyToMany(fetch = FetchType.EAGER)
+    private final List<UserEntity> recipients = new ArrayList<>();
 
     /**
      * Название теста
@@ -96,5 +99,19 @@ public class TestEntity extends BaseEntity {
      */
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * Получить пользователей с доступом к тесту
+     */
+    public List<UserEntity> getRecipients() {
+        return recipients;
+    }
+
+    /**
+     * Проверить открыт ли у теста доступ
+     */
+    public boolean isAccessOpen() {
+        return true;
     }
 }

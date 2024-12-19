@@ -6,6 +6,7 @@ import org.example.bot.service.QuestionService;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
+import org.example.bot.telegram.BotResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -48,11 +49,11 @@ public class EditAnswerTextProcessor extends AbstractStateProcessor {
     }
 
     @Override
-    public String process(Long userId, String message) {
+    public BotResponse process(Long userId, String message) {
         Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
         Optional<Integer> optionalEditingAnswerIndex = contextService.getEditingAnswerIndex(userId);
         if (optionalCurrentQuestion.isEmpty() || optionalEditingAnswerIndex.isEmpty()) {
-            return "Вопрос не найден";
+            return new BotResponse("Вопрос не найден");
         }
         QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         int editingAnswerIndex = optionalEditingAnswerIndex.get();
@@ -60,6 +61,6 @@ public class EditAnswerTextProcessor extends AbstractStateProcessor {
         questionService.update(currentQuestion);
         stateService.changeStateById(userId, UserState.DEFAULT);
 
-        return String.format("Формулировка изменена на “%s”", message);
+        return new BotResponse(String.format("Формулировка изменена на “%s”", message));
     }
 }

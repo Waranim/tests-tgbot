@@ -6,6 +6,7 @@ import org.example.bot.service.QuestionService;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
+import org.example.bot.telegram.BotResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -48,19 +49,21 @@ public class ConfirmDelQuestion extends AbstractStateProcessor {
     }
 
     @Override
-    public String process(Long userId, String message) {
+    public BotResponse process(Long userId, String message) {
         message = message.toLowerCase();
         Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
         if (optionalCurrentQuestion.isEmpty()) {
-            return "Вопрос не найден";
+            return new BotResponse("Вопрос не найден");
         }
         QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         stateService.changeStateById(userId, UserState.DEFAULT);
         if (message.equals("да")) {
             contextService.setCurrentQuestion(userId, null);
             questionService.delete(currentQuestion);
-            return String.format("Вопрос “%s” из теста “%s” удален.", currentQuestion.getQuestion(), currentQuestion.getTest().getTitle());
+            return new BotResponse(String.format("Вопрос “%s” из теста “%s” удален.",
+                    currentQuestion.getQuestion(), currentQuestion.getTest().getTitle()));
         }
-        return String.format("Вопрос “%s” из теста “%s” не удален.", currentQuestion.getQuestion(), currentQuestion.getTest().getTitle());
+        return new BotResponse(String.format("Вопрос “%s” из теста “%s” не удален.",
+                currentQuestion.getQuestion(), currentQuestion.getTest().getTitle()));
     }
 }

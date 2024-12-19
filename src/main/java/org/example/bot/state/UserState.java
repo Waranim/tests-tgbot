@@ -65,5 +65,5 @@ public enum UserState {
     EDIT_ANSWER_TEXT,
 
     /** Просмотр теста */
-    VIEW_TEST,
+    VIEW_TEST, CHOOSE_USER,
 }
