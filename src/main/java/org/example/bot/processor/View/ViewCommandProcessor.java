@@ -83,9 +83,11 @@ public class ViewCommandProcessor extends AbstractCommandProcessor {
      */
     private String testToString(TestEntity test) {
         List<QuestionEntity> questions = test.getQuestions();
-        StringBuilder response = new StringBuilder(String.format("Тест “%s”. Всего вопросов: %s\n",
+        StringBuilder response = new StringBuilder(String.format("Тест “%s”. Всего вопросов: %s\n" +
+                        "Пользователей с доступом к тесту: %d\n",
                 test.getTitle(),
-                questions.size()));
+                questions.size(),
+                test.getRecipients().size()));
 
         for (QuestionEntity question : questions) {
             response.append("Вопрос: %s\nВарианты ответов:\n"

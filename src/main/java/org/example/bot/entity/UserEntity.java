@@ -36,6 +36,12 @@ public class UserEntity {
     private List<TestEntity> tests;
 
     /**
+     * Список полученных тестов от других пользователей
+     */
+    @ManyToMany(fetch = FetchType.EAGER)
+    private List<TestEntity> receivedTests;
+
+    /**
      * Контекст пользователя
      */
     @OneToOne(cascade = CascadeType.ALL)
@@ -129,5 +135,12 @@ public class UserEntity {
     @Override
     public int hashCode() {
         return Long.hashCode(userId);
+    }
+
+    /**
+     * Получить полученные тесты пользователя
+     */
+    public List<TestEntity> getReceivedTests() {
+        return receivedTests;
     }
 }

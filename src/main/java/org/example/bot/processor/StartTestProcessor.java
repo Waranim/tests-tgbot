@@ -3,6 +3,7 @@ package org.example.bot.processor;
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.entity.TestEntity;
 import org.example.bot.service.ContextService;
+import org.example.bot.service.UserService;
 import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.ButtonUtils;
 import org.springframework.stereotype.Component;
