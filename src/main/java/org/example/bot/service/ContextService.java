@@ -39,7 +39,7 @@ public class ContextService {
      * @return контекст пользователя в Optional, пустой Optional если пользователь не найден
      */
     public Optional<UserContext> getContext(Long userId) {
-        return Optional.ofNullable(userService.getUserById(userId))
+        return userService.getUserById(userId)
                 .map(UserEntity::getContext);
     }
 

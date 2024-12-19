@@ -56,11 +56,9 @@ public class TestService {
      * @param userId идентификатор пользователя
      * @return список тестов или null, если пользователь не найден
      */
-    public List<TestEntity> getTestsByUserId(Long userId) {
-        UserEntity user = userService.getUserById(userId);
-        if (user == null)
-            return null;
-        return user.getTests();
+    public Optional<List<TestEntity>> getTestsByUserId(Long userId) {
+        return userService.getUserById(userId)
+                .flatMap(userEntity -> Optional.ofNullable(userEntity.getTests()));
     }
 
     /**

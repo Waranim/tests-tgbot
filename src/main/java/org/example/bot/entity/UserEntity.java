@@ -49,6 +49,19 @@ public class UserEntity {
     }
 
     /**
+     * Конструктор с параметрами
+     *
+     * @param userId идентификатор пользователя
+     * @param username псевдоним пользователя
+     * @param userContext контекст пользователя
+     */
+    public UserEntity(Long userId, String username, UserContext userContext) {
+        this.userId = userId;
+        this.username = username;
+        this.userContext = userContext;
+    }
+
+    /**
      * Конструктор со списком тестов для тестирования
      */
     public UserEntity(List<TestEntity> tests){

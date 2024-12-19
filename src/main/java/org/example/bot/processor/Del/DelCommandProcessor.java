@@ -1,5 +1,6 @@
 package org.example.bot.processor.Del;
 
+import org.example.bot.entity.TestEntity;
 import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
@@ -7,6 +8,9 @@ import org.example.bot.state.UserState;
 import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.TestUtils;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Обработчик команды удаления теста.
@@ -48,7 +52,9 @@ public class DelCommandProcessor extends AbstractCommandProcessor {
     @Override
     public BotResponse process(Long userId, String message) {
         stateService.changeStateById(userId, UserState.DELETE_TEST);
-        return new BotResponse("Выберите тест:\n"
-                + testUtils.testsToString(testService.getTestsByUserId(userId)));
+
+        Optional<List<TestEntity>> tests = testService.getTestsByUserId(userId);
+        String text = tests.isPresent()? testUtils.testsToString(tests.get()) : "";
+        return new BotResponse("Выберите тест:\n" + text);
     }
 }

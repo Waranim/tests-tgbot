@@ -67,7 +67,7 @@ public class EditCommandProcessor extends AbstractCommandProcessor {
             return new BotResponse("Ошибка ввода!");
         Long testId = Long.parseLong(parts[1]);
         Optional<TestEntity> testOptional = testService.getTest(testId);
-        if (testOptional.isEmpty() || !tests.contains(testOptional.get()))
+        if (testOptional.isEmpty() || testsOptional.isEmpty() || !testsOptional.get().contains(testOptional.get()))
             return new BotResponse("Тест не найден!");
 
         TestEntity test = testOptional.get();
