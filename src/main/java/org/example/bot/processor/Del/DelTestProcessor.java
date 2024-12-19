@@ -71,9 +71,9 @@ public class DelTestProcessor extends AbstractStateProcessor {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
         buttons.add(buttonUtils.createButton("Да", "DEL_TEST_CONFIRM " + testId + " да"));
         buttons.add(buttonUtils.createButton("Нет", "DEL_TEST_CONFIRM " + testId + " нет"));
-        List<TestEntity> tests = testService.getTestsByUserId(userId);
+        Optional<List<TestEntity>> tests = testService.getTestsByUserId(userId);
         Optional<TestEntity> testOptional = testService.getTest(testId);
-        if (testOptional.isEmpty() || !tests.contains(testOptional.get()))
+        if (testOptional.isEmpty() || tests.isEmpty() || !tests.get().contains(testOptional.get()))
             return new BotResponse("Тест не найден!");
 
         TestEntity test = testOptional.get();
