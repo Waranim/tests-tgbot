@@ -1,5 +1,6 @@
 package org.example.bot.processor.Del;
 
+import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.QuestionService;
@@ -7,10 +8,8 @@ import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
 import org.example.bot.telegram.BotResponse;
-import org.example.bot.util.ButtonUtils;
 import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +40,6 @@ public class DelQuestionCommandProcessor extends AbstractCommandProcessor {
      * Утилита с вспомогательными числовыми методами
      */
     private final NumberUtils numberUtils;
-    private final ButtonUtils buttonUtils;
 
     /**
      * Конструктор для инициализации обработчика команды удаления теста.
@@ -54,13 +52,12 @@ public class DelQuestionCommandProcessor extends AbstractCommandProcessor {
     public DelQuestionCommandProcessor(StateService stateService,
                                        ContextService contextService,
                                        QuestionService questionService,
-                                       NumberUtils numberUtils, ButtonUtils buttonUtils) {
+                                       NumberUtils numberUtils) {
         super("/del_question");
         this.stateService = stateService;
         this.contextService = contextService;
         this.questionService = questionService;
         this.numberUtils = numberUtils;
-        this.buttonUtils = buttonUtils;
     }
 
     @Override
@@ -73,9 +70,9 @@ public class DelQuestionCommandProcessor extends AbstractCommandProcessor {
             }
             Long questionId = Long.parseLong(questionIdStr);
             Optional<QuestionEntity> questionOpt = questionService.getQuestion(questionId);
-            List<InlineKeyboardButton> buttons = new ArrayList<>();
-            buttons.add(buttonUtils.createButton("Да", "DEL_QUESTION_CONFIRM " + questionId + " да"));
-            buttons.add(buttonUtils.createButton("Нет", "DEL_QUESTION_CONFIRM " + questionId + " нет"));
+            List<List<InlineButtonDTO>> buttons = new ArrayList<>();
+            buttons.add(List.of(new InlineButtonDTO("Да", "DEL_QUESTION_CONFIRM " + questionId + " да")));
+            buttons.add(List.of(new InlineButtonDTO("Нет", "DEL_QUESTION_CONFIRM " + questionId + " нет")));
             return new BotResponse(questionOpt.map(question -> {
                 contextService.setCurrentQuestion(userId, question);
                 stateService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);

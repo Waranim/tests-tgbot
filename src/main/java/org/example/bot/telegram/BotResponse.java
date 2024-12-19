@@ -49,11 +49,11 @@ public class BotResponse {
     }
 
     /**
-     * Получить кнопку
+     * Получить кнопки
      *
-     * @return возвращает кнопку
+     * @return возвращает кнопки
      */
-    public List<InlineKeyboardButton> getButtons() {
+    public List<List<InlineButtonDTO>> getButtons() {
         return buttons;
     }
 

@@ -1,12 +1,11 @@
 package org.example.bot.processor.Edit;
 
+import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.processor.AbstractCallbackProcessor;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
 import org.example.bot.telegram.BotResponse;
-import org.example.bot.util.ButtonUtils;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,28 +20,26 @@ public class EditQuestionProcessor extends AbstractCallbackProcessor {
      * Сервис для управления состояниями.
      */
     private final StateService stateService;
-    private final ButtonUtils buttonUtils;
 
     /**
      * Конструктор для инициализации обработчика редактирования вопроса
      *
      * @param stateService сервис для управления состояниями
      */
-    public EditQuestionProcessor(StateService stateService, ButtonUtils buttonUtils) {
+    public EditQuestionProcessor(StateService stateService) {
         super("EDIT_QUESTION");
         this.stateService = stateService;
-        this.buttonUtils = buttonUtils;
     }
 
     @Override
     public BotResponse process(Long userId, String message) {
         String[] parts = message.split(" ");
         Long questionId = Long.parseLong(parts[1]);
-        List<InlineKeyboardButton> buttons = new ArrayList<>();
-        buttons.add(buttonUtils.createButton("Изменить формулировку ответа",
-                "EDIT_ANSWER_OPTION_CHOICE " + questionId + " 1"));
-        buttons.add(buttonUtils.createButton("Изменить правильность варианта ответа",
-                "EDIT_ANSWER_OPTION_CHOICE " + questionId + " 2"));
+        List<List<InlineButtonDTO>> buttons = new ArrayList<>();
+        buttons.add(List.of(new InlineButtonDTO("Изменить формулировку ответа",
+                "EDIT_ANSWER_OPTION_CHOICE " + questionId + " 1")));
+        buttons.add(List.of(new InlineButtonDTO("Изменить правильность варианта ответа",
+                "EDIT_ANSWER_OPTION_CHOICE " + questionId + " 2")));
         if (parts[2].equals("1")) {
             stateService.changeStateById(userId, UserState.EDIT_QUESTION_TEXT);
             return new BotResponse("Введите новый текст вопроса");

@@ -1,5 +1,6 @@
 package org.example.bot.service;
 
+import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.entity.*;
 import org.example.bot.handler.MessageHandler;
 import org.example.bot.processor.Add.*;
@@ -14,13 +15,11 @@ import org.example.bot.repository.UserRepository;
 import org.example.bot.repository.UserContextRepository;
 import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.AnswerUtils;
-import org.example.bot.util.ButtonUtils;
 import org.example.bot.util.TestUtils;
 import org.example.bot.util.NumberUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.Arrays;
 import java.util.List;
@@ -94,7 +93,6 @@ public class QuestionProcessorTest {
 
 
         UserService userService = new UserService(userRepository);
-        ButtonUtils buttonUtils = new ButtonUtils();
         ContextService sessionService = new ContextService(userContextRepository, userService);
         StateService stateService = new StateService(sessionService);
         TestService testService = new TestService(testRepository, userService);
@@ -110,27 +108,27 @@ public class QuestionProcessorTest {
         AddQuestionTextProcessor addQuestionTextProcessor = new AddQuestionTextProcessor(stateService,
                 sessionService, questionService);
         StopCommandProcessor stopCommandProcessor = new StopCommandProcessor(stateService,
-                sessionService, answerUtils, buttonUtils);
+                sessionService, answerUtils);
         AddAnswerQuestionProcessor addAnswerQuestionProcessor = new AddAnswerQuestionProcessor(stateService,
                 sessionService, questionService,
                 stopCommandProcessor);
 
         DelQuestionCommandProcessor delQuestionCommandProcessor = new DelQuestionCommandProcessor(stateService,
                 sessionService,
-                questionService, numberUtils, buttonUtils);
+                questionService, numberUtils);
         DelQuestionProcessor delQuestionProcessor = new DelQuestionProcessor(stateService,
-                sessionService, questionService, buttonUtils);
+                sessionService, questionService);
         ConfirmDelQuestion confirmDelQuestion = new ConfirmDelQuestion(stateService,
                 sessionService, questionService);
 
         EditQuestionCommandProcessor editQuestionCommandProcessor = new EditQuestionCommandProcessor(stateService,
                 sessionService,
-                questionService, numberUtils, buttonUtils);
-        EditQuestionProcessor editQuestionProcessor = new EditQuestionProcessor(stateService, buttonUtils);
+                questionService, numberUtils);
+        EditQuestionProcessor editQuestionProcessor = new EditQuestionProcessor(stateService);
         EditQuestionTextProcessor editQuestionTextProcessor = new EditQuestionTextProcessor(stateService,
                 sessionService, questionService);
         EditAnswerOptionChoiceProcessor editAnswerOptionChoiceProcessor = new EditAnswerOptionChoiceProcessor(stateService,
-                sessionService, buttonUtils);
+                sessionService);
         EditAnswerTextChoiceProcessor editAnswerTextChoiceProcessor = new EditAnswerTextChoiceProcessor(stateService,
                 sessionService);
         EditAnswerTextProcessor editAnswerTextProcessor = new EditAnswerTextProcessor(stateService,
@@ -290,13 +288,13 @@ public class QuestionProcessorTest {
         assertNotNull(response7.getButtons());
         assertEquals(2, response7.getButtons().size());
 
-        InlineKeyboardButton button = response7.getButtons().getFirst();
-        assertEquals("1", button.getText());
-        assertEquals("SET_CORRECT_ANSWER 0", button.getCallbackData());
+        InlineButtonDTO button = response7.getButtons().getFirst().getFirst();
+        assertEquals("1", button.text());
+        assertEquals("SET_CORRECT_ANSWER 0", button.callbackData());
 
-        InlineKeyboardButton button6 = response7.getButtons().get(1);
-        assertEquals("4", button6.getText());
-        assertEquals("SET_CORRECT_ANSWER 1", button6.getCallbackData());
+        InlineButtonDTO button6 = response7.getButtons().get(1).getFirst();
+        assertEquals("4", button6.text());
+        assertEquals("SET_CORRECT_ANSWER 1", button6.callbackData());
 
         BotResponse response8 = messageHandler.handle("SET_CORRECT_ANSWER 3", userId);
         assertEquals("Некорректный номер варианта ответа. " +
@@ -365,13 +363,13 @@ public class QuestionProcessorTest {
         assertNotNull(response6.getButtons());
         assertEquals(2, response6.getButtons().size());
 
-        InlineKeyboardButton button = response6.getButtons().getFirst();
-        assertEquals("1", button.getText());
-        assertEquals("SET_CORRECT_ANSWER 0", button.getCallbackData());
+        InlineButtonDTO button = response6.getButtons().getFirst().getFirst();
+        assertEquals("1", button.text());
+        assertEquals("SET_CORRECT_ANSWER 0", button.callbackData());
 
-        InlineKeyboardButton button6 = response6.getButtons().get(1);
-        assertEquals("4", button6.getText());
-        assertEquals("SET_CORRECT_ANSWER 1", button6.getCallbackData());
+        InlineButtonDTO button6 = response6.getButtons().get(1).getFirst();
+        assertEquals("4", button6.text());
+        assertEquals("SET_CORRECT_ANSWER 1", button6.callbackData());
 
         BotResponse response8 = messageHandler.handle("SET_CORRECT_ANSWER 3", userId);
         assertEquals("Некорректный номер варианта ответа. " +
@@ -575,9 +573,9 @@ public class QuestionProcessorTest {
         assertNotNull(response1.getButtons());
         assertEquals(2, response1.getButtons().size());
 
-        InlineKeyboardButton yesButton = response1.getButtons().get(0);
-        assertEquals("Да", yesButton.getText());
-        assertEquals("DEL_QUESTION_CONFIRM 1 да", yesButton.getCallbackData());
+        InlineButtonDTO yesButton = response1.getButtons().getFirst().getFirst();
+        assertEquals("Да", yesButton.text());
+        assertEquals("DEL_QUESTION_CONFIRM 1 да", yesButton.callbackData());
 
         BotResponse response2 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 да", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
@@ -606,15 +604,14 @@ public class QuestionProcessorTest {
         assertNotNull(response1.getButtons());
         assertEquals(2, response1.getButtons().size());
 
-        InlineKeyboardButton noButton = response1.getButtons().get(1);
-        assertEquals("Нет", noButton.getText());
-        assertEquals("DEL_QUESTION_CONFIRM 1 нет", noButton.getCallbackData());
+        InlineButtonDTO noButton = response1.getButtons().get(1).getFirst();
+        assertEquals("Нет", noButton.text());
+        assertEquals("DEL_QUESTION_CONFIRM 1 нет", noButton.callbackData());
 
         BotResponse response2 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 нет", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
                         "из теста “Математический тест” не удален.",
                 response2.getMessage());
-        ;
 
         verify(questionRepository, never()).delete(any(QuestionEntity.class));
     }
@@ -633,9 +630,9 @@ public class QuestionProcessorTest {
         assertNotNull(response2.getButtons());
         assertEquals(2, response2.getButtons().size());
 
-        InlineKeyboardButton yesButton = response2.getButtons().get(0);
-        assertEquals("Да", yesButton.getText());
-        assertEquals("DEL_QUESTION_CONFIRM 1 да", yesButton.getCallbackData());
+        InlineButtonDTO yesButton = response2.getButtons().getFirst().getFirst();
+        assertEquals("Да", yesButton.text());
+        assertEquals("DEL_QUESTION_CONFIRM 1 да", yesButton.callbackData());
 
         BotResponse response3 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 да", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
@@ -667,15 +664,14 @@ public class QuestionProcessorTest {
         assertNotNull(response2.getButtons());
         assertEquals(2, response2.getButtons().size());
 
-        InlineKeyboardButton noButton = response2.getButtons().get(1);
-        assertEquals("Нет", noButton.getText());
-        assertEquals("DEL_QUESTION_CONFIRM 1 нет", noButton.getCallbackData());
+        InlineButtonDTO noButton = response2.getButtons().get(1).getFirst();
+        assertEquals("Нет", noButton.text());
+        assertEquals("DEL_QUESTION_CONFIRM 1 нет", noButton.callbackData());
 
         BotResponse response3 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 нет", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
                         "из теста “Математический тест” не удален.",
                 response3.getMessage());
-        ;
 
         verify(questionRepository, never()).delete(any(QuestionEntity.class));
     }
