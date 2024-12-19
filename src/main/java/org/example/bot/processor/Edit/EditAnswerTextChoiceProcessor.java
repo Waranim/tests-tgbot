@@ -1,7 +1,7 @@
 package org.example.bot.processor.Edit;
 
 import org.example.bot.entity.QuestionEntity;
-import org.example.bot.processor.AbstractStateProcessor;
+import org.example.bot.processor.AbstractCallbackProcessor;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
@@ -14,7 +14,7 @@ import java.util.Optional;
  * Обработчик состояния редактирования ответа
  */
 @Component
-public class EditAnswerTextChoiceProcessor extends AbstractStateProcessor {
+public class EditAnswerTextChoiceProcessor extends AbstractCallbackProcessor {
 
     /**
      * Сервис для управления состояниями
@@ -34,19 +34,20 @@ public class EditAnswerTextChoiceProcessor extends AbstractStateProcessor {
      */
     public EditAnswerTextChoiceProcessor(StateService stateService,
                                          ContextService contextService) {
-        super(stateService, UserState.EDIT_ANSWER_TEXT_CHOICE);
+        super("EDIT_ANSWER_TEXT_CHOICE");
         this.stateService = stateService;
         this.contextService = contextService;
     }
 
     @Override
     public BotResponse process(Long userId, String message) {
+        message = extractData(message);
         Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
         if (optionalCurrentQuestion.isEmpty()) {
             return new BotResponse("Вопрос не найден");
         }
         QuestionEntity currentQuestion = optionalCurrentQuestion.get();
-        int answerIndex = Integer.parseInt(message) - 1;
+        int answerIndex = Integer.parseInt(message);
         if (answerIndex < 0 || answerIndex >= currentQuestion.getAnswers().size()) {
             return new BotResponse("Некорректный номер ответа. Попробуйте еще раз.");
         }
@@ -54,5 +55,4 @@ public class EditAnswerTextChoiceProcessor extends AbstractStateProcessor {
         stateService.changeStateById(userId, UserState.EDIT_ANSWER_TEXT);
         return new BotResponse("Введите новую формулировку ответа");
     }
-
 }
