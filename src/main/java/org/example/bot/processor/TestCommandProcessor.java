@@ -5,7 +5,6 @@ import org.example.bot.entity.TestEntity;
 import org.example.bot.service.TestService;
 import org.example.bot.telegram.BotResponse;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;

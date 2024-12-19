@@ -2,7 +2,6 @@ package org.example.bot.util;
 
 import org.example.bot.dto.InlineButtonDTO;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;
