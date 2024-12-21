@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Обработчик состояния измения открытия или закрытия теста
+ * Обработчик состояния изменения открытия или закрытия теста
  */
 @Component
 public class ViewTestCallbackProcessor extends AbstractCallbackProcessor {

@@ -81,8 +81,6 @@ class TestProcessorTest {
         StateService stateService = new StateService(contextService);
         TestService testService = new TestService(testRepository, userService);
 
-        HelpCommandProcessor helpCommandProcessor = new HelpCommandProcessor();
-        StartCommandProcessor startCommandProcessor = new StartCommandProcessor(userService, helpCommandProcessor);
         AddCommandProcessor addCommandProcessor = new AddCommandProcessor(testService, stateService, contextService);
         ViewCommandProcessor viewCommandProcessor = new ViewCommandProcessor(testService, stateService, numberUtils, testUtils);
         EditCommandProcessor editCommandProcessor = new EditCommandProcessor(testService, numberUtils, contextService, stateService);
@@ -96,12 +94,9 @@ class TestProcessorTest {
         EditTestDescriptionProcessor editTestDescriptionProcessor = new EditTestDescriptionProcessor(stateService, contextService, testService);
         DelTestProcessor delTestProcessor = new DelTestProcessor(stateService, testService, numberUtils, contextService);
         ConfirmDelTest confirmDelTest = new ConfirmDelTest(stateService, contextService, testService);
-        InfoCommandProcessor infoCommandProcessor = new InfoCommandProcessor();
         ViewTestCallbackProcessor viewTestCallbackProcessor = new ViewTestCallbackProcessor(testService, testUtils);
 
         List<MessageProcessor> processors = Arrays.asList(
-                helpCommandProcessor,
-                startCommandProcessor,
                 addCommandProcessor,
                 viewCommandProcessor,
                 editCommandProcessor,
@@ -114,7 +109,6 @@ class TestProcessorTest {
                 editTestDescriptionProcessor,
                 delTestProcessor,
                 confirmDelTest,
-                infoCommandProcessor,
                 viewTestCallbackProcessor
         );
 
