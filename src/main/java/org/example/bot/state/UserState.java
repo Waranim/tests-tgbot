@@ -71,5 +71,5 @@ public enum UserState {
     CHOOSE_USER,
 
     /** Прохождение теста */
-    PASSAGE_TEST,
+    PASSAGE_TEST
 }
