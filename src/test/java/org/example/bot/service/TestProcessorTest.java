@@ -194,10 +194,12 @@ class TestProcessorTest {
                 "2)  id: 312 Тест по знаниям ПДД\n", response);
 
         String response2 = messageHandler.handle("123", userId).getMessage();
-        assertEquals("Тест “Математический тест”. Всего вопросов: 0\n", response2);
+        assertEquals("Тест “Математический тест”. Всего вопросов: 0\n" +
+                "Пользователей с доступом к тесту: 0\n", response2);
 
         String response3 = messageHandler.handle("/view 312", userId).getMessage();
-        assertEquals("Тест “Тест по знаниям ПДД”. Всего вопросов: 0\n", response3);
+        assertEquals("Тест “Тест по знаниям ПДД”. Всего вопросов: 0\n" +
+                "Пользователей с доступом к тесту: 0\n", response3);
     }
 
     /**

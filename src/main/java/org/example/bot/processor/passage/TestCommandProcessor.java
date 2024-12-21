@@ -21,6 +21,10 @@ public class TestCommandProcessor extends AbstractCommandProcessor {
      * Сервис для управления тестами.
      */
     private final TestService testService;
+
+    /**
+     * Сервис для управления пользователями.
+     */
     private final UserService userService;
 
     /**

@@ -1,12 +1,12 @@
-package org.example.bot.processor;
+package org.example.bot.processor.share;
 
+import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.entity.TestEntity;
-import org.example.bot.service.TestService;
+import org.example.bot.entity.UserEntity;
+import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.UserService;
 import org.example.bot.telegram.BotResponse;
-import org.example.bot.util.ButtonUtils;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,24 +17,27 @@ import java.util.List;
 @Component
 public class SharedTestsCommandProcessor extends AbstractCommandProcessor {
     private final UserService userService;
-    private final ButtonUtils buttonUtils;
 
     /**
      * Конструктор для инициализации обработчика команды.
      */
-    protected SharedTestsCommandProcessor(UserService userService, ButtonUtils buttonUtils) {
+    public SharedTestsCommandProcessor(UserService userService) {
         super("/shared_tests");
         this.userService = userService;
-        this.buttonUtils = buttonUtils;
     }
 
     @Override
     public BotResponse process(Long userId, String message) {
         List<TestEntity> receivedTests = userService.getOpenReceivedTests(userId);
-        List<InlineKeyboardButton> buttons = new ArrayList<>();
-        receivedTests.forEach(t-> buttons.add(buttonUtils.createButton(t.getTitle()
-                , "SHARE_UNSUBSCRIBE_CHOOSE_TEST "
-                        + t.getId().toString())));
+        List<List<InlineButtonDTO>> buttons = new ArrayList<>();
+        receivedTests.forEach(t->{
+            String creatorUsername = userService.getUserById(t.getCreatorId())
+                    .map(UserEntity::getUsername)
+                    .orElse("неизвестный пользователь");
+
+                buttons.add(List.of(new InlineButtonDTO("%s (%s)".formatted(t.getTitle(), creatorUsername),
+                "SHARE_UNSUBSCRIBE_CHOOSE_TEST "
+                + t.getId().toString())));});
         return new BotResponse("Выберите тест:", buttons, false);
     }
 }

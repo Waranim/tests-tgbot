@@ -1,7 +1,8 @@
-package org.example.bot.processor;
+package org.example.bot.processor.share;
 
 import org.example.bot.entity.TestEntity;
 import org.example.bot.entity.UserEntity;
+import org.example.bot.processor.AbstractStateProcessor;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
@@ -19,9 +20,24 @@ import java.util.Optional;
  */
 @Component
 public class ShareChooseUserProcessor extends AbstractStateProcessor {
+    /**
+     * Утилита с вспомогательными методами
+     */
     private final NumberUtils numberUtils;
+
+    /**
+     * Сервис для управления пользователями
+     */
     private final UserService userService;
+
+    /**
+     * Сервис для управления контекстом
+     */
     private final ContextService contextService;
+
+    /**
+     * Сервис для управления тестами
+     */
     private final TestService testService;
 
     /**
@@ -29,7 +45,7 @@ public class ShareChooseUserProcessor extends AbstractStateProcessor {
      *
      * @param stateService  сервис для управления состояниями
      */
-    protected ShareChooseUserProcessor(StateService stateService, NumberUtils numberUtils, UserService userService, ContextService contextService, TestService testService) {
+    public ShareChooseUserProcessor(StateService stateService, NumberUtils numberUtils, UserService userService, ContextService contextService, TestService testService) {
         super(stateService, UserState.CHOOSE_USER);
         this.numberUtils = numberUtils;
         this.userService = userService;

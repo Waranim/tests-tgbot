@@ -20,7 +20,7 @@ public class TestEntity extends BaseEntity {
      * Вопросы в тесте
      */
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    private List<QuestionEntity> question = new ArrayList<>();
+    private final List<QuestionEntity> question = new ArrayList<>();
 
     /**
      * Пользователи, которые получили доступ к данному тесту
@@ -37,6 +37,11 @@ public class TestEntity extends BaseEntity {
      * Описание теста
      */
     private String description;
+
+    /**
+     * Открыт ли тест
+     */
+    private boolean isAccessOpen = true;
 
     /**
      * Конструктор без параметров
@@ -112,6 +117,10 @@ public class TestEntity extends BaseEntity {
      * Проверить открыт ли у теста доступ
      */
     public boolean isAccessOpen() {
-        return true;
+        return isAccessOpen;
+    }
+
+    public void setAccessOpen(boolean isAccessOpen) {
+        this.isAccessOpen = isAccessOpen;
     }
 }

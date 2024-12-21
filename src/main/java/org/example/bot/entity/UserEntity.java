@@ -2,6 +2,7 @@ package org.example.bot.entity;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,13 +34,13 @@ public class UserEntity {
      * Список тестов пользователя
      */
     @OneToMany(mappedBy = "creatorId", fetch = FetchType.EAGER)
-    private List<TestEntity> tests;
+    private List<TestEntity> tests = new ArrayList<>();
 
     /**
      * Список полученных тестов от других пользователей
      */
     @ManyToMany(fetch = FetchType.EAGER)
-    private List<TestEntity> receivedTests;
+    private final List<TestEntity> receivedTests = new ArrayList<>();
 
     /**
      * Контекст пользователя
