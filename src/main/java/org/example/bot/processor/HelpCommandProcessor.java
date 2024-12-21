@@ -23,6 +23,7 @@ public class HelpCommandProcessor extends AbstractCommandProcessor {
                 /add_question [testID] - Добавить вопрос к тесту
                 /view – Посмотреть список тестов
                 /view [testID] - Посмотреть тест
+                /test - Начать прохождение теста
                 /view_question [testID] - Посмотреть список вопросов к тесту
                 /edit [testID] - Изменить тест с номером testID
                 /edit_question [questionID] - Изменить вопрос с номером questionID

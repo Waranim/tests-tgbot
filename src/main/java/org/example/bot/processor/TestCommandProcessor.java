@@ -1,11 +1,11 @@
 package org.example.bot.processor;
 
+import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.entity.TestEntity;
 import org.example.bot.service.TestService;
 import org.example.bot.service.UserService;
 import org.example.bot.telegram.BotResponse;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,12 +45,9 @@ public class TestCommandProcessor extends AbstractCommandProcessor {
                 : "%s (%s)".formatted(t.getTitle()
                 , userService.getUserById(t.getCreatorId()).get().getUsername())).toList();
         List<String> testsIds = tests.stream().map(t -> t.getId().toString()).toList();
-        List<InlineKeyboardButton> buttons = new ArrayList<>();
+        List<List<InlineButtonDTO>> buttons = new ArrayList<>();
         for(int i = 0; i < testsIds.size(); i++){
-            InlineKeyboardButton button = new InlineKeyboardButton();
-            button.setText(testsTitles.get(i));
-            button.setCallbackData("TEST_CHOOSE " + testsIds.get(i));
-            buttons.add(button);
+            buttons.add(List.of(new InlineButtonDTO(testsTitles.get(i), "TEST_CHOOSE " + testsIds.get(i))));
         }
 
         return new BotResponse("Выберите тест: ", buttons, false);

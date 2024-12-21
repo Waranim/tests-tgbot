@@ -1,5 +1,6 @@
 package org.example.bot.entity;
 
+import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
@@ -19,6 +20,7 @@ public class UserContext extends BaseEntity {
     /**
      * Состояние пользователя
      */
+    @Enumerated(EnumType.STRING)
     private UserState state = UserState.DEFAULT;
 
     /**
@@ -37,6 +39,16 @@ public class UserContext extends BaseEntity {
      */
     @ManyToOne(cascade = CascadeType.ALL)
     private QuestionEntity currentQuestion;
+
+    /**
+     * Количество правильных ответов в тесте
+     */
+    private Integer correctAnswerCount;
+
+    /**
+     * Количество решённых вопросов в тесте
+     */
+    private Integer countAnsweredQuestions;
 
     /**
      * Получить идентификатор пользователя
@@ -112,5 +124,33 @@ public class UserContext extends BaseEntity {
      */
     public void setEditingAnswerIndex(Integer editingAnswerIndex) {
         this.editingAnswerIndex = editingAnswerIndex;
+    }
+
+    /**
+     * Получить количество правильных ответов в тесте
+     */
+    public Integer getCorrectAnswerCount() {
+        return correctAnswerCount;
+    }
+
+    /**
+     * Установить количество правильных ответов в тесте
+     */
+    public void setCorrectAnswerCount(Integer correctAnswerCount) {
+        this.correctAnswerCount = correctAnswerCount;
+    }
+
+    /**
+     * Получить количество решённых вопросов в тесте
+     */
+    public Integer getCountAnsweredQuestions() {
+        return countAnsweredQuestions;
+    }
+
+    /**
+     * Установить количество решённых вопросов в тесте
+     */
+    public void setCountAnsweredQuestions(Integer countAnsweredQuestions) {
+        this.countAnsweredQuestions = countAnsweredQuestions;
     }
 }
