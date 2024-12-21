@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -93,48 +94,46 @@ public class QuestionProcessorTest {
 
 
         UserService userService = new UserService(userRepository);
-        ContextService sessionService = new ContextService(userContextRepository, userService);
-        StateService stateService = new StateService(sessionService);
+        ContextService contextService = new ContextService(userContextRepository, userService);
+        StateService stateService = new StateService(contextService);
         TestService testService = new TestService(testRepository, userService);
         QuestionService questionService = new QuestionService(questionRepository, testService);
 
 
         AddQuestionCommandProcessor addQuestionCommandProcessor = new AddQuestionCommandProcessor(testService,
                 questionService, stateService,
-                sessionService, numberUtils, testUtils);
+                contextService, numberUtils, testUtils);
         AddQuestionProcessor addQuestionProcessor = new AddQuestionProcessor(stateService,
-                sessionService, questionService,
+                contextService, questionService,
                 numberUtils, testService);
         AddQuestionTextProcessor addQuestionTextProcessor = new AddQuestionTextProcessor(stateService,
-                sessionService, questionService);
+                contextService, questionService);
         StopCommandProcessor stopCommandProcessor = new StopCommandProcessor(stateService,
-                sessionService, answerUtils);
+                contextService, answerUtils);
         AddAnswerQuestionProcessor addAnswerQuestionProcessor = new AddAnswerQuestionProcessor(stateService,
-                sessionService, questionService,
+                contextService, questionService,
                 stopCommandProcessor);
-
-        DelQuestionCommandProcessor delQuestionCommandProcessor = new DelQuestionCommandProcessor(stateService,
-                sessionService,
-                questionService, numberUtils);
         DelQuestionProcessor delQuestionProcessor = new DelQuestionProcessor(stateService,
-                sessionService, questionService);
+                contextService, questionService);
+        DelQuestionCommandProcessor delQuestionCommandProcessor = new DelQuestionCommandProcessor(stateService,
+                delQuestionProcessor);
         ConfirmDelQuestion confirmDelQuestion = new ConfirmDelQuestion(stateService,
-                sessionService, questionService);
+                contextService, questionService);
 
         EditQuestionCommandProcessor editQuestionCommandProcessor = new EditQuestionCommandProcessor(stateService,
-                sessionService,
+                contextService,
                 questionService, numberUtils);
         EditQuestionProcessor editQuestionProcessor = new EditQuestionProcessor(stateService);
         EditQuestionTextProcessor editQuestionTextProcessor = new EditQuestionTextProcessor(stateService,
-                sessionService, questionService);
+                contextService, questionService);
         EditAnswerOptionChoiceProcessor editAnswerOptionChoiceProcessor = new EditAnswerOptionChoiceProcessor(stateService,
-                sessionService);
+                contextService);
         EditAnswerTextChoiceProcessor editAnswerTextChoiceProcessor = new EditAnswerTextChoiceProcessor(stateService,
-                sessionService);
+                contextService);
         EditAnswerTextProcessor editAnswerTextProcessor = new EditAnswerTextProcessor(stateService,
-                sessionService, questionService);
+                contextService, questionService);
         EditSetCorrectAnswerProcessor editSetCorrectAnswerProcessor = new EditSetCorrectAnswerProcessor(stateService,
-                sessionService, questionService);
+                contextService, questionService);
 
         ViewQuestionCommandProcessor viewQuestionCommandProcessor = new ViewQuestionCommandProcessor(testService, numberUtils);
 
@@ -166,13 +165,13 @@ public class QuestionProcessorTest {
     @BeforeEach
     void initEach() {
         UserContext session = new UserContext(userId);
-        TestEntity test1 = createTest(userId, 1L, "Математический тест");
-        QuestionEntity question1 = createQuestion(test1, 1L, "Сколько будет 2 + 2?");
+        TestEntity test1 = createTest(userId);
+        QuestionEntity question1 = createQuestion(test1);
 
         createAnswer(question1, "1", false);
         createAnswer(question1, "4", true);
 
-        UserEntity user = new UserEntity(Arrays.asList(test1));
+        UserEntity user = new UserEntity(List.of(test1));
         user.setUserId(userId);
         user.setContext(session);
 
@@ -192,27 +191,23 @@ public class QuestionProcessorTest {
      * Создает тест с заданными параметрами
      *
      * @param userId Идентификатор пользователя
-     * @param testId Идентификатор теста
-     * @param title  Название теста
      * @return созданный тест
      */
-    private TestEntity createTest(Long userId, Long testId, String title) {
-        TestEntity test = new TestEntity(userId, testId);
-        test.setTitle(title);
+    private TestEntity createTest(Long userId) {
+        TestEntity test = new TestEntity(userId, 1L);
+        test.setTitle("Математический тест");
         return test;
     }
 
     /**
      * Создает вопрос с заданными параметрами
      *
-     * @param test       Тест для которого создается вопрос
-     * @param questionId Идентификатор вопроса
-     * @param title      Формулировка вопроса
+     * @param test Тест для которого создается вопрос
      * @return созданный вопрос
      */
-    private QuestionEntity createQuestion(TestEntity test, Long questionId, String title) {
-        QuestionEntity question = new QuestionEntity(test, questionId);
-        question.setQuestion(title);
+    private QuestionEntity createQuestion(TestEntity test) {
+        QuestionEntity question = new QuestionEntity(test, 1L);
+        question.setQuestion("Сколько будет 2 + 2?");
         test.getQuestions().add(question);
         return question;
     }
@@ -223,15 +218,13 @@ public class QuestionProcessorTest {
      * @param question  Вопрос для которого создается ответ
      * @param title     Формулировка ответа
      * @param isCorrect Флаг правильности ответа
-     * @return созданный ответ
      */
-    private AnswerEntity createAnswer(QuestionEntity question, String title, boolean isCorrect) {
+    private void createAnswer(QuestionEntity question, String title, boolean isCorrect) {
         AnswerEntity answer = new AnswerEntity();
         answer.setAnswerText(title);
         answer.setCorrect(isCorrect);
         answer.setQuestion(question);
         question.getAnswers().add(answer);
-        return answer;
     }
 
     /**
@@ -240,7 +233,7 @@ public class QuestionProcessorTest {
     @Test
     void testAddQuestionWithoutId() {
         UserContext session = new UserContext(userId);
-        TestEntity test = createTest(userId, 1L, "Математический тест");
+        TestEntity test = createTest(userId);
         UserEntity user = new UserEntity(List.of(test));
         user.setUserId(userId);
         user.setContext(session);
@@ -318,7 +311,7 @@ public class QuestionProcessorTest {
     @Test
     void testAddQuestionWithId() {
         UserContext session = new UserContext(userId);
-        TestEntity test = createTest(userId, 1L, "Математический тест");
+        TestEntity test = createTest(userId);
         UserEntity user = new UserEntity(List.of(test));
         user.setUserId(userId);
         user.setContext(session);
@@ -490,8 +483,7 @@ public class QuestionProcessorTest {
                 .save(argThat(savedQuestion ->
                         savedQuestion.getId().equals(1L) &&
                                 savedQuestion.getAnswers().stream()
-                                        .filter(a -> a.getAnswerText() == "2")
-                                        .findFirst().isPresent()
+                                        .anyMatch(a -> Objects.equals(a.getAnswerText(), "2"))
                 ));
     }
 
@@ -517,7 +509,7 @@ public class QuestionProcessorTest {
                 .save(argThat(savedQuestion ->
                         savedQuestion.getId().equals(1L) &&
                                 savedQuestion.getAnswers().stream()
-                                        .filter(a -> a.isCorrect())
+                                        .filter(AnswerEntity::isCorrect)
                                         .findFirst().get()
                                         .getAnswerText().equals("1")
                 ));
@@ -556,7 +548,7 @@ public class QuestionProcessorTest {
     @Test
     void testConfirmDeleteQuestionWithQuestionId() {
         UserContext session = new UserContext(userId);
-        TestEntity test = createTest(userId, 1L, "Математический тест");
+        TestEntity test = createTest(userId);
         UserEntity user = new UserEntity(List.of(test));
         user.setUserId(userId);
         user.setContext(session);
@@ -575,9 +567,9 @@ public class QuestionProcessorTest {
 
         InlineButtonDTO yesButton = response1.getButtons().getFirst().getFirst();
         assertEquals("Да", yesButton.text());
-        assertEquals("DEL_QUESTION_CONFIRM 1 да", yesButton.callbackData());
+        assertEquals("DEL_QUESTION_CONFIRM 1 YES", yesButton.callbackData());
 
-        BotResponse response2 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 да", userId);
+        BotResponse response2 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 YES", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
                         "из теста “Математический тест” удален.",
                 response2.getMessage());
@@ -606,9 +598,9 @@ public class QuestionProcessorTest {
 
         InlineButtonDTO noButton = response1.getButtons().get(1).getFirst();
         assertEquals("Нет", noButton.text());
-        assertEquals("DEL_QUESTION_CONFIRM 1 нет", noButton.callbackData());
+        assertEquals("DEL_QUESTION_CONFIRM 1 NO", noButton.callbackData());
 
-        BotResponse response2 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 нет", userId);
+        BotResponse response2 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 NO", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
                         "из теста “Математический тест” не удален.",
                 response2.getMessage());
@@ -632,9 +624,9 @@ public class QuestionProcessorTest {
 
         InlineButtonDTO yesButton = response2.getButtons().getFirst().getFirst();
         assertEquals("Да", yesButton.text());
-        assertEquals("DEL_QUESTION_CONFIRM 1 да", yesButton.callbackData());
+        assertEquals("DEL_QUESTION_CONFIRM 1 YES", yesButton.callbackData());
 
-        BotResponse response3 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 да", userId);
+        BotResponse response3 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 YES", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
                         "из теста “Математический тест” удален.",
                 response3.getMessage());
@@ -666,9 +658,9 @@ public class QuestionProcessorTest {
 
         InlineButtonDTO noButton = response2.getButtons().get(1).getFirst();
         assertEquals("Нет", noButton.text());
-        assertEquals("DEL_QUESTION_CONFIRM 1 нет", noButton.callbackData());
+        assertEquals("DEL_QUESTION_CONFIRM 1 NO", noButton.callbackData());
 
-        BotResponse response3 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 нет", userId);
+        BotResponse response3 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 NO", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
                         "из теста “Математический тест” не удален.",
                 response3.getMessage());
@@ -691,6 +683,6 @@ public class QuestionProcessorTest {
     @Test
     void testDeleteQuestionWithInvalidId() {
         BotResponse response = messageHandler.handle("/del_question f", userId);
-        assertEquals("Некорректный формат id вопроса. Пожалуйста, введите число.", response.getMessage());
+        assertEquals("Некорректный формат идентификатора вопроса. Пожалуйста, введите число.", response.getMessage());
     }
 }

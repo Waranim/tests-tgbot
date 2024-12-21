@@ -29,12 +29,12 @@ public class EditTestProcessor extends AbstractCallbackProcessor {
     @Override
     public BotResponse process(Long userId, String message) {
         String[] parts = message.split(" ");
-        if (parts[2].equals("1")) {
+        if (parts[2].equals("EDIT_TEST_TITLE")) {
             stateService.changeStateById(userId, UserState.EDIT_TEST_TITLE);
             return new BotResponse("Введите новое название теста");
-        } else if (parts[2].equals("2")) {
+        } else if (parts[2].equals("EDIT_TEST_DESCRIPTION")) {
             stateService.changeStateById(userId, UserState.EDIT_TEST_DESCRIPTION);
-            return  new BotResponse("Введите новое описание теста");
+            return new BotResponse("Введите новое описание теста");
         }
         return new BotResponse("Некорректный ввод");
     }
