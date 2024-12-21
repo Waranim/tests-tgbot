@@ -58,11 +58,13 @@ public class EditAnswerOptionChoiceProcessor extends AbstractCallbackProcessor {
                 stateService.changeStateById(userId, UserState.EDIT_ANSWER_TEXT_CHOICE);
                 for (int i = 0; i < answers.size(); i++) {
                     AnswerEntity answer = answers.get(i);
-                    String text = answer.isCorrect() ? answer.getAnswerText() + " (верный)" : answer.getAnswerText();
-                    buttons.add(List.of(new InlineButtonDTO(text, "EDIT_ANSWER_TEXT_CHOICE " + i)));
+                    String answerText = answer.isCorrect() ? answer.getAnswerText() + " (верный)" : answer.getAnswerText();
+                    buttons.add(List.of(new InlineButtonDTO(answerText, "EDIT_ANSWER_TEXT_CHOICE " + i)));
                 }
-                return new BotResponse("Какой вариант ответа вы хотите изменить?",
-                        buttons, false);
+                return new BotResponse(
+                        "Какой вариант ответа вы хотите изменить?",
+                        buttons,
+                        false);
 
             } else if (parts[2].equals("2")) {
                 stateService.changeStateById(userId, UserState.SET_CORRECT_ANSWER);
@@ -71,8 +73,10 @@ public class EditAnswerOptionChoiceProcessor extends AbstractCallbackProcessor {
                     String text = answer.isCorrect() ? answer.getAnswerText() + " (верный)" : answer.getAnswerText();
                     buttons.add(List.of(new InlineButtonDTO(text, "SET_CORRECT_ANSWER " + i)));
                 }
-                return new BotResponse("Какой вариант ответа вы хотите сделать правильным?",
-                        buttons, false);
+                return new BotResponse(
+                        "Какой вариант ответа вы хотите сделать правильным?",
+                        buttons,
+                        false);
             }
         }
         return new BotResponse("Некорректный ввод");

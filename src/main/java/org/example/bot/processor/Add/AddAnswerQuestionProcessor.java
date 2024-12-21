@@ -2,7 +2,6 @@ package org.example.bot.processor.Add;
 
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.processor.AbstractStateProcessor;
-import org.example.bot.processor.StopCommandProcessor;
 import org.example.bot.service.QuestionService;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
@@ -56,11 +55,12 @@ public class AddAnswerQuestionProcessor extends AbstractStateProcessor {
         if (message.equals("/stop")) {
             return stopCommandProcessor.process(userId, message);
         }
-        Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
 
+        Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
         if (optionalCurrentQuestion.isEmpty()) {
             return new BotResponse("Вопрос не найден");
         }
+
         QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         questionService.addAnswerOption(currentQuestion, message);
         return new BotResponse("Введите вариант ответа. " +

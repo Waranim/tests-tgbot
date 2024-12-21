@@ -34,7 +34,7 @@ public class EditQuestionProcessor extends AbstractCallbackProcessor {
     @Override
     public BotResponse process(Long userId, String message) {
         String[] parts = message.split(" ");
-        Long questionId = Long.parseLong(parts[1]);
+        long questionId = Long.parseLong(parts[1]);
         List<List<InlineButtonDTO>> buttons = new ArrayList<>();
         buttons.add(List.of(new InlineButtonDTO("Изменить формулировку ответа",
                 "EDIT_ANSWER_OPTION_CHOICE " + questionId + " 1")));
@@ -45,8 +45,12 @@ public class EditQuestionProcessor extends AbstractCallbackProcessor {
             return new BotResponse("Введите новый текст вопроса");
         } else if (parts[2].equals("2")) {
             stateService.changeStateById(userId, UserState.EDIT_ANSWER_OPTION_CHOICE);
-            return new BotResponse("Что вы хотите сделать с вариантом ответа?\n", buttons, false);
+            return new BotResponse(
+                    "Что вы хотите сделать с вариантом ответа?\n",
+                    buttons,
+                    false);
         }
+
         return new BotResponse("Некорректный ввод");
     }
 }

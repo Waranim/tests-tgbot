@@ -21,9 +21,4 @@ public abstract class AbstractCallbackProcessor implements MessageProcessor {
     public final boolean canProcess(Long userId, String message) {
         return message.startsWith(callback);
     }
-
-    protected final String extractData(String message) {
-        int spaceIndex = message.indexOf(' ');
-        return spaceIndex == -1 ? message : message.substring(spaceIndex+1);
-    }
 }

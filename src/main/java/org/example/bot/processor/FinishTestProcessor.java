@@ -14,10 +14,19 @@ import java.util.Optional;
 @Component
 public class FinishTestProcessor extends AbstractCallbackProcessor {
 
+    /**
+     * Сервис для управления состояниями
+     */
     private final StateService stateService;
 
+    /**
+     * Сервис для управления контекстом
+     */
     private final ContextService contextService;
 
+    /**
+     * Конструктор для инициализации обработчика callback.
+     */
     public FinishTestProcessor(StateService stateService, ContextService contextService) {
         super("FINISH_TEST");
         this.stateService = stateService;

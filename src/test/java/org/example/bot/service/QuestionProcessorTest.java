@@ -7,14 +7,13 @@ import org.example.bot.processor.Add.*;
 import org.example.bot.processor.Del.*;
 import org.example.bot.processor.Edit.*;
 import org.example.bot.processor.MessageProcessor;
-import org.example.bot.processor.StopCommandProcessor;
+import org.example.bot.processor.Add.StopCommandProcessor;
 import org.example.bot.processor.View.ViewQuestionCommandProcessor;
 import org.example.bot.repository.QuestionRepository;
 import org.example.bot.repository.TestRepository;
 import org.example.bot.repository.UserRepository;
 import org.example.bot.repository.UserContextRepository;
 import org.example.bot.telegram.BotResponse;
-import org.example.bot.util.AnswerUtils;
 import org.example.bot.util.TestUtils;
 import org.example.bot.util.NumberUtils;
 import org.junit.jupiter.api.*;
@@ -63,11 +62,6 @@ public class QuestionProcessorTest {
     private final NumberUtils numberUtils = new NumberUtils();
 
     /**
-     * Утилита с вспомогательными методами для ответов
-     */
-    private final AnswerUtils answerUtils = new AnswerUtils();
-
-    /**
      * Утилита с вспомогательными методами для тестов
      */
     private final TestUtils testUtils = new TestUtils();
@@ -108,7 +102,7 @@ public class QuestionProcessorTest {
         AddQuestionTextProcessor addQuestionTextProcessor = new AddQuestionTextProcessor(stateService,
                 sessionService, questionService);
         StopCommandProcessor stopCommandProcessor = new StopCommandProcessor(stateService,
-                sessionService, answerUtils);
+                sessionService);
         AddAnswerQuestionProcessor addAnswerQuestionProcessor = new AddAnswerQuestionProcessor(stateService,
                 sessionService, questionService,
                 stopCommandProcessor);
@@ -448,8 +442,7 @@ public class QuestionProcessorTest {
     @Test
     void testEditQuestionTitle() {
         BotResponse response1 = messageHandler.handle("/edit_question 1", userId);
-        assertEquals("Вы выбрали вопрос “Сколько будет 2 + 2?”. " +
-                        "Что вы хотите изменить в вопросе?\n",
+        assertEquals("Вы выбрали вопрос “Сколько будет 2 + 2?”. Что вы хотите изменить в вопросе?",
                 response1.getMessage());
         assertNotNull(response1.getButtons());
         assertEquals(2, response1.getButtons().size());
@@ -475,7 +468,7 @@ public class QuestionProcessorTest {
     @Test
     void testEditAnswerText() {
         BotResponse response1 = messageHandler.handle("/edit_question 1", userId);
-        assertEquals("Вы выбрали вопрос “Сколько будет 2 + 2?”. Что вы хотите изменить в вопросе?\n", response1.getMessage());
+        assertEquals("Вы выбрали вопрос “Сколько будет 2 + 2?”. Что вы хотите изменить в вопросе?", response1.getMessage());
 
         BotResponse response2 = messageHandler.handle("EDIT_QUESTION 1 2", userId);
         assertEquals("Что вы хотите сделать с вариантом ответа?\n", response2.getMessage());
@@ -501,8 +494,7 @@ public class QuestionProcessorTest {
     @Test
     void testEditCorrectAnswer() {
         BotResponse response1 = messageHandler.handle("/edit_question 1", userId);
-        assertEquals("Вы выбрали вопрос “Сколько будет 2 + 2?”. " +
-                        "Что вы хотите изменить в вопросе?\n",
+        assertEquals("Вы выбрали вопрос “Сколько будет 2 + 2?”. Что вы хотите изменить в вопросе?",
                 response1.getMessage());
 
         BotResponse response2 = messageHandler.handle("EDIT_QUESTION 1 2", userId);
