@@ -1,5 +1,6 @@
 package org.example.bot.processor.Edit;
 
+import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.QuestionService;
@@ -10,10 +11,12 @@ import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
- * Обработчик команды редактирования вопрса
+ * Обработчик команды редактирования вопроса
  */
 @Component
 public class EditQuestionCommandProcessor extends AbstractCommandProcessor {
@@ -41,9 +44,9 @@ public class EditQuestionCommandProcessor extends AbstractCommandProcessor {
     /**
      * Конструктор для инициализации обработчика команды редактирования вопроса
      *
-     * @param stateService    cервис для управления состояниями
-     * @param contextService  cервис для управления контекстом
-     * @param questionService cервис для управления вопросами
+     * @param stateService    сервис для управления состояниями
+     * @param contextService  сервис для управления контекстом
+     * @param questionService сервис для управления вопросами
      * @param numberUtils утилита с вспомогательными методами
      */
     public EditQuestionCommandProcessor(StateService stateService,
@@ -66,16 +69,21 @@ public class EditQuestionCommandProcessor extends AbstractCommandProcessor {
         if (!numberUtils.isNumber(parts[1])) {
             return new BotResponse("Ошибка ввода. Укажите корректный id теста.");
         }
+
         Long questionId = Long.parseLong(parts[1]);
         Optional<QuestionEntity> questionOpt = questionService.getQuestion(questionId);
-        return new BotResponse(questionOpt.map(question -> {
+        List<List<InlineButtonDTO>> buttons = new ArrayList<>();
+        buttons.add(List.of(
+                new InlineButtonDTO("Формулировку вопроса", "EDIT_QUESTION " + questionId + " 1")));
+        buttons.add(List.of(
+                new InlineButtonDTO("Варианты ответа", "EDIT_QUESTION " + questionId + " 2")));
+
+        String messageText = questionOpt.map(question -> {
             contextService.setCurrentQuestion(userId, question);
             stateService.changeStateById(userId, UserState.EDIT_QUESTION);
-            return String.format("""
-                Вы выбрали вопрос “%s”. Что вы хотите изменить в вопросе?
-                1: Формулировку вопроса
-                2: Варианты ответа
-                """, question.getQuestion());
-        }).orElse("Вопрос не найден!"));
+            return String.format("Вы выбрали вопрос “%s”. Что вы хотите изменить в вопросе?", question.getQuestion());
+        }).orElse("Вопрос не найден!");
+
+        return new BotResponse(messageText, buttons, false);
     }
 }

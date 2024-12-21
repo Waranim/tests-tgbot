@@ -10,6 +10,7 @@ import org.example.bot.processor.View.*;
 import org.example.bot.repository.TestRepository;
 import org.example.bot.repository.UserRepository;
 import org.example.bot.repository.UserContextRepository;
+import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.TestUtils;
 import org.example.bot.util.NumberUtils;
 import org.junit.jupiter.api.*;
@@ -80,8 +81,6 @@ class TestProcessorTest {
         StateService stateService = new StateService(contextService);
         TestService testService = new TestService(testRepository, userService);
 
-        HelpCommandProcessor helpCommandProcessor = new HelpCommandProcessor();
-        StartCommandProcessor startCommandProcessor = new StartCommandProcessor(userService, helpCommandProcessor);
         AddCommandProcessor addCommandProcessor = new AddCommandProcessor(testService, stateService, contextService);
         ViewCommandProcessor viewCommandProcessor = new ViewCommandProcessor(testService, stateService, numberUtils, testUtils);
         EditCommandProcessor editCommandProcessor = new EditCommandProcessor(testService, numberUtils, contextService, stateService);
@@ -95,10 +94,9 @@ class TestProcessorTest {
         EditTestDescriptionProcessor editTestDescriptionProcessor = new EditTestDescriptionProcessor(stateService, contextService, testService);
         DelTestProcessor delTestProcessor = new DelTestProcessor(stateService, testService, numberUtils, contextService);
         ConfirmDelTest confirmDelTest = new ConfirmDelTest(stateService, contextService, testService);
+        ViewTestCallbackProcessor viewTestCallbackProcessor = new ViewTestCallbackProcessor(testService, testUtils);
 
         List<MessageProcessor> processors = Arrays.asList(
-                helpCommandProcessor,
-                startCommandProcessor,
                 addCommandProcessor,
                 viewCommandProcessor,
                 editCommandProcessor,
@@ -110,7 +108,8 @@ class TestProcessorTest {
                 editTestTitleProcessor,
                 editTestDescriptionProcessor,
                 delTestProcessor,
-                confirmDelTest
+                confirmDelTest,
+                viewTestCallbackProcessor
         );
 
         messageHandler = new MessageHandler(processors);
@@ -192,11 +191,31 @@ class TestProcessorTest {
                 "1)  id: 123 Математический тест\n" +
                 "2)  id: 312 Тест по знаниям ПДД\n", response);
 
-        String response2 = messageHandler.handle("123", userId).getMessage();
-        assertEquals("Тест “Математический тест”. Всего вопросов: 0\n", response2);
+        BotResponse response2 = messageHandler.handle("123", userId);
 
-        String response3 = messageHandler.handle("/view 312", userId).getMessage();
-        assertEquals("Тест “Тест по знаниям ПДД”. Всего вопросов: 0\n", response3);
+        assertEquals("Тест “Математический тест”. Всего вопросов: 0\n" +
+                        "Пользователей с доступом к тесту: 0\n",
+                response2.getMessage());
+
+        assertEquals("Открыть доступ", response2.getButtons().getFirst().getFirst().text());
+        assertEquals("VIEW_TEST 123", response2.getButtons().getFirst().getFirst().callbackData());
+
+        BotResponse response3 = messageHandler.handle("VIEW_TEST 123", userId);
+
+        assertEquals("Закрыть доступ", response3.getButtons().getFirst().getFirst().text());
+        assertEquals("VIEW_TEST 123", response3.getButtons().getFirst().getFirst().callbackData());
+
+        BotResponse response4 = messageHandler.handle("/view 123", userId);
+        assertEquals("Тест “Математический тест”. Всего вопросов: 0\n" +
+                "Пользователей с доступом к тесту: 0\n", response4.getMessage());
+
+        assertEquals("Закрыть доступ", response4.getButtons().getFirst().getFirst().text());
+        assertEquals("VIEW_TEST 123", response4.getButtons().getFirst().getFirst().callbackData());
+
+        BotResponse response5 = messageHandler.handle("VIEW_TEST 123", userId);
+
+        assertEquals("Открыть доступ", response5.getButtons().getFirst().getFirst().text());
+        assertEquals("VIEW_TEST 123", response5.getButtons().getFirst().getFirst().callbackData());
     }
 
     /**
@@ -231,13 +250,15 @@ class TestProcessorTest {
      */
     @Test
     void testEditTestTitle() {
-        String response1 = messageHandler.handle("/edit 123", userId).getMessage();
+        BotResponse response1 = messageHandler.handle("/edit 123", userId);
         assertEquals("Вы выбрали тест “Математический тест”. " +
-                "Что вы хотите изменить?\n" +
-                "1: Название теста\n" +
-                "2: Описание теста\n", response1);
+                "Что вы хотите изменить?", response1.getMessage());
+        assertEquals("Название теста", response1.getButtons().getFirst().getFirst().text());
+        assertEquals("Описание теста", response1.getButtons().getLast().getFirst().text());
+        assertEquals("EDIT_TEST 123 EDIT_TEST_TITLE", response1.getButtons().getFirst().getFirst().callbackData());
+        assertEquals("EDIT_TEST 123 EDIT_TEST_DESCRIPTION", response1.getButtons().getLast().getFirst().callbackData());
 
-        String response2 = messageHandler.handle("1", userId).getMessage();
+        String response2 = messageHandler.handle("EDIT_TEST 123 EDIT_TEST_TITLE", userId).getMessage();
         assertEquals("Введите новое название теста", response2);
 
         String response3 = messageHandler.handle("Новый математический тест", userId).getMessage();
@@ -266,16 +287,21 @@ class TestProcessorTest {
      */
     @Test
     void testDeleteTest() {
-        String response1 = messageHandler.handle("/del", userId).getMessage();
+        BotResponse response1 = messageHandler.handle("/del", userId);
         assertEquals("Выберите тест:\n" +
                 "1)  id: 123 Математический тест\n" +
-                "2)  id: 312 Тест по знаниям ПДД\n", response1);
+                "2)  id: 312 Тест по знаниям ПДД\n", response1.getMessage());
 
-        String response2 = messageHandler.handle("123", userId).getMessage();
-        assertEquals("Тест “Математический тест” будет удалён, вы уверены? (Да/Нет)", response2);
+        BotResponse response2 = messageHandler.handle("123", userId);
+        assertEquals("Тест “Математический тест” будет удалён, вы уверены? (Да/Нет)", response2.getMessage());
 
-        String response3 = messageHandler.handle("Да", userId).getMessage();
-        assertEquals("Тест “Математический тест” удалён", response3);
+        assertEquals("Да", response2.getButtons().getFirst().getFirst().text());
+        assertEquals("Нет", response2.getButtons().getFirst().getLast().text());
+        assertEquals("DEL_TEST_CONFIRM 123 YES", response2.getButtons().getFirst().getFirst().callbackData());
+        assertEquals("DEL_TEST_CONFIRM 123 NO", response2.getButtons().getFirst().getLast().callbackData());
+
+        BotResponse response3 = messageHandler.handle("DEL_TEST_CONFIRM 123 YES", userId);
+        assertEquals("Тест “Математический тест” удалён", response3.getMessage());
 
         verify(testRepository, times(1)).delete(argThat(deletedTest -> 
             deletedTest.getId().equals(123L) && 
@@ -290,8 +316,8 @@ class TestProcessorTest {
     void testDeleteTestCancel() {
         messageHandler.handle("/del", userId);
         messageHandler.handle("123", userId);
-        
-        String response = messageHandler.handle("Нет", userId).getMessage();
+
+        String response = messageHandler.handle("DEL_TEST_CONFIRM 123 NO", userId).getMessage();
         assertEquals("Тест “Математический тест” не удалён", response);
         
         verify(testRepository, never()).delete(any(TestEntity.class));
@@ -317,11 +343,9 @@ class TestProcessorTest {
     @Test
     void testEditTestDescription() {
         String response1 = messageHandler.handle("/edit 123", userId).getMessage();
-        assertEquals("Вы выбрали тест “Математический тест”. Что вы хотите изменить?\n" +
-                "1: Название теста\n" +
-                "2: Описание теста\n", response1);
+        assertEquals("Вы выбрали тест “Математический тест”. Что вы хотите изменить?", response1);
 
-        String response2 = messageHandler.handle("2", userId).getMessage();
+        String response2 = messageHandler.handle("EDIT_TEST 123 EDIT_TEST_DESCRIPTION", userId).getMessage();
         assertEquals("Введите новое описание теста", response2);
 
         String response3 = messageHandler.handle("Новое описание математического теста", userId).getMessage();
@@ -332,5 +356,4 @@ class TestProcessorTest {
             savedTest.getDescription().equals("Новое описание математического теста")
         ));
     }
-
 }

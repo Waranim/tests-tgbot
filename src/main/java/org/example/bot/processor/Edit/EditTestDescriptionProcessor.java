@@ -54,10 +54,12 @@ public class EditTestDescriptionProcessor extends AbstractStateProcessor {
         if (optionalCurrentTest.isEmpty()) {
             return new BotResponse("Тест не найден");
         }
+
         TestEntity currentTest = optionalCurrentTest.get();
         currentTest.setDescription(message);
         testService.update(currentTest);
         stateService.changeStateById(userId, UserState.DEFAULT);
+
         return new BotResponse(String.format("Описание изменено на “%s”", message));
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class StartCommandProcessor extends AbstractCommandProcessor {
+
     /**
      * Сервис для управления пользователями.
      */
