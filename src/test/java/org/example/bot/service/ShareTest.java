@@ -3,6 +3,7 @@ package org.example.bot.service;
 import org.example.bot.entity.TestEntity;
 import org.example.bot.entity.UserContext;
 import org.example.bot.entity.UserEntity;
+import org.example.bot.processor.share.InfoCommandProcessor;
 import org.example.bot.processor.share.*;
 import org.example.bot.state.UserState;
 import org.example.bot.telegram.BotResponse;
@@ -87,6 +88,11 @@ public class ShareTest {
     private ShareUnsubscribeTestProcessor shareUnsubscribeTestProcessor;
 
     /**
+     * Обработчик команды получения идентификатора пользователя
+     */
+    private InfoCommandProcessor infoCommandProcessor;
+
+    /**
      * Идентификатор тестового пользователя
      */
     private final Long userId = 1L;
@@ -126,13 +132,13 @@ public class ShareTest {
      */
     @BeforeEach
     void setUp() {
-        testEntity.setAccessOpen(true);
         shareCommandProcessor = new ShareCommandProcessor(testService);
         shareChooseTestProcessor = new ShareChooseTestProcessor(testService, contextService, stateService);
         shareChooseUserProcessor = new ShareChooseUserProcessor(stateService, numberUtils, userService, contextService, testService);
         sharedTestsCommandProcessor = new SharedTestsCommandProcessor(userService);
         shareUnsubscribeChoseTestProcessor = new ShareUnsubscribeChoseTestProcessor(userService, testService);
         shareUnsubscribeTestProcessor = new ShareUnsubscribeTestProcessor(userService, testService);
+        infoCommandProcessor = new InfoCommandProcessor();
     }
 
     /**
@@ -156,6 +162,15 @@ public class ShareTest {
         assertEquals("Выберите тест: ", response.getMessage());
         assertEquals("тест", response.getButtons().getFirst().getFirst().text());
         verify(testService).getTestsByUserId(userId);
+    }
+
+    /**
+     * Тестирует команду /info
+     */
+    @Test
+    void shouldProcessInfoCommand() {
+        BotResponse response = infoCommandProcessor.process(userId, "/info");
+        assertEquals("Ваш идентификатор: 1", response.getMessage());
     }
 
     /**

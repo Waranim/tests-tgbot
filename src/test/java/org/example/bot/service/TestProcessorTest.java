@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
@@ -193,8 +192,15 @@ class TestProcessorTest {
 
         BotResponse response2 = messageHandler.handle("123", userId);
 
-        assertEquals("Тест “Математический тест”. Всего вопросов: 0\n" +
-                        "Пользователей с доступом к тесту: 0\n",
+        assertEquals("""
+                        Тест “Математический тест”. Всего вопросов: 0
+                        
+                        Статистика по тесту:
+                        Общее количество попыток: 0
+                        Средний процент правильных ответов: Тест ещё не проходили
+                        Пользователей с доступом к тесту: 0
+                        
+                        """,
                 response2.getMessage());
 
         assertEquals("Закрыть доступ", response2.getButtons().getFirst().getFirst().text());
@@ -206,8 +212,15 @@ class TestProcessorTest {
         assertEquals("VIEW_TEST 123", response3.getButtons().getFirst().getFirst().callbackData());
 
         BotResponse response4 = messageHandler.handle("/view 123", userId);
-        assertEquals("Тест “Математический тест”. Всего вопросов: 0\n" +
-                "Пользователей с доступом к тесту: 0\n", response4.getMessage());
+        assertEquals("""
+                        Тест “Математический тест”. Всего вопросов: 0
+                        
+                        Статистика по тесту:
+                        Общее количество попыток: 0
+                        Средний процент правильных ответов: Тест ещё не проходили
+                        Пользователей с доступом к тесту: 0
+                        
+                        """, response4.getMessage());
 
         assertEquals("Открыть доступ", response4.getButtons().getFirst().getFirst().text());
         assertEquals("VIEW_TEST 123", response4.getButtons().getFirst().getFirst().callbackData());
@@ -216,6 +229,19 @@ class TestProcessorTest {
 
         assertEquals("Закрыть доступ", response5.getButtons().getFirst().getFirst().text());
         assertEquals("VIEW_TEST 123", response5.getButtons().getFirst().getFirst().callbackData());
+
+        BotResponse response6 = messageHandler.handle("/view 312", userId);
+        assertEquals("""
+                        Тест “Тест по знаниям ПДД”. Всего вопросов: 0
+                        
+                        Статистика по тесту:
+                        Общее количество попыток: 0
+                        Средний процент правильных ответов: Тест ещё не проходили
+                        Пользователей с доступом к тесту: 0
+                        
+                        """, response6.getMessage());
+        assertEquals("Закрыть доступ", response6.getButtons().getFirst().getFirst().text());
+        assertEquals("VIEW_TEST 312", response6.getButtons().getFirst().getFirst().callbackData());
     }
 
     /**

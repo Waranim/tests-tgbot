@@ -1,9 +1,6 @@
 package org.example.bot.entity;
 
 import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
 import org.example.bot.state.UserState;
 
 /**

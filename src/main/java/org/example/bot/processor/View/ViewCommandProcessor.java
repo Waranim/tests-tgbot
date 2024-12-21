@@ -83,4 +83,47 @@ public class ViewCommandProcessor extends AbstractCommandProcessor {
         }
         return new BotResponse("Ошибка ввода!");
     }
+
+//    /**
+//     * Получить развернутое строковое представление сущности теста
+//     */
+//    private String testToString(TestEntity test) {
+//        List<QuestionEntity> questions = test.getQuestions();
+//        StringBuilder response = new StringBuilder(String.format("Тест “%s”. Всего вопросов: %s\n",
+//                test.getTitle(),
+//                questions.size()));
+//
+//        String correctAnswerPercent = test.getCountAnsweredQuestionsAllUsers() != 0
+//                ? String.valueOf(
+//                        (test.getCorrectAnswerCountAllUsers() * 100) / test.getCountAnsweredQuestionsAllUsers())
+//                : "Тест ещё не проходили";
+//        response.append(
+//                String.format("""
+//
+//                                Статистика по тесту:
+//                                Общее количество попыток: %d
+//                                Средний процент правильных ответов: %s
+//
+//                                """,
+//                        test.getCountTries(),
+//                        correctAnswerPercent));
+//
+//        for (QuestionEntity question : questions) {
+//            response.append("Вопрос: %s\nВарианты ответов:\n"
+//                    .formatted(question.getQuestion()));
+//            List<AnswerEntity> answers = question.getAnswers();
+//            AnswerEntity correctAnswer = null;
+//
+//            for (int i = 0; i < answers.size(); i++) {
+//                var answer = answers.get(i);
+//                response.append("%s - %s\n"
+//                        .formatted(i + 1, answer.getAnswerText()));
+//                if(answer.isCorrect()) correctAnswer = answer;
+//            }
+//            response.append("Правильный вариант: ")
+//                    .append(correctAnswer != null ? correctAnswer
+//                            .getAnswerText() : null).append("\n\n");
+//        }
+//        return response.toString();
+//    }
 }
