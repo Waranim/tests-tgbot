@@ -39,6 +39,11 @@ public class TestEntity extends BaseEntity {
     private String description;
 
     /**
+     * Открытие-закрытие доступа к тесту
+     */
+    private boolean accessOpen;
+
+    /**
      * Конструктор без параметров
      */
     public TestEntity() {
@@ -49,6 +54,7 @@ public class TestEntity extends BaseEntity {
      */
     public TestEntity(Long creatorId) {
         this.creatorId = creatorId;
+        this.accessOpen = false;
     }
 
     /**
@@ -112,6 +118,13 @@ public class TestEntity extends BaseEntity {
      * Проверить открыт ли у теста доступ
      */
     public boolean isAccessOpen() {
-        return true;
+        return accessOpen;
+    }
+
+    /**
+     * Установить значение состояния доступа
+     */
+    public void setAccessOpen(boolean accessOpen) {
+        this.accessOpen = accessOpen;
     }
 }

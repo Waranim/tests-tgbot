@@ -1,7 +1,6 @@
 package org.example.bot.processor.View;
 
-import org.example.bot.entity.AnswerEntity;
-import org.example.bot.entity.QuestionEntity;
+import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.entity.TestEntity;
 import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.StateService;
@@ -12,6 +11,7 @@ import org.example.bot.util.NumberUtils;
 import org.example.bot.util.TestUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,38 +75,12 @@ public class ViewCommandProcessor extends AbstractCommandProcessor {
             Optional<TestEntity> test = testService.getTest(testId);
             if (test.isEmpty() || testsOptional.isEmpty() || !testsOptional.get().contains(test.get()))
                 return new BotResponse("Тест не найден!");
-            return new BotResponse(testToString(test.get()));
+            List<List<InlineButtonDTO>> button = new ArrayList<>();
+            String buttonsText = test.get().isAccessOpen() ? "Закрыть доступ" : "Открыть доступ";
+            button.add(List.of(new InlineButtonDTO(buttonsText, "VIEW_TEST " + testId)));
+
+            return new BotResponse(testUtils.testToString(test.get()), button, false);
         }
         return new BotResponse("Ошибка ввода!");
-    }
-
-    /**
-     * Получить развернутое строковое представление сущности теста
-     */
-    private String testToString(TestEntity test) {
-        List<QuestionEntity> questions = test.getQuestions();
-        StringBuilder response = new StringBuilder(String.format("Тест “%s”. Всего вопросов: %s\n" +
-                        "Пользователей с доступом к тесту: %d\n",
-                test.getTitle(),
-                questions.size(),
-                test.getRecipients().size()));
-
-        for (QuestionEntity question : questions) {
-            response.append("Вопрос: %s\nВарианты ответов:\n"
-                    .formatted(question.getQuestion()));
-            List<AnswerEntity> answers = question.getAnswers();
-            AnswerEntity correctAnswer = null;
-
-            for (int i = 0; i < answers.size(); i++) {
-                var answer = answers.get(i);
-                response.append("%s - %s\n"
-                        .formatted(i + 1, answer.getAnswerText()));
-                if(answer.isCorrect()) correctAnswer = answer;
-            }
-            response.append("Правильный вариант: ")
-                    .append(correctAnswer != null ? correctAnswer
-                            .getAnswerText() : null).append("\n\n");
-        }
-        return response.toString();
     }
 }
