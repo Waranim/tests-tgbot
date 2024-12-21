@@ -24,14 +24,16 @@ public class ViewTestCallbackProcessor extends AbstractCallbackProcessor {
     private final TestService testService;
 
     /**
-     * Утилита с вспомогательными методами для тестов.
+     * Утилита с вспомогательными методами для тестов
      */
     private final TestUtils testUtils;
 
     /**
      * Конструктор для инициализации обработчика измения открытия или закрытия теста
+     * @param testService сервис для управления тестами
+     * @param testUtils утилита с вспомогательными методами для тестов
      */
-    ViewTestCallbackProcessor(TestService testService, TestUtils testUtils) {
+    public ViewTestCallbackProcessor(TestService testService, TestUtils testUtils) {
         super("VIEW_TEST");
         this.testService = testService;
         this.testUtils = testUtils;
