@@ -1,9 +1,10 @@
-package org.example.bot.processor;
+package org.example.bot.processor.passage;
 
 import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.entity.AnswerEntity;
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.entity.TestEntity;
+import org.example.bot.processor.AbstractCallbackProcessor;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
@@ -57,16 +58,18 @@ public class AnswerProcessor extends AbstractCallbackProcessor {
 
     @Override
     public BotResponse process(Long userId, String callback) {
-        String answer = extractData(callback);
+        String[] parts = callback.split(" ");
         Optional<UserState> currentStateOpt = stateService.getCurrentState(userId);
         if (currentStateOpt.isEmpty() || !currentStateOpt.get().equals(UserState.PASSAGE_TEST)) {
             return new BotResponse("");
         }
+
         Optional<TestEntity> test = contextService.getCurrentTest(userId);
         Optional<QuestionEntity> previousQuestionOpt = contextService.getCurrentQuestion(userId);
-        if(test.isEmpty() || previousQuestionOpt.isEmpty())
+        if (test.isEmpty() || previousQuestionOpt.isEmpty() || parts.length != 2)
             return new BotResponse("Произошла ошибка при прохождении теста");
 
+        String answer = parts[1];
         QuestionEntity previousQuestion = previousQuestionOpt.get();
         List<QuestionEntity> questions = test.get().getQuestions();
         int questionIndex = questions.indexOf(previousQuestion);
@@ -75,7 +78,6 @@ public class AnswerProcessor extends AbstractCallbackProcessor {
         String questionText = testUtils.createTextQuestion(questionIndex, questions);
 
         List<AnswerEntity> answers = previousQuestion.getAnswers();
-
         for (int i = 0; i < answers.size(); i++) {
             AnswerEntity answerQuestion = answers.get(i);
             String postfix = "";

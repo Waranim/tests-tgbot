@@ -7,14 +7,13 @@ import org.example.bot.processor.Add.*;
 import org.example.bot.processor.Del.*;
 import org.example.bot.processor.Edit.*;
 import org.example.bot.processor.MessageProcessor;
-import org.example.bot.processor.StopCommandProcessor;
+import org.example.bot.processor.Add.StopCommandProcessor;
 import org.example.bot.processor.View.ViewQuestionCommandProcessor;
 import org.example.bot.repository.QuestionRepository;
 import org.example.bot.repository.TestRepository;
 import org.example.bot.repository.UserRepository;
 import org.example.bot.repository.UserContextRepository;
 import org.example.bot.telegram.BotResponse;
-import org.example.bot.util.AnswerUtils;
 import org.example.bot.util.TestUtils;
 import org.example.bot.util.NumberUtils;
 import org.junit.jupiter.api.*;
@@ -23,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,11 +63,6 @@ public class QuestionProcessorTest {
     private final NumberUtils numberUtils = new NumberUtils();
 
     /**
-     * Утилита с вспомогательными методами для ответов
-     */
-    private final AnswerUtils answerUtils = new AnswerUtils();
-
-    /**
      * Утилита с вспомогательными методами для тестов
      */
     private final TestUtils testUtils = new TestUtils();
@@ -93,48 +88,46 @@ public class QuestionProcessorTest {
 
 
         UserService userService = new UserService(userRepository);
-        ContextService sessionService = new ContextService(userContextRepository, userService);
-        StateService stateService = new StateService(sessionService);
+        ContextService contextService = new ContextService(userContextRepository, userService);
+        StateService stateService = new StateService(contextService);
         TestService testService = new TestService(testRepository, userService);
         QuestionService questionService = new QuestionService(questionRepository, testService);
 
 
         AddQuestionCommandProcessor addQuestionCommandProcessor = new AddQuestionCommandProcessor(testService,
                 questionService, stateService,
-                sessionService, numberUtils, testUtils);
+                contextService, numberUtils, testUtils);
         AddQuestionProcessor addQuestionProcessor = new AddQuestionProcessor(stateService,
-                sessionService, questionService,
+                contextService, questionService,
                 numberUtils, testService);
         AddQuestionTextProcessor addQuestionTextProcessor = new AddQuestionTextProcessor(stateService,
-                sessionService, questionService);
+                contextService, questionService);
         StopCommandProcessor stopCommandProcessor = new StopCommandProcessor(stateService,
-                sessionService, answerUtils);
+                contextService);
         AddAnswerQuestionProcessor addAnswerQuestionProcessor = new AddAnswerQuestionProcessor(stateService,
-                sessionService, questionService,
+                contextService, questionService,
                 stopCommandProcessor);
-
-        DelQuestionCommandProcessor delQuestionCommandProcessor = new DelQuestionCommandProcessor(stateService,
-                sessionService,
-                questionService, numberUtils);
         DelQuestionProcessor delQuestionProcessor = new DelQuestionProcessor(stateService,
-                sessionService, questionService);
+                contextService, questionService);
+        DelQuestionCommandProcessor delQuestionCommandProcessor = new DelQuestionCommandProcessor(stateService,
+                delQuestionProcessor);
         ConfirmDelQuestion confirmDelQuestion = new ConfirmDelQuestion(stateService,
-                sessionService, questionService);
+                contextService, questionService);
 
         EditQuestionCommandProcessor editQuestionCommandProcessor = new EditQuestionCommandProcessor(stateService,
-                sessionService,
+                contextService,
                 questionService, numberUtils);
         EditQuestionProcessor editQuestionProcessor = new EditQuestionProcessor(stateService);
         EditQuestionTextProcessor editQuestionTextProcessor = new EditQuestionTextProcessor(stateService,
-                sessionService, questionService);
+                contextService, questionService);
         EditAnswerOptionChoiceProcessor editAnswerOptionChoiceProcessor = new EditAnswerOptionChoiceProcessor(stateService,
-                sessionService);
+                contextService);
         EditAnswerTextChoiceProcessor editAnswerTextChoiceProcessor = new EditAnswerTextChoiceProcessor(stateService,
-                sessionService);
+                contextService);
         EditAnswerTextProcessor editAnswerTextProcessor = new EditAnswerTextProcessor(stateService,
-                sessionService, questionService);
+                contextService, questionService);
         EditSetCorrectAnswerProcessor editSetCorrectAnswerProcessor = new EditSetCorrectAnswerProcessor(stateService,
-                sessionService, questionService);
+                contextService, questionService);
 
         ViewQuestionCommandProcessor viewQuestionCommandProcessor = new ViewQuestionCommandProcessor(testService, numberUtils);
 
@@ -183,6 +176,9 @@ public class QuestionProcessorTest {
 
     }
 
+    /**
+     * Очистка моков после каждого теста.
+     */
     @AfterEach
     void clearMocks() {
         clearInvocations(testRepository, userRepository, userContextRepository, questionRepository);
@@ -448,8 +444,7 @@ public class QuestionProcessorTest {
     @Test
     void testEditQuestionTitle() {
         BotResponse response1 = messageHandler.handle("/edit_question 1", userId);
-        assertEquals("Вы выбрали вопрос “Сколько будет 2 + 2?”. " +
-                        "Что вы хотите изменить в вопросе?\n",
+        assertEquals("Вы выбрали вопрос “Сколько будет 2 + 2?”. Что вы хотите изменить в вопросе?",
                 response1.getMessage());
         assertNotNull(response1.getButtons());
         assertEquals(2, response1.getButtons().size());
@@ -475,7 +470,7 @@ public class QuestionProcessorTest {
     @Test
     void testEditAnswerText() {
         BotResponse response1 = messageHandler.handle("/edit_question 1", userId);
-        assertEquals("Вы выбрали вопрос “Сколько будет 2 + 2?”. Что вы хотите изменить в вопросе?\n", response1.getMessage());
+        assertEquals("Вы выбрали вопрос “Сколько будет 2 + 2?”. Что вы хотите изменить в вопросе?", response1.getMessage());
 
         BotResponse response2 = messageHandler.handle("EDIT_QUESTION 1 2", userId);
         assertEquals("Что вы хотите сделать с вариантом ответа?\n", response2.getMessage());
@@ -501,8 +496,7 @@ public class QuestionProcessorTest {
     @Test
     void testEditCorrectAnswer() {
         BotResponse response1 = messageHandler.handle("/edit_question 1", userId);
-        assertEquals("Вы выбрали вопрос “Сколько будет 2 + 2?”. " +
-                        "Что вы хотите изменить в вопросе?\n",
+        assertEquals("Вы выбрали вопрос “Сколько будет 2 + 2?”. Что вы хотите изменить в вопросе?",
                 response1.getMessage());
 
         BotResponse response2 = messageHandler.handle("EDIT_QUESTION 1 2", userId);
@@ -517,7 +511,7 @@ public class QuestionProcessorTest {
                 .save(argThat(savedQuestion ->
                         savedQuestion.getId().equals(1L) &&
                                 savedQuestion.getAnswers().stream()
-                                        .filter(a -> a.isCorrect())
+                                        .filter(AnswerEntity::isCorrect)
                                         .findFirst().get()
                                         .getAnswerText().equals("1")
                 ));
@@ -571,13 +565,13 @@ public class QuestionProcessorTest {
                         "будет удалён, вы уверены?",
                 response1.getMessage());
         assertNotNull(response1.getButtons());
-        assertEquals(2, response1.getButtons().size());
+        assertEquals(2, response1.getButtons().getFirst().size());
 
         InlineButtonDTO yesButton = response1.getButtons().getFirst().getFirst();
         assertEquals("Да", yesButton.text());
-        assertEquals("DEL_QUESTION_CONFIRM 1 да", yesButton.callbackData());
+        assertEquals("DEL_QUESTION_CONFIRM 1 YES", yesButton.callbackData());
 
-        BotResponse response2 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 да", userId);
+        BotResponse response2 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 YES", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
                         "из теста “Математический тест” удален.",
                 response2.getMessage());
@@ -602,13 +596,13 @@ public class QuestionProcessorTest {
                         "будет удалён, вы уверены?",
                 response1.getMessage());
         assertNotNull(response1.getButtons());
-        assertEquals(2, response1.getButtons().size());
+        assertEquals(2, response1.getButtons().getFirst().size());
 
-        InlineButtonDTO noButton = response1.getButtons().get(1).getFirst();
+        InlineButtonDTO noButton = response1.getButtons().getFirst().get(1);
         assertEquals("Нет", noButton.text());
-        assertEquals("DEL_QUESTION_CONFIRM 1 нет", noButton.callbackData());
+        assertEquals("DEL_QUESTION_CONFIRM 1 NO", noButton.callbackData());
 
-        BotResponse response2 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 нет", userId);
+        BotResponse response2 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 NO", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
                         "из теста “Математический тест” не удален.",
                 response2.getMessage());
@@ -628,13 +622,13 @@ public class QuestionProcessorTest {
         assertEquals("Вопрос “Сколько будет 2 + 2?” будет удалён, вы уверены?",
                 response2.getMessage());
         assertNotNull(response2.getButtons());
-        assertEquals(2, response2.getButtons().size());
+        assertEquals(2, response2.getButtons().getFirst().size());
 
         InlineButtonDTO yesButton = response2.getButtons().getFirst().getFirst();
         assertEquals("Да", yesButton.text());
-        assertEquals("DEL_QUESTION_CONFIRM 1 да", yesButton.callbackData());
+        assertEquals("DEL_QUESTION_CONFIRM 1 YES", yesButton.callbackData());
 
-        BotResponse response3 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 да", userId);
+        BotResponse response3 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 YES", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
                         "из теста “Математический тест” удален.",
                 response3.getMessage());
@@ -662,13 +656,13 @@ public class QuestionProcessorTest {
         assertEquals("Вопрос “Сколько будет 2 + 2?” будет удалён, вы уверены?",
                 response2.getMessage());
         assertNotNull(response2.getButtons());
-        assertEquals(2, response2.getButtons().size());
+        assertEquals(2, response2.getButtons().getFirst().size());
 
-        InlineButtonDTO noButton = response2.getButtons().get(1).getFirst();
+        InlineButtonDTO noButton = response2.getButtons().getFirst().get(1);
         assertEquals("Нет", noButton.text());
-        assertEquals("DEL_QUESTION_CONFIRM 1 нет", noButton.callbackData());
+        assertEquals("DEL_QUESTION_CONFIRM 1 NO", noButton.callbackData());
 
-        BotResponse response3 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 нет", userId);
+        BotResponse response3 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 NO", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
                         "из теста “Математический тест” не удален.",
                 response3.getMessage());
@@ -691,6 +685,6 @@ public class QuestionProcessorTest {
     @Test
     void testDeleteQuestionWithInvalidId() {
         BotResponse response = messageHandler.handle("/del_question f", userId);
-        assertEquals("Некорректный формат id вопроса. Пожалуйста, введите число.", response.getMessage());
+        assertEquals("Некорректный формат идентификатора вопроса. Пожалуйста, введите число.", response.getMessage());
     }
 }

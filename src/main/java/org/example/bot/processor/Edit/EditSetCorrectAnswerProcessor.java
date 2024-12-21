@@ -51,14 +51,14 @@ public class EditSetCorrectAnswerProcessor extends AbstractCallbackProcessor {
 
     @Override
     public BotResponse process(Long userId, String message) {
-        message = extractData(message);
+        String[] parts = message.split(" ");
         Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
-        if (optionalCurrentQuestion.isEmpty()) {
+        if (optionalCurrentQuestion.isEmpty() || parts.length != 2) {
             return new BotResponse("Вопрос не найден");
         }
         QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         try {
-            int optionIndex = Integer.parseInt(message) + 1;
+            int optionIndex = Integer.parseInt(parts[1]) + 1;
             questionService.setCorrectAnswer(currentQuestion, optionIndex);
             stateService.changeStateById(userId, UserState.DEFAULT);
             return new BotResponse(String.format("Вариант ответа %s назначен правильным.", optionIndex));

@@ -2,7 +2,6 @@ package org.example.bot.processor.Del;
 
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.processor.AbstractCallbackProcessor;
-import org.example.bot.processor.AbstractStateProcessor;
 import org.example.bot.service.QuestionService;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
@@ -58,9 +57,9 @@ public class ConfirmDelQuestion extends AbstractCallbackProcessor {
         }
 
         QuestionEntity currentQuestion = optionalCurrentQuestion.get();
-        if (currentQuestion.getId() == Integer.parseInt(parts[1])) {
+        if (currentQuestion.getId() == Long.parseLong(parts[1])) {
             stateService.changeStateById(userId, UserState.DEFAULT);
-            if (!parts[2].equals("да")) {
+            if (!parts[2].equals("YES")) {
                 return new BotResponse(String.format("Вопрос “%s” из теста “%s” не удален.",
                         currentQuestion.getQuestion(), currentQuestion.getTest().getTitle()));
             }

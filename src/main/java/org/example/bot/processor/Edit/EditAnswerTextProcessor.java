@@ -55,6 +55,7 @@ public class EditAnswerTextProcessor extends AbstractStateProcessor {
         if (optionalCurrentQuestion.isEmpty() || optionalEditingAnswerIndex.isEmpty()) {
             return new BotResponse("Вопрос не найден");
         }
+
         QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         int editingAnswerIndex = optionalEditingAnswerIndex.get();
         currentQuestion.getAnswers().get(editingAnswerIndex).setAnswerText(message);

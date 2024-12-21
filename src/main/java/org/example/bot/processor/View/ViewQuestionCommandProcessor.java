@@ -46,26 +46,31 @@ public class ViewQuestionCommandProcessor extends AbstractCommandProcessor {
         if (parts.length == 1) {
             return new BotResponse("Используйте команду вместе с идентификатором вопроса!");
         }
+
         if (!numberUtils.isNumber(parts[1])) {
             return new BotResponse("Ошибка ввода. Укажите корректный id теста.");
 
         }
+
         Long testId = Long.parseLong(parts[1]);
         Optional<TestEntity> testOptional = testService.getTest(testId);
         if (testOptional.isEmpty() || !testOptional.get().getCreatorId().equals(userId)) {
             return new BotResponse("Тест не найден!");
         }
+
         TestEntity test = testOptional.get();
         List<QuestionEntity> questions = test.getQuestions();
         if (questions.isEmpty()) {
             return new BotResponse("В этом тесте пока нет вопросов.");
         }
+
         StringBuilder response = new StringBuilder();
         response.append(String.format("Вопросы теста \"%s\":\n", test.getTitle()));
         for (int i = 0; i < questions.size(); i++) {
             QuestionEntity question = questions.get(i);
             response.append(String.format("%d) id:%d  \"%s\"\n", i + 1, question.getId(), question.getQuestion()));
         }
+
         return new BotResponse(response.toString());
     }
 }

@@ -1,5 +1,6 @@
-package org.example.bot.processor;
+package org.example.bot.processor.passage;
 
+import org.example.bot.processor.AbstractCallbackProcessor;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
@@ -14,10 +15,19 @@ import java.util.Optional;
 @Component
 public class FinishTestProcessor extends AbstractCallbackProcessor {
 
+    /**
+     * Сервис для управления состояниями
+     */
     private final StateService stateService;
 
+    /**
+     * Сервис для управления контекстом
+     */
     private final ContextService contextService;
 
+    /**
+     * Конструктор для инициализации обработчика callback.
+     */
     public FinishTestProcessor(StateService stateService, ContextService contextService) {
         super("FINISH_TEST");
         this.stateService = stateService;

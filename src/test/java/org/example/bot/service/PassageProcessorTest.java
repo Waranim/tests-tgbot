@@ -3,7 +3,7 @@ package org.example.bot.service;
 import org.example.bot.entity.AnswerEntity;
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.entity.TestEntity;
-import org.example.bot.processor.*;
+import org.example.bot.processor.passage.*;
 import org.example.bot.state.UserState;
 import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.ButtonUtils;
@@ -41,12 +41,12 @@ public class PassageProcessorTest {
     /**
      * Утилита для кнопок
      */
-    private ButtonUtils buttonUtils = new ButtonUtils();
+    private final ButtonUtils buttonUtils = new ButtonUtils();
 
     /**
      * Утилита для тестов
      */
-    private TestUtils testUtils = new TestUtils();
+    private final TestUtils testUtils = new TestUtils();
 
     /**
      * Обработчик начала теста
@@ -69,37 +69,61 @@ public class PassageProcessorTest {
     private ExitTestProcessor exitTestProcessor;
 
     /**
+     * Обработчик перехода на след. вопрос
+     */
+    private NextQuestionProcessor nextQuestionProcessor;
+
+    /**
      * Идентификатор пользователя
      */
-    private static final Long userId = 1L;
+    private final Long userId = 1L;
 
     /**
      * Тест
      */
-    private static TestEntity testEntity;
+    private TestEntity testEntity;
 
     /**
-     * Вопрос
+     * Вопрос первый
      */
-    private static QuestionEntity questionEntity;
+    private QuestionEntity question1;
+
+    /**
+     * Вопрос второй
+     */
+    private QuestionEntity question2;
 
     /**
      * Инициализация теста
      */
     @BeforeAll
-    static void init() {
+    void init() {
         testEntity = new TestEntity(userId, 12L);
-        AnswerEntity answer1 = new AnswerEntity();
-        answer1.setCorrect(true);
-        answer1.setAnswerText("Ответ1");
-        AnswerEntity answer2 = new AnswerEntity();
-        answer2.setCorrect(false);
-        answer2.setAnswerText("Ответ2");
-        questionEntity = new QuestionEntity();
-        questionEntity.getAnswers().add(answer1);
-        questionEntity.getAnswers().add(answer2);
-        questionEntity.setQuestion("Вопрос");
-        testEntity.getQuestions().add(questionEntity);
+
+        AnswerEntity answer1_1 = new AnswerEntity();
+        answer1_1.setCorrect(true);
+        answer1_1.setAnswerText("Ответ1");
+        AnswerEntity answer1_2 = new AnswerEntity();
+        answer1_2.setCorrect(false);
+        answer1_2.setAnswerText("Ответ2");
+        question1 = new QuestionEntity();
+        question1.getAnswers().add(answer1_1);
+        question1.getAnswers().add(answer1_2);
+        question1.setQuestion("Вопрос 1");
+
+        AnswerEntity answer2_1 = new AnswerEntity();
+        answer2_1.setCorrect(false);
+        answer2_1.setAnswerText("Ответ1");
+        AnswerEntity answer2_2 = new AnswerEntity();
+        answer2_2.setCorrect(true);
+        answer2_2.setAnswerText("Ответ2");
+        question2 = new QuestionEntity();
+        question2.getAnswers().add(answer2_1);
+        question2.getAnswers().add(answer2_2);
+        question2.setQuestion("Вопрос 2");
+
+        testEntity.getQuestions().add(question1);
+        testEntity.getQuestions().add(question2);
     }
 
     /**
@@ -111,6 +135,7 @@ public class PassageProcessorTest {
         answerProcessor = new AnswerProcessor(contextService, stateService, buttonUtils, testUtils);
         finishTestProcessor = new FinishTestProcessor(stateService, contextService);
         exitTestProcessor = new ExitTestProcessor(stateService, contextService);
+        nextQuestionProcessor = new NextQuestionProcessor(contextService, stateService, buttonUtils, testUtils);
     }
 
     /**
@@ -133,7 +158,7 @@ public class PassageProcessorTest {
 
         verify(contextService, times(1)).getCurrentTest(userId);
 
-        assertEquals("Вопрос 1/1: Вопрос\n" +
+        assertEquals("Вопрос 1/2: Вопрос 1\n" +
                 "Варианты ответа:\n" +
                 "1: Ответ1\n" +
                 "2: Ответ2\n" +
@@ -150,7 +175,7 @@ public class PassageProcessorTest {
     void shouldAnswerQuestion() {
         when(stateService.getCurrentState(userId)).thenReturn(Optional.of(UserState.PASSAGE_TEST));
         when(contextService.getCurrentTest(userId)).thenReturn(Optional.of(testEntity));
-        when(contextService.getCurrentQuestion(userId)).thenReturn(Optional.of(questionEntity));
+        when(contextService.getCurrentQuestion(userId)).thenReturn(Optional.of(question1));
 
         BotResponse response = answerProcessor.process(userId, "ANSWER_QUESTION Ответ1");
 
@@ -163,8 +188,6 @@ public class PassageProcessorTest {
      */
     @Test
     void shouldFinishTest() {
-        Long userId = 1L;
-
         when(stateService.getCurrentState(userId)).thenReturn(Optional.of(UserState.PASSAGE_TEST));
         when(contextService.getCorrectAnswerCount(userId)).thenReturn(Optional.of(3));
         when(contextService.getCountAnsweredQuestions(userId)).thenReturn(Optional.of(5));
@@ -181,8 +204,6 @@ public class PassageProcessorTest {
      */
     @Test
     void shouldExitTest() {
-        Long userId = 1L;
-
         when(stateService.getCurrentState(userId)).thenReturn(Optional.of(UserState.PASSAGE_TEST));
 
         BotResponse response = exitTestProcessor.process(userId, "");
@@ -190,5 +211,21 @@ public class PassageProcessorTest {
         assertEquals("Вы вышли из теста", response.getMessage());
         verify(stateService).changeStateById(userId, UserState.DEFAULT);
         verify(contextService).setCurrentTest(userId, null);
+    }
+
+    /**
+     * Тестирует переход к след. вопросу
+     */
+    @Test
+    void shouldMoveToNextQuestionSuccessfully() {
+        when(stateService.getCurrentState(userId)).thenReturn(Optional.of(UserState.PASSAGE_TEST));
+        when(contextService.getCurrentTest(userId)).thenReturn(Optional.of(testEntity));
+        when(contextService.getCurrentQuestion(userId)).thenReturn(Optional.of(question1));
+
+        BotResponse response = nextQuestionProcessor.process(userId, "NEXT_QUESTION");
+
+        assertNotNull(response);
+        assertTrue(response.getMessage().contains("Вопрос 2/2: Вопрос 2"));
+        verify(contextService).setCurrentQuestion(userId, question2);
     }
 }

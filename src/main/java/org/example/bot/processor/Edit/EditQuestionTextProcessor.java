@@ -35,9 +35,9 @@ public class EditQuestionTextProcessor extends AbstractStateProcessor {
     /**
      * Конструктор для инициализации обработчика редактирования формулировки вопроса
      *
-     * @param stateService    cервис для управления состояниями
-     * @param contextService  cервис для управления контекстом
-     * @param questionService cервис для управления вопросами
+     * @param stateService    сервис для управления состояниями
+     * @param contextService  сервис для управления контекстом
+     * @param questionService сервис для управления вопросами
      */
     public EditQuestionTextProcessor(StateService stateService,
                                      ContextService contextService,
@@ -54,6 +54,7 @@ public class EditQuestionTextProcessor extends AbstractStateProcessor {
         if (optionalCurrentQuestion.isEmpty()) {
             return new BotResponse("Вопрос не найден");
         }
+
         QuestionEntity currentQuestion = optionalCurrentQuestion.get();
         currentQuestion.setQuestion(message);
         questionService.update(currentQuestion);

@@ -1,5 +1,6 @@
-package org.example.bot.processor;
+package org.example.bot.processor.passage;
 
+import org.example.bot.processor.AbstractCallbackProcessor;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
@@ -39,6 +40,7 @@ public class ExitTestProcessor extends AbstractCallbackProcessor {
         if (currentStateOpt.isEmpty() || !currentStateOpt.get().equals(UserState.PASSAGE_TEST)) {
             return new BotResponse("");
         }
+
         stateService.changeStateById(userId, UserState.DEFAULT);
         contextService.setCurrentTest(userId, null);
         contextService.setCurrentQuestion(userId, null);
