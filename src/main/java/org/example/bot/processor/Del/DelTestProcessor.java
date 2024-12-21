@@ -66,8 +66,8 @@ public class DelTestProcessor extends AbstractStateProcessor {
             return new BotResponse("Введите число!");
         Long testId = Long.parseLong(parts[0]);
         List<List<InlineButtonDTO>> buttons = new ArrayList<>();
-        buttons.add(List.of(new InlineButtonDTO("Да", "DEL_TEST_CONFIRM " + testId + " YES")
-                , new InlineButtonDTO("Нет", "DEL_TEST_CONFIRM " + testId + " NO")));
+        buttons.add(List.of(new InlineButtonDTO("Да", "DEL_TEST_CONFIRM " + testId + " YES"),
+                new InlineButtonDTO("Нет", "DEL_TEST_CONFIRM " + testId + " NO")));
         Optional<List<TestEntity>> tests = testService.getTestsByUserId(userId);
         Optional<TestEntity> testOptional = testService.getTest(testId);
         if (testOptional.isEmpty() || tests.isEmpty() || !tests.get().contains(testOptional.get()))

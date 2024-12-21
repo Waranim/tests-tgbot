@@ -65,10 +65,10 @@ public class DelQuestionProcessor extends AbstractStateProcessor {
             QuestionEntity question = questionOpt.get();
             contextService.setCurrentQuestion(userId, question);
             stateService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
-            return new BotResponse(String.format("Вопрос “%s” будет удалён, вы уверены?"
-                    , question.getQuestion())
-                    , buttons
-                    , false);
+            return new BotResponse(String.format("Вопрос “%s” будет удалён, вы уверены?",
+                    question.getQuestion()),
+                    buttons,
+                    false);
         } catch (NumberFormatException e) {
             return new BotResponse("Некорректный формат идентификатора вопроса. Пожалуйста, введите число.");
         }
