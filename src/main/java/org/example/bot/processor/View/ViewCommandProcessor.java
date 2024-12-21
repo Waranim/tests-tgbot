@@ -89,6 +89,21 @@ public class ViewCommandProcessor extends AbstractCommandProcessor {
                 test.getTitle(),
                 questions.size()));
 
+        String correctAnswerPercent = test.getCountAnsweredQuestionsAllUsers() != 0
+                ? String.valueOf(
+                        (test.getCorrectAnswerCountAllUsers() * 100) / test.getCountAnsweredQuestionsAllUsers())
+                : "Тест ещё не проходили";
+        response.append(
+                String.format("""
+                                
+                                Статистика по тесту:
+                                Общее количество попыток: %d
+                                Средний процент правильных ответов: %s
+                                
+                                """,
+                        test.getCountTries(),
+                        correctAnswerPercent));
+
         for (QuestionEntity question : questions) {
             response.append("Вопрос: %s\nВарианты ответов:\n"
                     .formatted(question.getQuestion()));

@@ -36,6 +36,21 @@ public class TestEntity extends BaseEntity {
     private String description;
 
     /**
+     * Количество попыток прохождения
+     */
+    private Integer countTries;
+
+    /**
+     * Количество правильных ответов всех пользователей
+     */
+    private Integer correctAnswerCountAllUsers;
+
+    /**
+     * Количество решённых вопросов всех пользователей
+     */
+    private Integer countAnsweredQuestionsAllUsers;
+
+    /**
      * Конструктор без параметров
      */
     public TestEntity() {
@@ -46,6 +61,9 @@ public class TestEntity extends BaseEntity {
      */
     public TestEntity(Long creatorId) {
         this.creatorId = creatorId;
+        this.countTries = 0;
+        this.correctAnswerCountAllUsers = 0;
+        this.countAnsweredQuestionsAllUsers = 0;
     }
 
     /**
@@ -54,6 +72,9 @@ public class TestEntity extends BaseEntity {
     public TestEntity(Long creatorId, Long testId) {
         super(testId);
         this.creatorId = creatorId;
+        this.countTries = 0;
+        this.correctAnswerCountAllUsers = 0;
+        this.countAnsweredQuestionsAllUsers = 0;
     }
 
     /**
@@ -89,6 +110,48 @@ public class TestEntity extends BaseEntity {
      */
     public Long getCreatorId() {
         return creatorId;
+    }
+
+    /**
+     * Получить количество попыток прохождения
+     */
+    public Integer getCountTries() {
+        return countTries;
+    }
+
+    /**
+     * Установить количество попыток прохождения
+     */
+    public void setCountTries(Integer countTries) {
+        this.countTries = countTries;
+    }
+
+    /**
+     * Получить количество правильных ответов всех пользователей
+     */
+    public Integer getCorrectAnswerCountAllUsers() {
+        return correctAnswerCountAllUsers;
+    }
+
+    /**
+     * Установить количество правильных ответов всех пользователей
+     */
+    public void setCorrectAnswerCountAllUsers(Integer correctAnswerCountAllUsers) {
+        this.correctAnswerCountAllUsers = correctAnswerCountAllUsers;
+    }
+
+    /**
+     * Получить количество решённых вопросов всех пользователей
+     */
+    public Integer getCountAnsweredQuestionsAllUsers() {
+        return countAnsweredQuestionsAllUsers;
+    }
+
+    /**
+     * Установить количество решённых вопросов всех пользователей
+     */
+    public void setCountAnsweredQuestionsAllUsers(Integer countAnsweredQuestionsAllUsers) {
+        this.countAnsweredQuestionsAllUsers = countAnsweredQuestionsAllUsers;
     }
 
     /**

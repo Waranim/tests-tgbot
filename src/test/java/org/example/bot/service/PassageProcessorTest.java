@@ -39,6 +39,12 @@ public class PassageProcessorTest {
     private StateService stateService;
 
     /**
+     * Сервис для управления тестом
+     */
+    @Mock
+    private TestService testService;
+
+    /**
      * Утилита для кнопок
      */
     private final ButtonUtils buttonUtils = new ButtonUtils();
@@ -133,7 +139,7 @@ public class PassageProcessorTest {
     void setUpProcessors() {
         startTestProcessor = new StartTestProcessor(contextService, stateService, buttonUtils, testUtils);
         answerProcessor = new AnswerProcessor(contextService, stateService, buttonUtils, testUtils);
-        finishTestProcessor = new FinishTestProcessor(stateService, contextService);
+        finishTestProcessor = new FinishTestProcessor(stateService, contextService, testService);
         exitTestProcessor = new ExitTestProcessor(stateService, contextService);
         nextQuestionProcessor = new NextQuestionProcessor(contextService, stateService, buttonUtils, testUtils);
     }
@@ -143,7 +149,7 @@ public class PassageProcessorTest {
      */
     @AfterEach
     void clearMocks() {
-        clearInvocations(contextService, stateService);
+        clearInvocations(contextService, stateService, testService);
     }
 
     /**
@@ -189,13 +195,16 @@ public class PassageProcessorTest {
     @Test
     void shouldFinishTest() {
         when(stateService.getCurrentState(userId)).thenReturn(Optional.of(UserState.PASSAGE_TEST));
+        when(contextService.getCurrentTest(userId)).thenReturn(Optional.of(testEntity));
         when(contextService.getCorrectAnswerCount(userId)).thenReturn(Optional.of(3));
         when(contextService.getCountAnsweredQuestions(userId)).thenReturn(Optional.of(5));
 
         BotResponse response = finishTestProcessor.process(userId, "");
 
-        assertTrue(response.getMessage().contains("Тест завершен"));
-        assertTrue(response.getMessage().contains("Процент правильных ответов: 60%"));
+        assertEquals("Тест завершен!\n" +
+                "Правильных ответов: 3/5\n" +
+                "Процент правильных ответов: 60%",
+                response.getMessage());
         verify(stateService).changeStateById(userId, UserState.DEFAULT);
     }
 
@@ -217,7 +226,7 @@ public class PassageProcessorTest {
      * Тестирует переход к след. вопросу
      */
     @Test
-    void shouldMoveToNextQuestionSuccessfully() {
+    void shouldMoveToNextQuestion() {
         when(stateService.getCurrentState(userId)).thenReturn(Optional.of(UserState.PASSAGE_TEST));
         when(contextService.getCurrentTest(userId)).thenReturn(Optional.of(testEntity));
         when(contextService.getCurrentQuestion(userId)).thenReturn(Optional.of(question1));
@@ -227,5 +236,33 @@ public class PassageProcessorTest {
         assertNotNull(response);
         assertTrue(response.getMessage().contains("Вопрос 2/2: Вопрос 2"));
         verify(contextService).setCurrentQuestion(userId, question2);
+    }
+
+    /**
+     * Тестирует обновление общей статистики после прохождения теста
+     */
+    @Test
+    void shouldUpdateTestStatistics() {
+        when(stateService.getCurrentState(userId)).thenReturn(Optional.of(UserState.PASSAGE_TEST));
+        when(contextService.getCurrentTest(userId)).thenReturn(Optional.of(testEntity));
+        when(contextService.getCorrectAnswerCount(userId)).thenReturn(Optional.of(1));
+        when(contextService.getCountAnsweredQuestions(userId)).thenReturn(Optional.of(2));
+
+        BotResponse response = finishTestProcessor.process(userId, "FINISH_TEST");
+
+        assertEquals(1, testEntity.getCountTries());
+        assertEquals(1, testEntity.getCorrectAnswerCountAllUsers());
+        assertEquals(2, testEntity.getCountAnsweredQuestionsAllUsers());
+
+        assertNotNull(response);
+        assertEquals("Тест завершен!\n" +
+                        "Правильных ответов: 1/2\n" +
+                        "Процент правильных ответов: 50%",
+                response.getMessage());
+
+        verify(testService).update(testEntity);
+        verify(stateService).changeStateById(userId, UserState.DEFAULT);
+        verify(contextService).setCurrentTest(userId, null);
+        verify(contextService).setCurrentQuestion(userId, null);
     }
 }
