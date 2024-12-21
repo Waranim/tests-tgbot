@@ -1,9 +1,10 @@
-package org.example.bot.processor;
+package org.example.bot.processor.passage;
 
 import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.entity.AnswerEntity;
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.entity.TestEntity;
+import org.example.bot.processor.AbstractCallbackProcessor;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;
