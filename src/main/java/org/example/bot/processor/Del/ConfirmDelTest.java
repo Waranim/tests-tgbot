@@ -5,10 +5,8 @@ import org.example.bot.processor.AbstractCallbackProcessor;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.service.TestService;
-import org.example.bot.service.UserService;
 import org.example.bot.state.UserState;
 import org.example.bot.telegram.BotResponse;
-import org.example.bot.util.ButtonUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -56,6 +54,7 @@ public class ConfirmDelTest extends AbstractCallbackProcessor {
         if (optionalCurrentTest.isEmpty()) {
             return new BotResponse("Тест не найден");
         }
+
         TestEntity currentTest = optionalCurrentTest.get();
         if (currentTest.getId() == Integer.parseInt(parts[1])) {
             stateService.changeStateById(userId, UserState.DEFAULT);

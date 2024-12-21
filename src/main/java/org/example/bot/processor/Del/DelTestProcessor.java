@@ -64,6 +64,7 @@ public class DelTestProcessor extends AbstractStateProcessor {
         String[] parts = message.split(" ");
         if(!numberUtils.isNumber(message))
             return  new BotResponse("Введите число!");
+
         Long testId = Long.parseLong(parts[0]);
         List<List<InlineButtonDTO>> buttons = new ArrayList<>();
         buttons.add(List.of(new InlineButtonDTO("Да", "DEL_TEST_CONFIRM " + testId + " да")));
@@ -76,6 +77,9 @@ public class DelTestProcessor extends AbstractStateProcessor {
         TestEntity test = testOptional.get();
         contextService.setCurrentTest(userId, test);
         stateService.changeStateById(userId, UserState.CONFIRM_DELETE_TEST);
-        return new BotResponse(String.format("Тест “%s” будет удалён, вы уверены? (Да/Нет)", test.getTitle()), buttons, false);
+        return new BotResponse(
+                String.format("Тест “%s” будет удалён, вы уверены? (Да/Нет)", test.getTitle()),
+                buttons,
+                false);
     }
 }

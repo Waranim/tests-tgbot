@@ -79,8 +79,9 @@ public class EditCommandProcessor extends AbstractCommandProcessor {
         TestEntity test = testOptional.get();
         contextService.setCurrentTest(userId, test);
         stateService.changeStateById(userId, UserState.EDIT_TEST);
-        return new BotResponse(String.format("""
-                Вы выбрали тест “%s”. Что вы хотите изменить?
-                """, test.getTitle()), buttons, false);
+        return new BotResponse(
+                String.format("Вы выбрали тест “%s”. Что вы хотите изменить?", test.getTitle()),
+                buttons,
+                false);
     }
 }

@@ -36,6 +36,7 @@ public class EditTestProcessor extends AbstractCallbackProcessor {
             stateService.changeStateById(userId, UserState.EDIT_TEST_DESCRIPTION);
             return  new BotResponse("Введите новое описание теста");
         }
+
         return new BotResponse("Некорректный ввод");
     }
 }

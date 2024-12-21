@@ -233,7 +233,7 @@ class TestProcessorTest {
     void testEditTestTitle() {
         String response1 = messageHandler.handle("/edit 123", userId).getMessage();
         assertEquals("Вы выбрали тест “Математический тест”. " +
-                "Что вы хотите изменить?\n", response1);
+                "Что вы хотите изменить?", response1);
 
         String response2 = messageHandler.handle("EDIT_TEST 123 1", userId).getMessage();
         assertEquals("Введите новое название теста", response2);
@@ -315,7 +315,7 @@ class TestProcessorTest {
     @Test
     void testEditTestDescription() {
         String response1 = messageHandler.handle("/edit 123", userId).getMessage();
-        assertEquals("Вы выбрали тест “Математический тест”. Что вы хотите изменить?\n", response1);
+        assertEquals("Вы выбрали тест “Математический тест”. Что вы хотите изменить?", response1);
 
         String response2 = messageHandler.handle("EDIT_TEST 123 2", userId).getMessage();
         assertEquals("Введите новое описание теста", response2);

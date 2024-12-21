@@ -69,20 +69,25 @@ public class DelQuestionCommandProcessor extends AbstractCommandProcessor {
                 return new BotResponse("Некорректный формат id вопроса. Пожалуйста, введите число.");
             }
             Long questionId = Long.parseLong(questionIdStr);
-            Optional<QuestionEntity> questionOpt = questionService.getQuestion(questionId);
             List<List<InlineButtonDTO>> buttons = new ArrayList<>();
             buttons.add(List.of(new InlineButtonDTO("Да", "DEL_QUESTION_CONFIRM " + questionId + " да")));
             buttons.add(List.of(new InlineButtonDTO("Нет", "DEL_QUESTION_CONFIRM " + questionId + " нет")));
-            return new BotResponse(questionOpt.map(question -> {
+
+            Optional<QuestionEntity> questionOpt = questionService.getQuestion(questionId);
+            String messageText = questionOpt.map(question -> {
                 contextService.setCurrentQuestion(userId, question);
                 stateService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
                 return String.format("Вопрос “%s” будет удалён, вы уверены?", question.getQuestion());
-            }).orElse("Вопрос не найден!"), buttons, false);
+            }).orElse("Вопрос не найден!");
+
+            return new BotResponse(messageText, buttons, false);
         }
+
         if (parts.length == 1) {
             stateService.changeStateById(userId, UserState.DELETE_QUESTION);
             return new BotResponse("Введите id вопроса для удаления:\n");
         }
+
         return new BotResponse("Ошибка ввода. Укажите корректный id теста.");
     }
 }
