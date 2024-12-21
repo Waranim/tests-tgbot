@@ -176,6 +176,9 @@ public class QuestionProcessorTest {
 
     }
 
+    /**
+     * Очистка моков после каждого теста.
+     */
     @AfterEach
     void clearMocks() {
         clearInvocations(testRepository, userRepository, userContextRepository, questionRepository);

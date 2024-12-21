@@ -213,6 +213,9 @@ public class PassageProcessorTest {
         verify(contextService).setCurrentTest(userId, null);
     }
 
+    /**
+     * Тестирует переход к след. вопросу
+     */
     @Test
     void shouldMoveToNextQuestionSuccessfully() {
         when(stateService.getCurrentState(userId)).thenReturn(Optional.of(UserState.PASSAGE_TEST));
