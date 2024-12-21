@@ -1,5 +1,6 @@
-package org.example.bot.processor;
+package org.example.bot.processor.share;
 
+import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.telegram.BotResponse;
 import org.springframework.stereotype.Component;
 

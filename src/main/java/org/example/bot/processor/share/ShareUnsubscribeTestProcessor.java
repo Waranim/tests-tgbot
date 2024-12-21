@@ -54,7 +54,7 @@ public class ShareUnsubscribeTestProcessor extends AbstractCallbackProcessor {
         testService.update(test);
         String creatorUsername = userService.getUserById(test.getCreatorId()).get().getUsername();
         return new BotResponse(
-                ("Вы отписались от теста “%s (%s)” " +
+                ("Вы отписались от теста “%s (%s)”. " +
                         "Чтобы вернуть доступ к тесту необходимо обратится к его владельцу.")
                         .formatted(test.getTitle(), creatorUsername));
     }

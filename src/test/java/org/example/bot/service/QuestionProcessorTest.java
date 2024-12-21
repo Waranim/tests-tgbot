@@ -7,7 +7,6 @@ import org.example.bot.processor.Add.*;
 import org.example.bot.processor.Del.*;
 import org.example.bot.processor.Edit.*;
 import org.example.bot.processor.MessageProcessor;
-import org.example.bot.processor.Add.StopCommandProcessor;
 import org.example.bot.processor.View.ViewQuestionCommandProcessor;
 import org.example.bot.repository.QuestionRepository;
 import org.example.bot.repository.TestRepository;
@@ -22,13 +21,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.when;
 
 /**
  * Тестирование обработчика сообщений для управления вопросами
@@ -165,7 +162,7 @@ public class QuestionProcessorTest {
         createAnswer(question1, "1", false);
         createAnswer(question1, "4", true);
 
-        UserEntity user = new UserEntity(Arrays.asList(test1));
+        UserEntity user = new UserEntity(List.of(test1));
         user.setUserId(userId);
         user.setContext(session);
 

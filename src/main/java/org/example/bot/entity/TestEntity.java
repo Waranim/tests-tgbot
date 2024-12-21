@@ -192,6 +192,9 @@ public class TestEntity extends BaseEntity {
         return isAccessOpen;
     }
 
+    /**
+     * Установить доступ к тесту
+     */
     public void setAccessOpen(boolean isAccessOpen) {
         this.isAccessOpen = isAccessOpen;
     }
