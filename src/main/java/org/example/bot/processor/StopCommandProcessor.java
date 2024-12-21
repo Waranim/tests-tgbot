@@ -1,5 +1,6 @@
 package org.example.bot.processor;
 
+import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.entity.AnswerEntity;
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.entity.UserContext;
@@ -11,6 +12,7 @@ import org.example.bot.util.AnswerUtils;
 import org.springframework.stereotype.Component;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,6 +73,12 @@ public class StopCommandProcessor extends AbstractCommandProcessor {
             return new BotResponse("Вы не создали необходимый минимум ответов (минимум: 2). Введите варианты ответа.");
         }
         stateService.changeStateById(userId, UserState.SET_CORRECT_ANSWER);
-        return new BotResponse("Укажите правильный вариант ответа:\n" + answerUtils.answersToString(currentQuestion.getAnswers()));
+        List<List<InlineButtonDTO>> buttons = new ArrayList<>();
+        for (int i = 0; i < answers.size(); i++) {
+            AnswerEntity answer = answers.get(i);
+            String text = answer.getAnswerText();
+            buttons.add(List.of(new InlineButtonDTO(text, "SET_CORRECT_ANSWER " + i)));
+        }
+        return new BotResponse("Укажите правильный вариант ответа:\n" + answerUtils.answersToString(currentQuestion.getAnswers()), buttons, false);
     }
 }

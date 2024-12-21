@@ -1,5 +1,6 @@
 package org.example.bot.processor.Del;
 
+import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.QuestionService;
@@ -10,6 +11,8 @@ import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -67,12 +70,14 @@ public class DelQuestionCommandProcessor extends AbstractCommandProcessor {
             }
             Long questionId = Long.parseLong(questionIdStr);
             Optional<QuestionEntity> questionOpt = questionService.getQuestion(questionId);
-
+            List<List<InlineButtonDTO>> buttons = new ArrayList<>();
+            buttons.add(List.of(new InlineButtonDTO("Да", "DEL_QUESTION_CONFIRM " + questionId + " да")));
+            buttons.add(List.of(new InlineButtonDTO("Нет", "DEL_QUESTION_CONFIRM " + questionId + " нет")));
             return new BotResponse(questionOpt.map(question -> {
                 contextService.setCurrentQuestion(userId, question);
                 stateService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
-                return String.format("Вопрос “%s” будет удалён, вы уверены? (Да/Нет)", question.getQuestion());
-            }).orElse("Вопрос не найден!"));
+                return String.format("Вопрос “%s” будет удалён, вы уверены?", question.getQuestion());
+            }).orElse("Вопрос не найден!"), buttons, false);
         }
         if (parts.length == 1) {
             stateService.changeStateById(userId, UserState.DELETE_QUESTION);

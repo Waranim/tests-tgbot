@@ -1,5 +1,6 @@
 package org.example.bot.processor.Edit;
 
+import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.QuestionService;
@@ -10,6 +11,8 @@ import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.NumberUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -66,16 +69,20 @@ public class EditQuestionCommandProcessor extends AbstractCommandProcessor {
         if (!numberUtils.isNumber(parts[1])) {
             return new BotResponse("Ошибка ввода. Укажите корректный id теста.");
         }
+
         Long questionId = Long.parseLong(parts[1]);
         Optional<QuestionEntity> questionOpt = questionService.getQuestion(questionId);
+        List<List<InlineButtonDTO>> buttons = new ArrayList<>();
+        buttons.add(List.of(
+                new InlineButtonDTO("Формулировку вопроса", "EDIT_QUESTION " + questionId + " 1")));
+        buttons.add(List.of(
+                new InlineButtonDTO("Варианты ответа", "EDIT_QUESTION " + questionId + " 2")));
         return new BotResponse(questionOpt.map(question -> {
             contextService.setCurrentQuestion(userId, question);
             stateService.changeStateById(userId, UserState.EDIT_QUESTION);
             return String.format("""
                 Вы выбрали вопрос “%s”. Что вы хотите изменить в вопросе?
-                1: Формулировку вопроса
-                2: Варианты ответа
                 """, question.getQuestion());
-        }).orElse("Вопрос не найден!"));
+        }).orElse("Вопрос не найден!"), buttons, false);
     }
 }
