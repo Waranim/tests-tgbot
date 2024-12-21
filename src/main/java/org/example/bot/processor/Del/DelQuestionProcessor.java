@@ -56,9 +56,8 @@ public class DelQuestionProcessor extends AbstractStateProcessor {
         try {
             Long questionId = Long.parseLong(message);
             List<List<InlineButtonDTO>> buttons = new ArrayList<>();
-            buttons.add(List.of(new InlineButtonDTO("Да", "DEL_QUESTION_CONFIRM " + questionId + " да")));
-            buttons.add(List.of(new InlineButtonDTO("Нет", "DEL_QUESTION_CONFIRM " + questionId + " нет")));
-
+            buttons.add(List.of(new InlineButtonDTO("Да", "DEL_QUESTION_CONFIRM " + questionId + " YES"),
+                    new InlineButtonDTO("Нет", "DEL_QUESTION_CONFIRM " + questionId + " NO")));
             Optional<QuestionEntity> questionOpt = questionService.getQuestion(questionId);
             String messageText = questionOpt.map(question -> {
                 contextService.setCurrentQuestion(userId, question);

@@ -58,7 +58,7 @@ public class ConfirmDelTest extends AbstractCallbackProcessor {
         TestEntity currentTest = optionalCurrentTest.get();
         if (currentTest.getId() == Integer.parseInt(parts[1])) {
             stateService.changeStateById(userId, UserState.DEFAULT);
-            if (!parts[2].equals("да")) {
+            if (!parts[2].equals("YES")) {
                 return new BotResponse(String.format("Тест “%s” не удалён", currentTest.getTitle()));
             }
             contextService.setCurrentTest(userId, null);
