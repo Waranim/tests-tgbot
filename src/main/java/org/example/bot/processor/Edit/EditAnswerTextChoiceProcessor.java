@@ -29,8 +29,8 @@ public class EditAnswerTextChoiceProcessor extends AbstractCallbackProcessor {
     /**
      * Конструктор для инициализации обработчика редактирования формулировки ответа
      *
-     * @param stateService   cервис для управления состояниями
-     * @param contextService cервис для управления контекстом
+     * @param stateService   сервис для управления состояниями
+     * @param contextService сервис для управления контекстом
      */
     public EditAnswerTextChoiceProcessor(StateService stateService,
                                          ContextService contextService) {
@@ -41,16 +41,18 @@ public class EditAnswerTextChoiceProcessor extends AbstractCallbackProcessor {
 
     @Override
     public BotResponse process(Long userId, String message) {
-        message = extractData(message);
+        String[] parts = message.split(" ");
         Optional<QuestionEntity> optionalCurrentQuestion = contextService.getCurrentQuestion(userId);
-        if (optionalCurrentQuestion.isEmpty()) {
+        if (optionalCurrentQuestion.isEmpty() || parts.length != 2) {
             return new BotResponse("Вопрос не найден");
         }
+
         QuestionEntity currentQuestion = optionalCurrentQuestion.get();
-        int answerIndex = Integer.parseInt(message);
+        int answerIndex = Integer.parseInt(parts[1]);
         if (answerIndex < 0 || answerIndex >= currentQuestion.getAnswers().size()) {
             return new BotResponse("Некорректный номер ответа. Попробуйте еще раз.");
         }
+
         contextService.setEditingAnswerIndex(userId, answerIndex);
         stateService.changeStateById(userId, UserState.EDIT_ANSWER_TEXT);
         return new BotResponse("Введите новую формулировку ответа");

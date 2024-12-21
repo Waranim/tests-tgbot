@@ -39,10 +39,6 @@ public class TestCommandProcessor extends AbstractCommandProcessor {
         List<String> testsIds = tests.stream().map(t -> t.getId().toString()).toList();
         List<List<InlineButtonDTO>> buttons = new ArrayList<>();
         for(int i = 0; i < testsIds.size(); i++){
-//            InlineKeyboardButton button = new InlineKeyboardButton();
-//            button.setText(testsTitles.get(i));
-//            button.setCallbackData("TEST_CHOOSE " + testsIds.get(i));
-//            buttons.add(button);
             buttons.add(List.of(new InlineButtonDTO(testsTitles.get(i), "TEST_CHOOSE " + testsIds.get(i))));
         }
 

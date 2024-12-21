@@ -53,12 +53,16 @@ public class AddTestDescriptionProcessor extends AbstractStateProcessor {
         if (optionalCurrentTest.isEmpty()) {
             return new BotResponse("Тест не найден");
         }
+
         TestEntity currentTest = optionalCurrentTest.get();
         currentTest.setDescription(message);
         stateService.changeStateById(userId, UserState.DEFAULT);
         testService.update(currentTest);
         return new BotResponse(String.format("Тест “%s” создан! Количество вопросов: 0. " +
                         "Для добавление вопросов используйте /add_question %s, где %s - идентификатор теста “%s”.",
-                currentTest.getTitle(), currentTest.getId(), currentTest.getId(), currentTest.getTitle()));
+                currentTest.getTitle(),
+                currentTest.getId(),
+                currentTest.getId(),
+                currentTest.getTitle()));
     }
 }

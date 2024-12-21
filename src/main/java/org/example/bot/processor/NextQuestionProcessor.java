@@ -64,7 +64,7 @@ public class NextQuestionProcessor extends AbstractCallbackProcessor {
         Optional<TestEntity> test = contextService.getCurrentTest(userId);
         Optional<QuestionEntity> previousQuestionOpt = contextService.getCurrentQuestion(userId);
         if(test.isEmpty() || previousQuestionOpt.isEmpty())
-            return new BotResponse("Произошла ошибка при прохождении теста", null, false);
+            return new BotResponse("Произошла ошибка при прохождении теста");
         List<QuestionEntity> questions = test.get().getQuestions();
         QuestionEntity previousQuestion = previousQuestionOpt.get();
         int currentQuestionIndex = questions.indexOf(previousQuestion)+1;

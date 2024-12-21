@@ -234,7 +234,7 @@ class TestProcessorTest {
     void testEditTestTitle() {
         BotResponse response1 = messageHandler.handle("/edit 123", userId);
         assertEquals("Вы выбрали тест “Математический тест”. " +
-                "Что вы хотите изменить?\n", response1.getMessage());
+                "Что вы хотите изменить?", response1.getMessage());
         assertEquals("Название теста", response1.getButtons().getFirst().getFirst().text());
         assertEquals("Описание теста", response1.getButtons().getLast().getFirst().text());
         assertEquals("EDIT_TEST 123 EDIT_TEST_TITLE", response1.getButtons().getFirst().getFirst().callbackData());
@@ -325,7 +325,7 @@ class TestProcessorTest {
     @Test
     void testEditTestDescription() {
         String response1 = messageHandler.handle("/edit 123", userId).getMessage();
-        assertEquals("Вы выбрали тест “Математический тест”. Что вы хотите изменить?\n", response1);
+        assertEquals("Вы выбрали тест “Математический тест”. Что вы хотите изменить?", response1);
 
         String response2 = messageHandler.handle("EDIT_TEST 123 EDIT_TEST_DESCRIPTION", userId).getMessage();
         assertEquals("Введите новое описание теста", response2);

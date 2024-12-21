@@ -39,6 +39,7 @@ public class ExitTestProcessor extends AbstractCallbackProcessor {
         if (currentStateOpt.isEmpty() || !currentStateOpt.get().equals(UserState.PASSAGE_TEST)) {
             return new BotResponse("");
         }
+
         stateService.changeStateById(userId, UserState.DEFAULT);
         contextService.setCurrentTest(userId, null);
         contextService.setCurrentQuestion(userId, null);

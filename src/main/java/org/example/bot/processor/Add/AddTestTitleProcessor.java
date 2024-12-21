@@ -53,6 +53,7 @@ public class AddTestTitleProcessor extends AbstractStateProcessor {
         if (optionalCurrentTest.isEmpty()) {
             return new BotResponse("Тест не найден");
         }
+
         TestEntity currentTest = optionalCurrentTest.get();
         currentTest.setTitle(message);
         stateService.changeStateById(userId, UserState.ADD_TEST_DESCRIPTION);

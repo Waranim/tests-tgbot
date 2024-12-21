@@ -87,10 +87,12 @@ public class AddQuestionCommandProcessor extends AbstractCommandProcessor {
             stateService.changeStateById(userId, UserState.ADD_QUESTION);
             return new BotResponse("Выберите тест:\n" + testUtils.testsToString(tests.get()));
         }
+
         String testIdStr = parts[1];
         if (!numberUtils.isNumber(testIdStr)) {
             return new BotResponse("Ошибка ввода. Укажите корректный id теста.");
         }
+
         long testId = Long.parseLong(testIdStr);
         Optional<TestEntity> testOptional = testService.getTest(testId);
         if (tests.isEmpty() || testOptional.isEmpty() || !tests.get().contains(testOptional.get())) {
@@ -101,6 +103,7 @@ public class AddQuestionCommandProcessor extends AbstractCommandProcessor {
         QuestionEntity question = questionService.createQuestion(test);
         stateService.changeStateById(userId, UserState.ADD_QUESTION_TEXT);
         contextService.setCurrentQuestion(userId, question);
+
         return new BotResponse(String.format("Введите название вопроса для теста “%s”", test.getTitle()));
     }
 }

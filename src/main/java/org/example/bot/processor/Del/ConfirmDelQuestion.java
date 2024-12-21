@@ -57,7 +57,7 @@ public class ConfirmDelQuestion extends AbstractCallbackProcessor {
         }
 
         QuestionEntity currentQuestion = optionalCurrentQuestion.get();
-        if (currentQuestion.getId() == Integer.parseInt(parts[1])) {
+        if (currentQuestion.getId() == Long.parseLong(parts[1])) {
             stateService.changeStateById(userId, UserState.DEFAULT);
             if (!parts[2].equals("YES")) {
                 return new BotResponse(String.format("Вопрос “%s” из теста “%s” не удален.",

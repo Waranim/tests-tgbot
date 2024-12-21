@@ -59,16 +59,14 @@ public class DelQuestionProcessor extends AbstractStateProcessor {
             buttons.add(List.of(new InlineButtonDTO("Да", "DEL_QUESTION_CONFIRM " + questionId + " YES"),
                     new InlineButtonDTO("Нет", "DEL_QUESTION_CONFIRM " + questionId + " NO")));
             Optional<QuestionEntity> questionOpt = questionService.getQuestion(questionId);
-            if(questionOpt.isEmpty()) {
-                return new BotResponse("Вопрос не найден!");
-            }
-            QuestionEntity question = questionOpt.get();
-            contextService.setCurrentQuestion(userId, question);
-            stateService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
-            return new BotResponse(String.format("Вопрос “%s” будет удалён, вы уверены?",
-                    question.getQuestion()),
-                    buttons,
-                    false);
+            String messageText = questionOpt.map(question -> {
+                contextService.setCurrentQuestion(userId, question);
+                stateService.changeStateById(userId, UserState.CONFIRM_DELETE_QUESTION);
+                return String.format("Вопрос “%s” будет удалён, вы уверены?", question.getQuestion());
+            }).orElse("Вопрос не найден!");
+
+            return new BotResponse(messageText, buttons, false);
+
         } catch (NumberFormatException e) {
             return new BotResponse("Некорректный формат идентификатора вопроса. Пожалуйста, введите число.");
         }
