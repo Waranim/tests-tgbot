@@ -562,13 +562,13 @@ public class QuestionProcessorTest {
                         "будет удалён, вы уверены?",
                 response1.getMessage());
         assertNotNull(response1.getButtons());
-        assertEquals(2, response1.getButtons().size());
+        assertEquals(2, response1.getButtons().getFirst().size());
 
         InlineButtonDTO yesButton = response1.getButtons().getFirst().getFirst();
         assertEquals("Да", yesButton.text());
-        assertEquals("DEL_QUESTION_CONFIRM 1 да", yesButton.callbackData());
+        assertEquals("DEL_QUESTION_CONFIRM 1 YES", yesButton.callbackData());
 
-        BotResponse response2 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 да", userId);
+        BotResponse response2 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 YES", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
                         "из теста “Математический тест” удален.",
                 response2.getMessage());
@@ -593,13 +593,13 @@ public class QuestionProcessorTest {
                         "будет удалён, вы уверены?",
                 response1.getMessage());
         assertNotNull(response1.getButtons());
-        assertEquals(2, response1.getButtons().size());
+        assertEquals(2, response1.getButtons().getFirst().size());
 
-        InlineButtonDTO noButton = response1.getButtons().get(1).getFirst();
+        InlineButtonDTO noButton = response1.getButtons().getFirst().get(1);
         assertEquals("Нет", noButton.text());
-        assertEquals("DEL_QUESTION_CONFIRM 1 нет", noButton.callbackData());
+        assertEquals("DEL_QUESTION_CONFIRM 1 NO", noButton.callbackData());
 
-        BotResponse response2 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 нет", userId);
+        BotResponse response2 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 NO", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
                         "из теста “Математический тест” не удален.",
                 response2.getMessage());
@@ -619,13 +619,13 @@ public class QuestionProcessorTest {
         assertEquals("Вопрос “Сколько будет 2 + 2?” будет удалён, вы уверены?",
                 response2.getMessage());
         assertNotNull(response2.getButtons());
-        assertEquals(2, response2.getButtons().size());
+        assertEquals(2, response2.getButtons().getFirst().size());
 
         InlineButtonDTO yesButton = response2.getButtons().getFirst().getFirst();
         assertEquals("Да", yesButton.text());
-        assertEquals("DEL_QUESTION_CONFIRM 1 да", yesButton.callbackData());
+        assertEquals("DEL_QUESTION_CONFIRM 1 YES", yesButton.callbackData());
 
-        BotResponse response3 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 да", userId);
+        BotResponse response3 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 YES", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
                         "из теста “Математический тест” удален.",
                 response3.getMessage());
@@ -653,13 +653,13 @@ public class QuestionProcessorTest {
         assertEquals("Вопрос “Сколько будет 2 + 2?” будет удалён, вы уверены?",
                 response2.getMessage());
         assertNotNull(response2.getButtons());
-        assertEquals(2, response2.getButtons().size());
+        assertEquals(2, response2.getButtons().getFirst().size());
 
-        InlineButtonDTO noButton = response2.getButtons().get(1).getFirst();
+        InlineButtonDTO noButton = response2.getButtons().getFirst().get(1);
         assertEquals("Нет", noButton.text());
-        assertEquals("DEL_QUESTION_CONFIRM 1 нет", noButton.callbackData());
+        assertEquals("DEL_QUESTION_CONFIRM 1 NO", noButton.callbackData());
 
-        BotResponse response3 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 нет", userId);
+        BotResponse response3 = messageHandler.handle("DEL_QUESTION_CONFIRM 1 NO", userId);
         assertEquals("Вопрос “Сколько будет 2 + 2?” " +
                         "из теста “Математический тест” не удален.",
                 response3.getMessage());
