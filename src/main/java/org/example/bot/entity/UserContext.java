@@ -21,7 +21,7 @@ public class UserContext extends BaseEntity {
      * Состояние пользователя
      */
     @Enumerated(EnumType.STRING)
-    private UserState state = UserState.DEFAULT;
+    private UserState state;
 
     /**
      * Тест, который в данный момент использует пользователь
@@ -103,6 +103,7 @@ public class UserContext extends BaseEntity {
      * Конструктор без параметров
      */
     public UserContext() {
+        state = UserState.DEFAULT;
     }
 
     /**
@@ -110,6 +111,7 @@ public class UserContext extends BaseEntity {
      */
     public UserContext(Long userId) {
         this.userId = userId;
+        state = UserState.DEFAULT;
     }
 
     /**

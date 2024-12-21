@@ -34,13 +34,13 @@ public class UserEntity {
      * Список тестов пользователя
      */
     @OneToMany(mappedBy = "creatorId", fetch = FetchType.EAGER)
-    private List<TestEntity> tests = new ArrayList<>();
+    private List<TestEntity> tests;
 
     /**
      * Список полученных тестов от других пользователей
      */
     @ManyToMany(fetch = FetchType.EAGER)
-    private final List<TestEntity> receivedTests = new ArrayList<>();
+    private final List<TestEntity> receivedTests;
 
     /**
      * Контекст пользователя
@@ -52,7 +52,8 @@ public class UserEntity {
      * Пустой конструктор
      */
     public UserEntity(){
-
+        tests = new ArrayList<>();
+        receivedTests = new ArrayList<>();
     }
 
     /**
@@ -66,6 +67,8 @@ public class UserEntity {
         this.userId = userId;
         this.username = username;
         this.userContext = userContext;
+        tests = new ArrayList<>();
+        receivedTests = new ArrayList<>();
     }
 
     /**
@@ -73,6 +76,7 @@ public class UserEntity {
      */
     public UserEntity(List<TestEntity> tests){
         this.tests = tests;
+        receivedTests = new ArrayList<>();
     }
 
     /**

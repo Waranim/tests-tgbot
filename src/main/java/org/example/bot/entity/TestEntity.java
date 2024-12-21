@@ -20,13 +20,13 @@ public class TestEntity extends BaseEntity {
      * Вопросы в тесте
      */
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    private final List<QuestionEntity> question = new ArrayList<>();
+    private final List<QuestionEntity> question;
 
     /**
      * Пользователи, которые получили доступ к данному тесту
      */
     @ManyToMany(fetch = FetchType.EAGER)
-    private final List<UserEntity> recipients = new ArrayList<>();
+    private final List<UserEntity> recipients;
 
     /**
      * Название теста
@@ -41,12 +41,15 @@ public class TestEntity extends BaseEntity {
     /**
      * Открыт ли тест
      */
-    private boolean isAccessOpen = true;
+    private boolean isAccessOpen;
 
     /**
      * Конструктор без параметров
      */
     public TestEntity() {
+        recipients = new ArrayList<>();
+        question = new ArrayList<>();
+        isAccessOpen = true;
     }
 
     /**
@@ -54,6 +57,9 @@ public class TestEntity extends BaseEntity {
      */
     public TestEntity(Long creatorId) {
         this.creatorId = creatorId;
+        question = new ArrayList<>();
+        recipients = new ArrayList<>();
+        isAccessOpen = true;
     }
 
     /**
@@ -62,6 +68,9 @@ public class TestEntity extends BaseEntity {
     public TestEntity(Long creatorId, Long testId) {
         super(testId);
         this.creatorId = creatorId;
+        question = new ArrayList<>();
+        recipients = new ArrayList<>();
+        isAccessOpen = true;
     }
 
     /**
