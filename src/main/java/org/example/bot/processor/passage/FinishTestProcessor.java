@@ -1,5 +1,6 @@
-package org.example.bot.processor;
+package org.example.bot.processor.passage;
 
+import org.example.bot.processor.AbstractCallbackProcessor;
 import org.example.bot.service.ContextService;
 import org.example.bot.service.StateService;
 import org.example.bot.state.UserState;

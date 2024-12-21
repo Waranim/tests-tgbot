@@ -3,7 +3,7 @@ package org.example.bot.service;
 import org.example.bot.entity.AnswerEntity;
 import org.example.bot.entity.QuestionEntity;
 import org.example.bot.entity.TestEntity;
-import org.example.bot.processor.*;
+import org.example.bot.processor.passage.*;
 import org.example.bot.state.UserState;
 import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.ButtonUtils;
