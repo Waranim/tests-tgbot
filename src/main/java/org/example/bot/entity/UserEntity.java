@@ -2,6 +2,7 @@ package org.example.bot.entity;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,7 +40,7 @@ public class UserEntity {
      * Список полученных тестов от других пользователей
      */
     @ManyToMany(fetch = FetchType.EAGER)
-    private List<TestEntity> receivedTests;
+    private final List<TestEntity> receivedTests;
 
     /**
      * Контекст пользователя
@@ -51,7 +52,8 @@ public class UserEntity {
      * Пустой конструктор
      */
     public UserEntity(){
-
+        tests = new ArrayList<>();
+        receivedTests = new ArrayList<>();
     }
 
     /**
@@ -65,6 +67,8 @@ public class UserEntity {
         this.userId = userId;
         this.username = username;
         this.userContext = userContext;
+        tests = new ArrayList<>();
+        receivedTests = new ArrayList<>();
     }
 
     /**
@@ -72,6 +76,7 @@ public class UserEntity {
      */
     public UserEntity(List<TestEntity> tests){
         this.tests = tests;
+        receivedTests = new ArrayList<>();
     }
 
     /**

@@ -12,6 +12,7 @@ import org.example.bot.telegram.BotResponse;
 import org.example.bot.util.ButtonUtils;
 import org.example.bot.util.TestUtils;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;
