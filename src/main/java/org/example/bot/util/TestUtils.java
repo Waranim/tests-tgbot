@@ -44,4 +44,34 @@ public class TestUtils {
 
         return stringBuilder.toString();
     }
+
+    /**
+     * Получить развернутое строковое представление сущности теста
+     */
+    public String testToString(TestEntity test) {
+        List<QuestionEntity> questions = test.getQuestions();
+        StringBuilder response = new StringBuilder(String.format("Тест “%s”. Всего вопросов: %s\n" +
+                        "Пользователей с доступом к тесту: %d\n",
+                test.getTitle(),
+                questions.size(),
+                test.getRecipients().size()));
+
+        for (QuestionEntity question : questions) {
+            response.append("Вопрос: %s\nВарианты ответов:\n"
+                    .formatted(question.getQuestion()));
+            List<AnswerEntity> answers = question.getAnswers();
+            AnswerEntity correctAnswer = null;
+
+            for (int i = 0; i < answers.size(); i++) {
+                var answer = answers.get(i);
+                response.append("%s - %s\n"
+                        .formatted(i + 1, answer.getAnswerText()));
+                if (answer.isCorrect()) correctAnswer = answer;
+            }
+            response.append("Правильный вариант: ")
+                    .append(correctAnswer != null ? correctAnswer
+                            .getAnswerText() : null).append("\n\n");
+        }
+        return response.toString();
+    }
 }

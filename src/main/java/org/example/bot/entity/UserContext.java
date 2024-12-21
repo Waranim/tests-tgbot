@@ -1,6 +1,9 @@
 package org.example.bot.entity;
 
 import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
 import org.example.bot.state.UserState;
 
 /**
@@ -18,12 +21,12 @@ public class UserContext extends BaseEntity {
      * Состояние пользователя
      */
     @Enumerated(EnumType.STRING)
-    private UserState state = UserState.DEFAULT;
+    private UserState state;
 
     /**
      * Тест, который в данный момент использует пользователь
      */
-    @OneToOne
+    @ManyToOne
     private TestEntity currentTest;
 
     /**
@@ -34,7 +37,7 @@ public class UserContext extends BaseEntity {
     /**
      * Вопрос, который в данный момент использует пользователь
      */
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     private QuestionEntity currentQuestion;
 
     /**
@@ -100,6 +103,7 @@ public class UserContext extends BaseEntity {
      * Конструктор без параметров
      */
     public UserContext() {
+        state = UserState.DEFAULT;
     }
 
     /**
@@ -107,6 +111,7 @@ public class UserContext extends BaseEntity {
      */
     public UserContext(Long userId) {
         this.userId = userId;
+        state = UserState.DEFAULT;
     }
 
     /**

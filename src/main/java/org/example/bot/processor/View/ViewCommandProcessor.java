@@ -1,7 +1,6 @@
 package org.example.bot.processor.View;
 
-import org.example.bot.entity.AnswerEntity;
-import org.example.bot.entity.QuestionEntity;
+import org.example.bot.dto.InlineButtonDTO;
 import org.example.bot.entity.TestEntity;
 import org.example.bot.processor.AbstractCommandProcessor;
 import org.example.bot.service.StateService;
@@ -12,6 +11,7 @@ import org.example.bot.util.NumberUtils;
 import org.example.bot.util.TestUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,7 +75,11 @@ public class ViewCommandProcessor extends AbstractCommandProcessor {
             Optional<TestEntity> test = testService.getTest(testId);
             if (test.isEmpty() || testsOptional.isEmpty() || !testsOptional.get().contains(test.get()))
                 return new BotResponse("Тест не найден!");
-            return new BotResponse(testToString(test.get()));
+            List<List<InlineButtonDTO>> button = new ArrayList<>();
+            String buttonsText = test.get().isAccessOpen() ? "Закрыть доступ" : "Открыть доступ";
+            button.add(List.of(new InlineButtonDTO(buttonsText, "VIEW_TEST " + testId)));
+
+            return new BotResponse(testUtils.testToString(test.get()), button, false);
         }
         return new BotResponse("Ошибка ввода!");
     }

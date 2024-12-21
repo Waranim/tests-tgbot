@@ -1,9 +1,12 @@
 package org.example.bot.service;
 
+import org.example.bot.entity.TestEntity;
 import org.example.bot.entity.UserEntity;
 import org.example.bot.entity.UserContext;
 import org.example.bot.repository.UserRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 import java.util.Optional;
 
@@ -47,5 +50,31 @@ public class UserService {
      */
     public Optional<UserEntity> getUserById(Long id) {
         return userRepository.findById(id);
+    }
+
+    /**
+     * Добавить получателю тест
+     */
+    public void addReceivedTest(Long recipientID, TestEntity test){
+        Optional<UserEntity> recipient = getUserById(recipientID);
+        recipient.get().getReceivedTests().add(test);
+        userRepository.save(recipient.get());
+    }
+
+    /**
+     * Получить открытые полученные тесты
+     */
+    public List<TestEntity> getOpenReceivedTests(Long userId){
+        Optional<UserEntity> user = getUserById(userId);
+        return user.get().getReceivedTests().stream().filter(TestEntity::isAccessOpen).toList();
+    }
+
+    /**
+     * Удалить тест из полученных тестов
+     */
+    public void removeReceivedTest(Long userId, TestEntity test) {
+        Optional<UserEntity> recipient = getUserById(userId);
+        recipient.get().getReceivedTests().remove(test);
+        userRepository.save(recipient.get());
     }
 }

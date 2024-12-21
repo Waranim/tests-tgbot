@@ -67,6 +67,9 @@ public enum UserState {
     /** Просмотр теста */
     VIEW_TEST,
 
+    /** Выбрать пользователя при шейринге теста*/
+    CHOOSE_USER,
+
     /** Прохождение теста */
-    PASSAGE_TEST,
+    PASSAGE_TEST
 }
