@@ -197,24 +197,24 @@ class TestProcessorTest {
                         "Пользователей с доступом к тесту: 0\n",
                 response2.getMessage());
 
-        assertEquals("Открыть доступ", response2.getButtons().getFirst().getFirst().text());
+        assertEquals("Закрыть доступ", response2.getButtons().getFirst().getFirst().text());
         assertEquals("VIEW_TEST 123", response2.getButtons().getFirst().getFirst().callbackData());
 
         BotResponse response3 = messageHandler.handle("VIEW_TEST 123", userId);
 
-        assertEquals("Закрыть доступ", response3.getButtons().getFirst().getFirst().text());
+        assertEquals("Открыть доступ", response3.getButtons().getFirst().getFirst().text());
         assertEquals("VIEW_TEST 123", response3.getButtons().getFirst().getFirst().callbackData());
 
         BotResponse response4 = messageHandler.handle("/view 123", userId);
         assertEquals("Тест “Математический тест”. Всего вопросов: 0\n" +
                 "Пользователей с доступом к тесту: 0\n", response4.getMessage());
 
-        assertEquals("Закрыть доступ", response4.getButtons().getFirst().getFirst().text());
+        assertEquals("Открыть доступ", response4.getButtons().getFirst().getFirst().text());
         assertEquals("VIEW_TEST 123", response4.getButtons().getFirst().getFirst().callbackData());
 
         BotResponse response5 = messageHandler.handle("VIEW_TEST 123", userId);
 
-        assertEquals("Открыть доступ", response5.getButtons().getFirst().getFirst().text());
+        assertEquals("Закрыть доступ", response5.getButtons().getFirst().getFirst().text());
         assertEquals("VIEW_TEST 123", response5.getButtons().getFirst().getFirst().callbackData());
     }
 
