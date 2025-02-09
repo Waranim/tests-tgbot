@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
@@ -81,8 +80,6 @@ class TestProcessorTest {
         StateService stateService = new StateService(contextService);
         TestService testService = new TestService(testRepository, userService);
 
-        HelpCommandProcessor helpCommandProcessor = new HelpCommandProcessor();
-        StartCommandProcessor startCommandProcessor = new StartCommandProcessor(userService, helpCommandProcessor);
         AddCommandProcessor addCommandProcessor = new AddCommandProcessor(testService, stateService, contextService);
         ViewCommandProcessor viewCommandProcessor = new ViewCommandProcessor(testService, stateService, numberUtils, testUtils);
         EditCommandProcessor editCommandProcessor = new EditCommandProcessor(testService, numberUtils, contextService, stateService);
@@ -96,10 +93,9 @@ class TestProcessorTest {
         EditTestDescriptionProcessor editTestDescriptionProcessor = new EditTestDescriptionProcessor(stateService, contextService, testService);
         DelTestProcessor delTestProcessor = new DelTestProcessor(stateService, testService, numberUtils, contextService);
         ConfirmDelTest confirmDelTest = new ConfirmDelTest(stateService, contextService, testService);
+        ViewTestCallbackProcessor viewTestCallbackProcessor = new ViewTestCallbackProcessor(testService, testUtils);
 
         List<MessageProcessor> processors = Arrays.asList(
-                helpCommandProcessor,
-                startCommandProcessor,
                 addCommandProcessor,
                 viewCommandProcessor,
                 editCommandProcessor,
@@ -111,7 +107,8 @@ class TestProcessorTest {
                 editTestTitleProcessor,
                 editTestDescriptionProcessor,
                 delTestProcessor,
-                confirmDelTest
+                confirmDelTest,
+                viewTestCallbackProcessor
         );
 
         messageHandler = new MessageHandler(processors);
@@ -193,11 +190,58 @@ class TestProcessorTest {
                 "1)  id: 123 Математический тест\n" +
                 "2)  id: 312 Тест по знаниям ПДД\n", response);
 
-        String response2 = messageHandler.handle("123", userId).getMessage();
-        assertEquals("Тест “Математический тест”. Всего вопросов: 0\n", response2);
+        BotResponse response2 = messageHandler.handle("123", userId);
 
-        String response3 = messageHandler.handle("/view 312", userId).getMessage();
-        assertEquals("Тест “Тест по знаниям ПДД”. Всего вопросов: 0\n", response3);
+        assertEquals("""
+                        Тест “Математический тест”. Всего вопросов: 0
+                        
+                        Статистика по тесту:
+                        Общее количество попыток: 0
+                        Средний процент правильных ответов: Тест ещё не проходили
+                        Пользователей с доступом к тесту: 0
+                        
+                        """,
+                response2.getMessage());
+
+        assertEquals("Закрыть доступ", response2.getButtons().getFirst().getFirst().text());
+        assertEquals("VIEW_TEST 123", response2.getButtons().getFirst().getFirst().callbackData());
+
+        BotResponse response3 = messageHandler.handle("VIEW_TEST 123", userId);
+
+        assertEquals("Открыть доступ", response3.getButtons().getFirst().getFirst().text());
+        assertEquals("VIEW_TEST 123", response3.getButtons().getFirst().getFirst().callbackData());
+
+        BotResponse response4 = messageHandler.handle("/view 123", userId);
+        assertEquals("""
+                        Тест “Математический тест”. Всего вопросов: 0
+                        
+                        Статистика по тесту:
+                        Общее количество попыток: 0
+                        Средний процент правильных ответов: Тест ещё не проходили
+                        Пользователей с доступом к тесту: 0
+                        
+                        """, response4.getMessage());
+
+        assertEquals("Открыть доступ", response4.getButtons().getFirst().getFirst().text());
+        assertEquals("VIEW_TEST 123", response4.getButtons().getFirst().getFirst().callbackData());
+
+        BotResponse response5 = messageHandler.handle("VIEW_TEST 123", userId);
+
+        assertEquals("Закрыть доступ", response5.getButtons().getFirst().getFirst().text());
+        assertEquals("VIEW_TEST 123", response5.getButtons().getFirst().getFirst().callbackData());
+
+        BotResponse response6 = messageHandler.handle("/view 312", userId);
+        assertEquals("""
+                        Тест “Тест по знаниям ПДД”. Всего вопросов: 0
+                        
+                        Статистика по тесту:
+                        Общее количество попыток: 0
+                        Средний процент правильных ответов: Тест ещё не проходили
+                        Пользователей с доступом к тесту: 0
+                        
+                        """, response6.getMessage());
+        assertEquals("Закрыть доступ", response6.getButtons().getFirst().getFirst().text());
+        assertEquals("VIEW_TEST 312", response6.getButtons().getFirst().getFirst().callbackData());
     }
 
     /**

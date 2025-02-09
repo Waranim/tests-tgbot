@@ -60,6 +60,7 @@ public class AddQuestionCommandProcessor extends AbstractCommandProcessor {
      * @param stateService    сервис для управления состояниями
      * @param contextService  сервис для управления контекстом
      * @param numberUtils     утилита с вспомогательными числовыми методами
+     * @param testUtils       утилита с вспомогательными методами для тестов
      */
     public AddQuestionCommandProcessor(TestService testService,
                                        QuestionService questionService,

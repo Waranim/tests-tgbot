@@ -20,7 +20,7 @@ public class QuestionEntity extends BaseEntity {
      */
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @OrderBy("id ASC")
-    private List<AnswerEntity> answers = new ArrayList<>();
+    private final List<AnswerEntity> answers;
 
     /**
      * Тест
@@ -32,6 +32,7 @@ public class QuestionEntity extends BaseEntity {
      * Конструктор без параметров
      */
     public QuestionEntity() {
+        answers = new ArrayList<>();
     }
 
     /**
@@ -40,6 +41,7 @@ public class QuestionEntity extends BaseEntity {
      */
     public QuestionEntity(TestEntity test) {
         this.test = test;
+        answers = new ArrayList<>();
     }
 
     /**
@@ -51,6 +53,7 @@ public class QuestionEntity extends BaseEntity {
     public QuestionEntity(TestEntity test, Long questionId) {
         super(questionId);
         this.test = test;
+        answers = new ArrayList<>();
     }
     /**
      * Получить формулировку вопроса
